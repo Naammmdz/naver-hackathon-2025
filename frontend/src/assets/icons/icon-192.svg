@@ -1,0 +1,11 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="96" cy="96" r="90" fill="hsl(221, 83%, 53%)" stroke="hsl(221, 83%, 45%)" stroke-width="12"/>
+  
+  <!-- Task checkmark icon -->
+  <path d="M54 96L78 120L138 60" stroke="white" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Flow lines -->
+  <path d="M36 48L156 48" stroke="white" stroke-width="9" stroke-linecap="round" opacity="0.6"/>
+  <path d="M36 144L156 144" stroke="white" stroke-width="9" stroke-linecap="round" opacity="0.6"/>
+</svg>

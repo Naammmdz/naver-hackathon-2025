@@ -1,0 +1,278 @@
+{
+  "common": {
+    "new": "Mới",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "clear": "Xóa",
+    "today": "Hôm nay",
+    "loading": "Đang tải",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "more": "thêm",
+    "showLess": "Ẩn bớt"
+  },
+  "header": {
+    "title": "DevFlow",
+    "subtitle": "Bộ công cụ năng suất",
+    "searchPlaceholder": "Tìm kiếm công việc...",
+    "newTask": "Công việc mới",
+    "darkMode": "Chế độ tối",
+    "lightMode": "Chế độ sáng"
+  },
+  "sidebar": {
+    "quickFilters": "Bộ lọc nhanh",
+    "allTasks": "Tất cả công việc",
+    "overdue": "Quá hạn",
+    "dueToday": "Hạn hôm nay",
+    "thisWeek": "Tuần này",
+    "byStatus": "Theo trạng thái",
+    "byPriority": "Theo ưu tiên",
+    "byTags": "Theo thẻ",
+    "clearAllFilters": "Xóa tất cả bộ lọc",
+    "searchTags": "Tìm kiếm thẻ...",
+    "noTagsFound": "Không tìm thấy thẻ nào"
+  },
+  "tasks": {
+    "title": "Dự án DevFlow",
+    "subtitle": "Tối ưu hóa quy trình làm việc và tăng năng suất",
+    "todo": "Cần làm",
+    "inProgress": "Đang làm",
+    "done": "Hoàn thành",
+    "priority": {
+      "high": "Cao",
+      "medium": "Trung bình",
+      "low": "Thấp",
+      "highPriority": "Ưu tiên cao",
+      "mediumPriority": "Ưu tiên trung bình",
+      "lowPriority": "Ưu tiên thấp"
+    },
+    "status": {
+      "todo": "Cần làm",
+      "inProgress": "Đang làm",
+      "done": "Hoàn thành"
+    },
+    "dueDate": "Ngày hết hạn",
+    "tags": "Thẻ",
+    "description": "Mô tả",
+    "noTasks": "Không tìm thấy công việc",
+    "addTask": "Thêm công việc vào {{column}}",
+    "taskDetails": "Chi tiết công việc",
+    "createTask": "Tạo công việc",
+    "editTask": "Chỉnh sửa công việc"
+  },
+  "form": {
+    "title": "Tiêu Đề",
+    "titlePlaceholder": "Nhập tiêu đề công việc...",
+    "description": "Mô Tả",
+    "descriptionPlaceholder": "Nhập mô tả công việc...",
+    "status": "Trạng Thái",
+    "selectStatus": "Chọn trạng thái",
+    "priority": "Độ Ưu Tiên",
+    "selectPriority": "Chọn độ ưu tiên",
+    "dueDate": "Ngày Đến Hạn",
+    "selectDate": "Chọn ngày",
+    "tags": "Thẻ",
+    "tagsPlaceholder": "Thêm thẻ...",
+    "newTag": "Thẻ mới",
+    "addTag": "Thêm thẻ",
+    "createTask": "Tạo công việc để tổ chức công việc của bạn",
+    "updateTask": "Cập nhật chi tiết công việc",
+    "traditionalForm": "Biểu Mẫu Truyền Thống"
+  },
+  "views": {
+    "board": "Bảng",
+    "list": "Danh sách",
+    "calendar": "Lịch",
+    "analytics": "Phân tích"
+  },
+  "calendar": {
+    "monthNames": {
+      "january": "Tháng 1",
+      "february": "Tháng 2",
+      "march": "Tháng 3",
+      "april": "Tháng 4",
+      "may": "Tháng 5",
+      "june": "Tháng 6",
+      "july": "Tháng 7",
+      "august": "Tháng 8",
+      "september": "Tháng 9",
+      "october": "Tháng 10",
+      "november": "Tháng 11",
+      "december": "Tháng 12"
+    },
+    "dayNames": {
+      "sunday": "CN",
+      "monday": "T2",
+      "tuesday": "T3",
+      "wednesday": "T4",
+      "thursday": "T5",
+      "friday": "T6",
+      "saturday": "T7"
+    }
+  },
+  "bulk": {
+    "selected": "{{count}} đã chọn",
+    "markComplete": "Đánh dấu hoàn thành",
+    "markIncomplete": "Đánh dấu chưa hoàn thành",
+    "clearSelection": "Xóa lựa chọn"
+  },
+  "tableHeaders": {
+    "task": "Công việc",
+    "status": "Trạng thái", 
+    "priority": "Độ ưu tiên",
+    "dueDate": "Hạn chót",
+    "updated": "Cập nhật",
+    "actions": "Hành động",
+    "noDueDate": "Không có hạn chót",
+    "noTasksYet": "Chưa có công việc nào. Tạo công việc đầu tiên của bạn!",
+    "clearSort": "Xóa sắp xếp",
+    "sortBy": "Sắp xếp theo",
+    "sortAsc": "Nhấp để sắp xếp giảm dần",
+    "sortDesc": "Nhấp để xóa sắp xếp"
+  },
+  "columns": {
+    "todoDescription": "Các công việc cần được bắt đầu",
+    "inProgressDescription": "Các công việc đang được thực hiện",
+    "doneDescription": "Các công việc đã hoàn thành"
+  },
+  "analytics": {
+    "title": "Bảng điều khiển phân tích",
+    "subtitle": "Hiệu suất công việc và thông tin chi tiết về năng suất",
+    "productivityScore": "Điểm năng suất",
+    "totalTasks": "Tổng số công việc",
+    "completedTasks": "Công việc đã hoàn thành",
+    "pendingTasks": "Công việc đang chờ",
+    "overdueTasks": "Công việc quá hạn",
+    "statusDistribution": "Phân bổ trạng thái",
+    "priorityDistribution": "Phân bổ ưu tiên",
+    "completionRate": "Tỷ lệ hoàn thành",
+    "averageTaskAge": "Tuổi trung bình của công việc",
+    "completionTime": "Thời gian hoàn thành trung bình",
+    "tasksCreated": "Công việc đã tạo",
+    "tasksCompleted": "Công việc đã hoàn thành",
+    "last14Days": "14 ngày qua",
+    "createdToday": "Đã tạo hôm nay",
+    "completedToday": "Đã hoàn thành hôm nay",
+    "createdThisWeek": "Đã tạo tuần này",
+    "streakDays": "Chuỗi ngày",
+    "topTags": "Thẻ được sử dụng nhiều nhất",
+    "days": "ngày",
+    "of": "của",
+    "taskCompletionText": "công việc đã hoàn thành",
+    "averageTaskAgeDescription": "Thời gian trung bình kể từ khi tạo công việc",
+    "averageCompletionDescription": "Thời gian trung bình để hoàn thành công việc"
+  },
+  "actions": {
+    "viewDetails": "Xem chi tiết",
+    "moveToTodo": "Chuyển sang Cần làm",
+    "moveToInProgress": "Chuyển sang Đang làm",
+    "moveToDone": "Chuyển sang Hoàn thành",
+    "deleteTask": "Xóa công việc"
+  },
+  "taskCard": {
+    "overdue": "Quá Hạn",
+    "due": "Đến Hạn",
+    "dueToday": "Đến hạn hôm nay",
+    "subtasks": "Công Việc Con",
+    "completeSubtasksFirst": "Hoàn thành tất cả công việc con trước",
+    "cannotMoveToDone": "Không thể chuyển sang Hoàn Thành"
+  },
+  "taskDetails": {
+    "priority": "Độ Ưu Tiên",
+    "dueDate": "Ngày Đến Hạn",
+    "created": "Đã Tạo",
+    "lastUpdated": "Cập Nhật Cuối",
+    "tags": "Thẻ",
+    "subtasks": "Công Việc Con",
+    "addSubtask": "Thêm công việc con...",
+    "add": "Thêm",
+    "taskId": "ID Công Việc",
+    "createdOn": "Được tạo vào",
+    "edit": "Chỉnh Sửa"
+  },
+  "focusFly": {
+    "title": "Chế Độ Bay Tập Trung",
+    "timeSelection": {
+      "title": "Chọn Thời Gian Bay",
+      "subtitle": "Bạn muốn tập trung bao lâu?",
+      "customDuration": "Thời gian tùy chỉnh",
+      "minutes": "phút",
+      "minute": "phút",
+      "hour": "giờ",
+      "hours": "giờ",
+      "startFlight": "Bắt Đầu Chuyến Bay",
+      "flightRouteReady": "Tuyến bay đã sẵn sàng",
+      "journeyDescription": "Hành trình tập trung của bạn đang chờ đợi",
+      "quickSprint": "Tập Trung Nhanh",
+      "classicPomodoro": "Pomodoro Cổ Điển",
+      "deepWork": "Làm Việc Sâu",
+      "longFocus": "Tập Trung Lâu",
+      "extendedSession": "Phiên Kéo Dài",
+      "marathonFocus": "Tập Trung Marathon",
+      "durationError": "Vui lòng nhập thời gian hợp lệ từ 5 đến 180 phút",
+      "setTime": "Đặt Thời Gian",
+      "durationRange": "Thời gian: 5-180 phút"
+    },
+    "ready": {
+      "title": "Sẵn Sàng Cất Cánh",
+      "subtitle": "Máy bay đã sẵn sàng cho chuyến bay tập trung của bạn",
+      "checkIn": "Làm Thủ Tục",
+      "defaultDuration": "Thời Gian Bay",
+      "proceedToSeatSelection": "Chuyển Đến Chọn Ghế"
+    },
+    "seatSelection": {
+      "title": "Chọn Ghế Ngồi",
+      "subtitle": "Chọn ghế của bạn cho trải nghiệm bay tập trung",
+      "seat": "Ghế",
+      "occupied": "Đã có người",
+      "available": "Trống",
+      "selected": "Đã chọn"
+    },
+    "boardingPass": {
+      "title": "Thẻ Lên Máy Bay",
+      "subtitle": "Ghế của bạn đã được xác nhận! Xé thẻ lên máy bay để bắt đầu chuyến bay tập trung.",
+      "readyForTakeoff": "Sẵn sàng cất cánh!",
+      "swipeInstruction": "Nhấp vào bất kỳ đâu trên thẻ lên máy bay để xé và bắt đầu phiên tập trung"
+    },
+    "inFlight": {
+      "title": "Trong Chuyến Bay",
+      "subtitle": "Dịch vụ trên chuyến bay cho:",
+      "seatInfo": "Ghế",
+      "flightInProgress": "Chuyến bay đang diễn ra",
+      "endFlight": "Kết Thúc Chuyến Bay"
+    },
+    "landed": {
+      "title": "Máy Bay Đã Hạ Cánh!",
+      "subtitle": "Bạn đã hoàn thành phiên tập trung cho",
+      "totalFlightTime": "Tổng thời gian bay",
+      "markComplete": "Đánh Dấu Công Việc Hoàn Thành & Đóng",
+      "closeWithoutMarking": "Đóng Mà Không Đánh Dấu Hoàn Thành"
+    },
+    "ticket": {
+      "passenger": "Hành Khách",
+      "focusFlyer": "Người Bay Tập Trung",
+      "flight": "Chuyến Bay",
+      "seat": "Ghế",
+      "departure": "Khởi Hành",
+      "arrival": "Đến",
+      "focusSession": "Phiên Tập Trung",
+      "swipeRight": "Vuốt phải để xé",
+      "dragInstruction": "Kéo để xé vé",
+      "keepSwiping": "Tiếp tục vuốt phải...",
+      "releaseToStart": "Thả để bắt đầu chuyến bay"
+    },
+    "map": {
+      "flying": "Đang Bay",
+      "progress": "Tiến Độ",
+      "timeRemaining": "Thời Gian Còn Lại",
+      "flightInfo": "Thông Tin Chuyến Bay",
+      "loadingRoute": "Đang tải tuyến ngẫu nhiên...",
+      "status": "Trạng Thái"
+    }
+  }
+}

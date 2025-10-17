@@ -1,0 +1,24 @@
+{
+  "type": "Topology",
+  "arcs": [
+    [[158, 0], [84, 0], [0, 84], [-84, 0], [0, -84]],
+    [[242, 0], [0, 84], [-84, 0], [0, -84], [84, 0]]
+  ],
+  "objects": {
+    "states": {
+      "type": "GeometryCollection", 
+      "geometries": [
+        {
+          "type": "Polygon",
+          "properties": {"name": "California"},
+          "arcs": [[0]]
+        },
+        {
+          "type": "Polygon", 
+          "properties": {"name": "Nevada"},
+          "arcs": [[1]]
+        }
+      ]
+    }
+  }
+}

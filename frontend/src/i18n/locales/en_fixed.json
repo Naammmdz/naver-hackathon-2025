@@ -1,0 +1,237 @@
+{
+  "common": {
+    "new": "New",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "today": "Today",
+    "loading": "Loading",
+    "error": "Error",
+    "success": "Success"
+  },
+  "header": {
+    "title": "DevFlow",
+    "subtitle": "Productivity Suite",
+    "searchPlaceholder": "Search tasks...",
+    "newTask": "New Task",
+    "importExport": "Import/Export",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
+  },
+  "sidebar": {
+    "quickFilters": "Quick Filters",
+    "allTasks": "All Tasks",
+    "overdue": "Overdue",
+    "dueToday": "Due Today",
+    "thisWeek": "This Week",
+    "byStatus": "By Status",
+    "byPriority": "By Priority",
+    "byTags": "By Tags",
+    "clearAllFilters": "Clear All Filters"
+  },
+  "tasks": {
+    "title": "DevFlow Projects",
+    "subtitle": "Streamline your workflow and boost productivity",
+    "todo": "Todo",
+    "inProgress": "In Progress",
+    "done": "Done",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "status": {
+      "todo": "Todo",
+      "inProgress": "In Progress",
+      "done": "Done"
+    },
+    "dueDate": "Due Date",
+    "tags": "Tags",
+    "description": "Description",
+    "noTasks": "No tasks found",
+    "addTask": "Add a task to {{column}}",
+    "taskDetails": "Task Details",
+    "createTask": "Create Task",
+    "editTask": "Edit Task"
+  },
+  "form": {
+    "title": "Title",
+    "titlePlaceholder": "Enter task title...",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter task description...",
+    "dueDate": "Due Date",
+    "priority": "Priority",
+    "status": "Status",
+    "tags": "Tags",
+    "tagsPlaceholder": "Add tags...",
+    "required": "This field is required",
+    "selectDate": "Select date",
+    "selectPriority": "Select priority",
+    "selectStatus": "Select status",
+    "addTag": "Add tag",
+    "removeTag": "Remove tag",
+    "createTask": "Fill in the details to create a new task",
+    "updateTask": "Update the task details below"
+  },
+  "views": {
+    "board": "Board",
+    "list": "List",
+    "calendar": "Calendar",
+    "analytics": "Analytics"
+  },
+  "calendar": {
+    "monthNames": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "dayNames": {
+      "sunday": "Sun",
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat"
+    }
+  },
+  "bulk": {
+    "selected": "{{count}} selected",
+    "markComplete": "Mark Complete",
+    "markIncomplete": "Mark Incomplete",
+    "clearSelection": "Clear Selection"
+  },
+  "columns": {
+    "todoDescription": "Tasks that need to be started",
+    "inProgressDescription": "Tasks currently being worked on",
+    "doneDescription": "Completed tasks"
+  },
+  "analytics": {
+    "title": "Analytics Dashboard",
+    "subtitle": "Task performance and productivity insights",
+    "productivityScore": "Productivity Score",
+    "totalTasks": "Total Tasks",
+    "completedTasks": "Completed Tasks",
+    "pendingTasks": "Pending Tasks",
+    "overdueTasks": "Overdue Tasks",
+    "statusDistribution": "Status Distribution",
+    "priorityDistribution": "Priority Distribution",
+    "completionRate": "Completion Rate",
+    "averageTaskAge": "Average Task Age",
+    "completionTime": "Average Completion Time",
+    "tasksCreated": "Tasks Created",
+    "tasksCompleted": "Tasks Completed",
+    "last14Days": "Last 14 Days",
+    "createdToday": "Created Today",
+    "completedToday": "Completed Today",
+    "createdThisWeek": "Created This Week",
+    "streakDays": "Day Streak",
+    "topTags": "Most Used Tags",
+    "days": "days",
+    "of": "of",
+    "taskCompletionText": "tasks completed",
+    "averageTaskAgeDescription": "Average time since task creation",
+    "averageCompletionDescription": "Average time to complete tasks"
+  },
+  "actions": {
+    "viewDetails": "View Details",
+    "moveToTodo": "Move to Todo",
+    "moveToInProgress": "Move to In Progress",
+    "moveToDone": "Move to Done",
+    "deleteTask": "Delete Task"
+  },
+  "focusFly": {
+    "title": "Focus Fly Mode",
+    "timeSelection": {
+      "title": "Select Flight Duration",
+      "subtitle": "How long would you like to focus?",
+      "customDuration": "Custom Duration",
+      "minutes": "minutes",
+      "minute": "minute",
+      "hour": "hour",
+      "hours": "hours",
+      "startFlight": "Start Flight",
+      "flightRouteReady": "Flight route ready",
+      "journeyDescription": "Your focus journey awaits",
+      "quickSprint": "Quick Sprint",
+      "classicPomodoro": "Classic Pomodoro",
+      "deepWork": "Deep Work",
+      "longFocus": "Long Focus",
+      "extendedSession": "Extended Session",
+      "marathonFocus": "Marathon Focus",
+      "durationError": "Please enter a valid duration between 5 and 180 minutes",
+      "setTime": "Set Time",
+      "durationRange": "Duration: 5-180 minutes"
+    },
+    "ready": {
+      "title": "Ready for Takeoff",
+      "subtitle": "Your aircraft is ready for your focus flight",
+      "checkIn": "Check In",
+      "defaultDuration": "Flight Duration",
+      "proceedToSeatSelection": "Proceed to Seat Selection"
+    },
+    "seatSelection": {
+      "title": "Select Your Seat",
+      "subtitle": "Choose your seat for the focus flight experience",
+      "seat": "Seat",
+      "occupied": "Occupied",
+      "available": "Available", 
+      "selected": "Selected"
+    },
+    "boardingPass": {
+      "title": "Your Boarding Pass",
+      "subtitle": "Your seat is confirmed! Tear your boarding pass to begin your focus flight.",
+      "readyForTakeoff": "Ready for takeoff!",
+      "swipeInstruction": "Click anywhere on your boarding pass to tear it and start your focus session"
+    },
+    "inFlight": {
+      "title": "In Flight",
+      "subtitle": "In-flight service for:",
+      "seatInfo": "Seat",
+      "flightInProgress": "Flight in progress",
+      "endFlight": "End Flight"
+    },
+    "landed": {
+      "title": "Flight Landed!",
+      "subtitle": "You have completed your focus session for",
+      "totalFlightTime": "Total flight time",
+      "markComplete": "Mark Task as Done & Close",
+      "closeWithoutMarking": "Close without Marking as Done"
+    },
+    "ticket": {
+      "passenger": "Passenger",
+      "focusFlyer": "Focus Flyer",
+      "flight": "Flight",
+      "seat": "Seat",
+      "departure": "Departure",
+      "arrival": "Arrival",
+      "focusSession": "Focus Session",
+      "swipeRight": "Swipe right to tear",
+      "dragInstruction": "Drag to tear ticket",
+      "keepSwiping": "Keep swiping right...",
+      "releaseToStart": "Release to start flight"
+    },
+    "map": {
+      "flying": "Flying", 
+      "progress": "Progress",
+      "timeRemaining": "Time Remaining",
+      "flightInfo": "Flight Info",
+      "loadingRoute": "Loading random route...",
+      "status": "Status"
+    }
+  }
+}
