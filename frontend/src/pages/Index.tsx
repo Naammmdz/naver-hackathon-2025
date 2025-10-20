@@ -238,11 +238,11 @@ export default function Index() {
   };
 
     return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-background">
+    <div className="h-full bg-background overflow-auto">
       <FocusFlyModal onComplete={handleFocusComplete} />
       
       <div className="relative bg-background">
-        <div className="min-h-full p-6 bg-background max-w-7xl mx-auto">
+        <div className="h-full p-6 bg-background max-w-7xl mx-auto">
           {/* Header with View Switcher */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <ViewSwitcher 

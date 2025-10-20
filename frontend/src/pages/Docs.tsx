@@ -123,15 +123,15 @@ export default function Docs() {
   }, []);
 
   return (
-    <div className={`flex h-[calc(100vh-3.5rem)] ${isDark ? 'bg-[#1f1f1f]' : 'bg-white'}`}>
-      {/* Sidebar */}
+    <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
+      {/* Document Sidebar */}
       <DocumentSidebar />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeDocument ? (
           isTrashedDocument ? (
-            <div className="flex-1 flex items-center justify-center bg-muted/10">
+            <div className="flex-1 flex items-center justify-center bg-muted/5">
               <div className="text-center max-w-md px-6">
                 <div className="h-20 w-20 rounded-2xl bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mx-auto mb-6">
                   <FileText className="h-10 w-10 text-orange-600 dark:text-orange-400" />
@@ -152,7 +152,7 @@ export default function Docs() {
                   <Button 
                     onClick={() => addDocument('Untitled')} 
                     size="lg" 
-                    className="gap-2"
+                    className="gap-2 bg-primary hover:bg-primary/90"
                   >
                     <Plus className="h-4 w-4" />
                     Create New
@@ -162,20 +162,21 @@ export default function Docs() {
             </div>
           ) : (
             <>
-              {/* Editor - Full Width */}
-              <div className="flex-1 overflow-auto px-16 py-8">
+              {/* Editor Container */}
+              <div className="flex-1 overflow-auto px-12 py-8">
                 <div className="max-w-4xl mx-auto">
                   <BlockNoteView 
                     editor={editor} 
                     onChange={handleChange}
                     theme={isDark ? "dark" : "light"}
+                    className="rounded-lg border border-border/50"
                   />
                 </div>
               </div>
             </>
           )
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-muted/10">
+          <div className="flex-1 flex items-center justify-center bg-muted/5">
             <div className="text-center max-w-md px-6">
               <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6">
                 <FileText className="h-10 w-10 text-primary" />
@@ -184,7 +185,7 @@ export default function Docs() {
               <p className="text-muted-foreground mb-6 leading-relaxed">
                 Select a document from the sidebar to start editing, or create a new one to begin writing.
               </p>
-              <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2">
+              <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2 bg-primary hover:bg-primary/90">
                 <Plus className="h-4 w-4" />
                 Create Document
               </Button>
