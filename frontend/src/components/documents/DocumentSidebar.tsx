@@ -1,30 +1,30 @@
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDocumentStore } from '@/store/documentStore';
 import {
-  ChevronDown,
-  ChevronRight,
-  Edit2,
-  FileText,
-  MoreHorizontal,
-  Plus,
-  Search,
-  Trash2,
+    ChevronDown,
+    ChevronRight,
+    Edit2,
+    FileText,
+    MoreHorizontal,
+    Plus,
+    Search,
+    Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -281,23 +281,25 @@ export default function DocumentSidebar() {
 
   return (
     <>
-      <div className="w-64 border-r bg-card flex flex-col h-full rounded-tl-lg rounded-bl-lg ml-2">
+      <div className="w-64 border-r bg-card flex flex-col h-full rounded-tl-lg rounded-bl-lg">
         {/* Header */}
         <div className="p-4 border-b space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {showTrash ? 'Trash' : 'Documents'}
             </h2>
-            {!showTrash && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleCreateDocument}
-                className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {!showTrash && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleCreateDocument}
+                  className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Search */}

@@ -5,7 +5,7 @@ import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
-import { FileText, Plus } from 'lucide-react';
+import { FileText, PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Docs() {
@@ -23,6 +23,7 @@ export default function Docs() {
 
   // Detect current theme
   const [isDark, setIsDark] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   useEffect(() => {
     const checkTheme = () => {
@@ -124,37 +125,49 @@ export default function Docs() {
 
   return (
     <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
-      {/* Document Sidebar */}
-      <DocumentSidebar />
+      {/* Document Sidebar - Collapsible on larger screens */}
+      <div className={`hidden lg:block transition-all duration-300 ease-in-out ${
+        isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'
+      }`}>
+        <DocumentSidebar />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {activeDocument ? (
           isTrashedDocument ? (
-            <div className="flex-1 flex items-center justify-center bg-muted/5">
-              <div className="text-center max-w-md px-6">
-                <div className="h-20 w-20 rounded-2xl bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mx-auto mb-6">
-                  <FileText className="h-10 w-10 text-orange-600 dark:text-orange-400" />
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-orange-50/50 to-orange-100/20 dark:from-orange-950/20 dark:to-orange-900/10 p-4">
+              <div className="text-center max-w-lg px-6">
+                <div className="relative mb-8">
+                  <div className="h-24 w-24 rounded-3xl bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mx-auto shadow-lg">
+                    <FileText className="h-12 w-12 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                    <div className="h-3 w-3 rounded-full bg-orange-500"></div>
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold mb-3">Document in Trash</h2>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  This document has been moved to trash. You can restore it or permanently delete it.
+                <h2 className="text-3xl font-bold mb-4 text-orange-900 dark:text-orange-100">
+                  Document in Trash
+                </h2>
+                <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
+                  This document has been moved to trash. You can restore it or permanently delete it from the sidebar.
                 </p>
-                <div className="flex gap-3 justify-center">
-                  <Button 
-                    onClick={() => restoreDocument(activeDocumentId!)} 
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Button
+                    onClick={() => restoreDocument(activeDocumentId!)}
                     variant="outline"
-                    className="gap-2"
+                    size="lg"
+                    className="gap-2 border-orange-200 hover:bg-orange-50 dark:border-orange-800 dark:hover:bg-orange-950/50"
                   >
-                    <FileText className="h-4 w-4" />
+                    <FileText className="h-5 w-5" />
                     Restore Document
                   </Button>
-                  <Button 
-                    onClick={() => addDocument('Untitled')} 
-                    size="lg" 
-                    className="gap-2 bg-primary hover:bg-primary/90"
+                  <Button
+                    onClick={() => addDocument('Untitled')}
+                    size="lg"
+                    className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-5 w-5" />
                     Create New
                   </Button>
                 </div>
@@ -162,33 +175,80 @@ export default function Docs() {
             </div>
           ) : (
             <>
+              {/* Document Header */}
+              <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                      className="h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground transition-colors hidden lg:flex"
+                      title={isSidebarCollapsed ? 'Show Sidebar' : 'Hide Sidebar'}
+                    >
+                      {isSidebarCollapsed ? (
+                        <PanelLeftOpen className="h-4 w-4" />
+                      ) : (
+                        <PanelLeftClose className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
+                    <div className="text-xs text-muted-foreground">
+                      {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               {/* Editor Container */}
-              <div className="flex-1 overflow-auto px-12 py-8">
+              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="max-w-4xl mx-auto">
-                  <BlockNoteView 
-                    editor={editor} 
+                  <BlockNoteView
+                    editor={editor}
                     onChange={handleChange}
                     theme={isDark ? "dark" : "light"}
-                    className="rounded-lg border border-border/50"
+                    className="rounded-lg border border-border/50 shadow-sm"
                   />
                 </div>
               </div>
             </>
           )
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-muted/5">
-            <div className="text-center max-w-md px-6">
-              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-10 w-10 text-primary" />
+          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5 p-4">
+            <div className="text-center max-w-lg px-6">
+              <div className="relative mb-8">
+                <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto shadow-lg">
+                  <FileText className="h-12 w-12 text-primary" />
+                </div>
+                <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plus className="h-4 w-4 text-primary" />
+                </div>
               </div>
-              <h2 className="text-2xl font-bold mb-3">No document selected</h2>
-              <p className="text-muted-foreground mb-6 leading-relaxed">
-                Select a document from the sidebar to start editing, or create a new one to begin writing.
+              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Start Writing
+              </h2>
+              <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
+                Create your first document and bring your ideas to life. Use the sidebar to organize your thoughts and collaborate with your team.
               </p>
-              <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2 bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4" />
-                Create Document
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                  <Plus className="h-5 w-5" />
+                  Create Document
+                </Button>
+                <Button variant="outline" size="lg" className="gap-2 hover:bg-muted/50 transition-all">
+                  <FileText className="h-5 w-5" />
+                  Browse Templates
+                </Button>
+              </div>
+              <div className="mt-8 text-sm text-muted-foreground">
+                <p>💡 Tip: Use keyboard shortcuts for faster editing</p>
+              </div>
             </div>
           </div>
         )}
