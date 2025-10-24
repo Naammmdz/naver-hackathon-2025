@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 interface ClickupHeaderProps {
   onSmartCreate?: () => void;
   onMenuClick?: () => void;
-  currentView: 'tasks' | 'docs';
+  currentView: 'tasks' | 'docs' | 'board';
 }
 
 export function ClickupHeader({

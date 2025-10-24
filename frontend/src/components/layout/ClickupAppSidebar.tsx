@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-    Calendar,
     CheckSquare,
     FileText,
     Home,
@@ -14,8 +13,8 @@ import { useState } from 'react';
 interface ClickupAppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewChange?: (view: 'tasks' | 'docs') => void;
-  currentView?: 'tasks' | 'docs';
+  onViewChange?: (view: 'tasks' | 'docs' | 'board') => void;
+  currentView?: 'tasks' | 'docs' | 'board';
 }
 
 export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'tasks' }: ClickupAppSidebarProps) {
@@ -32,7 +31,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'home', icon: Home, label: 'Home', color: 'text-blue-500' },
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', color: 'text-green-500', view: 'tasks' as const },
     { id: 'docs', icon: FileText, label: 'Docs', color: 'text-purple-500', view: 'docs' as const },
-    { id: 'calendar', icon: Calendar, label: 'Calendar', color: 'text-orange-500' },
+    { id: 'board', icon: CheckSquare, label: 'Board', color: 'text-orange-500', view: 'board' as const },
     { id: 'team', icon: Users, label: 'Teams', color: 'text-red-500' },
   ];
 

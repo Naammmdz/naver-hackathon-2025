@@ -27,7 +27,7 @@ export default function Landing() {
   return (
     <div id="landing-page" className="tw-flex tw-min-h-screen tw-flex-col tw-bg-[#fcfcfc] tw-text-black dark:tw-bg-black dark:tw-text-white">
       <Header />
-      <main className="tw-flex tw-flex-col tw-items-center tw-pt-[100px]">
+      <main className="tw-flex tw-flex-col tw-items-center">
         <HeroSection />
         <BrandsSection />
         <BuildAppsSection />

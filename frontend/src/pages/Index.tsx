@@ -1,5 +1,8 @@
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
+import { DocumentEditorDialog } from "@/components/documents/DocumentEditorDialog";
 import { ViewSwitcher, ViewType } from "@/components/layout/ViewSwitcher";
+import { Column } from "@/components/tasks/Column";
+import { ColumnHeader } from "@/components/tasks/ColumnHeader";
 import SmartTaskParser from "@/components/tasks/SmartTaskParser";
 import { TaskCalendarView } from "@/components/tasks/TaskCalendarView";
 import { TaskCard } from "@/components/tasks/TaskCard";
@@ -9,75 +12,22 @@ import { TaskListView } from "@/components/tasks/TaskListView";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FocusFlyModal } from "@/features/focusFly/components/FocusFlyModal";
+import { useToast } from "@/hooks/use-toast";
 import { ParsedTask } from "@/lib/parseNatural";
-import { cn } from "@/lib/utils";
+import { useDocumentStore } from "@/store/documentStore";
 import { useTaskStore } from "@/store/taskStore";
 import { Task, TaskStatus } from "@/types/task";
-import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, PointerSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-function DroppableColumnHeader({ column, taskCount, onAddTask }: { column: { id: TaskStatus; title: string; description: string }, taskCount: number, onAddTask: () => void }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `${column.id}-header` });
-  return (
-    <div 
-      ref={setNodeRef}
-      className={cn(
-        "p-4 border-b bg-card rounded-t-lg transition-colors",
-        column.id === "Todo" && "border-l-4 border-l-muted-foreground",
-        column.id === "In Progress" && "border-l-4 border-l-primary", 
-        column.id === "Done" && "border-l-4 border-l-success",
-        isOver && "bg-primary/10"
-      )}
-    >
-      <div className="flex items-center justify-between mb-1">
-        <h2 className="font-semibold text-sm">{column.title}</h2>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 hover:bg-primary/10"
-            onClick={onAddTask}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-          <span className={cn(
-            "px-2 py-1 rounded-full text-xs font-medium",
-            column.id === "Todo" && "bg-muted text-muted-foreground",
-            column.id === "In Progress" && "bg-primary/10 text-primary",
-            column.id === "Done" && "bg-success/10 text-success"
-          )}>
-            {taskCount}
-          </span>
-        </div>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {column.description}
-      </p>
-    </div>
-  );
-}
-
-function DroppableColumn({ column, tasks, children }: { column: { id: TaskStatus; title: string; description: string }, tasks: Task[], children?: React.ReactNode }) {
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
-  return (
-    <div 
-      ref={setNodeRef}
-      className={cn(
-        "flex flex-col bg-muted/30 rounded-lg border h-full transition-colors",
-        isOver && "bg-primary/10 border-2 border-dashed border-primary"
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-export default function Index() {
+export default function Index({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board') => void }) {
   const { t } = useTranslation();
-  
+  const { toast } = useToast();
+  const { setActiveDocument } = useDocumentStore();
+
   // Listen for smart parser events from the top navigation
   useEffect(() => {
     const handleOpenSmartParser = () => {
@@ -87,7 +37,7 @@ export default function Index() {
     window.addEventListener('openSmartParser', handleOpenSmartParser);
     return () => window.removeEventListener('openSmartParser', handleOpenSmartParser);
   }, []);
-  
+
   const COLUMNS: { id: TaskStatus; title: string; description: string }[] = [
     {
       id: "Todo",
@@ -95,13 +45,13 @@ export default function Index() {
       description: t('columns.todoDescription'),
     },
     {
-      id: "In Progress", 
+      id: "In Progress",
       title: t('tasks.inProgress'),
       description: t('columns.inProgressDescription'),
     },
     {
       id: "Done",
-      title: t('tasks.done'), 
+      title: t('tasks.done'),
       description: t('columns.doneDescription'),
     },
   ];
@@ -122,70 +72,111 @@ export default function Index() {
   
   const [currentView, setCurrentView] = useState<ViewType>("board");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [overTaskId, setOverTaskId] = useState<string | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
   const [showSmartParser, setShowSmartParser] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>("Todo");
   const [defaultDate, setDefaultDate] = useState<Date | undefined>(undefined);
+  const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
 
   // Get fresh task from store instead of using stale selectedTask state
   const freshSelectedTask = selectedTask ? tasks.find(t => t.id === selectedTask.id) : null;
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const task = tasks.find(t => t.id === event.active.id);
-    setActiveTask(task || null);
-  };
+// ============================================================================
+// Drag and Drop Handlers
+// ============================================================================
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveTask(null);
+const handleDragStart = (event: DragStartEvent) => {
+  const task = tasks.find(t => t.id === event.active.id);
+  setActiveTask(task || null);
+};
 
-    if (!over) return;
+const handleDragOver = (event: any) => {
+  const { over } = event;
+  setOverTaskId(over ? over.id as string : null);
+};
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event;
+  setActiveTask(null);
+  setOverTaskId(null);
+  if (!over) return;
 
-    const activeTask = tasks.find(t => t.id === activeId);
-    if (!activeTask) return;
+  const activeId = active.id as string;
+  const overId = over.id as string;
 
-    // Handle reordering within the same column (task over another task)
-    const overTask = tasks.find(t => t.id === overId);
-    if (overTask && activeTask.status === overTask.status) {
-      const columnTasks = getFilteredTasksByStatus(activeTask.status);
-      const activeIndex = columnTasks.findIndex(t => t.id === activeId);
-      const overIndex = columnTasks.findIndex(t => t.id === overId);
-      
-      if (activeIndex !== overIndex && activeIndex >= 0 && overIndex >= 0) {
-        reorderTasks(activeIndex, overIndex, activeTask.status);
+  const draggedTask = tasks.find(t => t.id === activeId);
+  if (!draggedTask) return;
+
+  // Nếu drop vào column trống (over.id là column)
+  const isColumnDrop = ["Todo", "In Progress", "Done"].includes(overId);
+  if (isColumnDrop) {
+    if (draggedTask.status !== overId) {
+      // Check if trying to move to "Done" with incomplete subtasks
+      if (overId === "Done") {
+        const hasIncompleteSubtasks = draggedTask.subtasks.some(subtask => !subtask.done);
+        if (hasIncompleteSubtasks) {
+          toast({
+            title: t('tasks.cannotMoveToDone'),
+            description: t('tasks.incompleteSubtasks'),
+            variant: "destructive",
+          });
+          return;
+        }
       }
-      return;
+      moveTask(activeId, overId as TaskStatus);
     }
+    return;
+  }
 
-    // Check if dropping on a column header (ends with -header)
-    if (overId.endsWith('-header')) {
-      const targetColumnId = overId.replace('-header', '') as TaskStatus;
-      const targetColumn = COLUMNS.find(col => col.id === targetColumnId);
-      if (targetColumn && activeTask.status !== targetColumn.id) {
-        moveTask(activeId, targetColumn.id);
+  // Nếu drop lên task khác
+  const overTask = tasks.find(t => t.id === overId);
+  if (!overTask) return;
+
+  // Nếu cùng cột => reorder
+  if (overTask.status === draggedTask.status) {
+    reorderTasksInColumn(activeId, overId, overTask.status);
+  }
+  // Nếu khác cột => move sang cột của task bị đè
+  else {
+    // Check if trying to move to "Done" with incomplete subtasks
+    if (overTask.status === "Done") {
+      const hasIncompleteSubtasks = draggedTask.subtasks.some(subtask => !subtask.done);
+      if (hasIncompleteSubtasks) {
+        toast({
+          title: t('tasks.cannotMoveToDone'),
+          description: t('tasks.incompleteSubtasks'),
+          variant: "destructive",
+        });
         return;
       }
     }
+    moveTask(activeId, overTask.status);
+  }
+};  /**
+   * Reorders tasks within the same column
+   */
+  const reorderTasksInColumn = (activeId: string, overId: string, status: TaskStatus) => {
+    const columnTasks = getFilteredTasksByStatus(status);
+    const activeIndex = columnTasks.findIndex(t => t.id === activeId);
+    const overIndex = columnTasks.findIndex(t => t.id === overId);
 
-    // Check if dropping on a column (when dragging to empty area or column drop zone)
-    const targetColumn = COLUMNS.find(col => col.id === overId);
-    if (targetColumn && activeTask.status !== targetColumn.id) {
-      moveTask(activeId, targetColumn.id);
-      return;
+    if (activeIndex !== overIndex && activeIndex >= 0 && overIndex >= 0) {
+      reorderTasks(activeIndex, overIndex, status);
     }
   };
 
-  // Sensors: use a small activation distance so clicks aren't mistaken for drags
-  // Use immediate activation for responsive dragging
+  // Configure drag sensors with minimal distance for immediate activation
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
     useSensor(MouseSensor)
   );
+
+  // ============================================================================
+  // Task Management Handlers
+  // ============================================================================
 
   const handleNewTask = (date?: Date, status?: TaskStatus) => {
     setSelectedTask(null);
@@ -220,7 +211,6 @@ export default function Index() {
   };
 
   const handleSmartParserCreate = (parsedTask: ParsedTask) => {
-    // Convert ParsedTask to our task format
     addTask({
       title: parsedTask.title,
       description: "",
@@ -232,6 +222,10 @@ export default function Index() {
     });
     setShowSmartParser(false);
   };
+
+  // ============================================================================
+  // Utilities
+  // ============================================================================
 
   const getColumnTasks = (status: TaskStatus) => {
     return getFilteredTasksByStatus(status);
@@ -285,8 +279,9 @@ export default function Index() {
             {currentView === "board" && (
               <DndContext 
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={rectIntersection}
                 onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
               >
                 {/* Kanban Board */}
@@ -295,9 +290,9 @@ export default function Index() {
                     const columnTasks = getColumnTasks(column.id);
                     
                     return (
-            <DroppableColumn key={column.id} column={column} tasks={columnTasks}>
+            <Column key={column.id} column={column}>
                         {/* Column Header */}
-                        <DroppableColumnHeader 
+                        <ColumnHeader 
                           column={column} 
                           taskCount={columnTasks.length}
                           onAddTask={() => handleNewTask(undefined, column.id)}
@@ -309,12 +304,13 @@ export default function Index() {
                             items={columnTasks.map(t => t.id)}
                             strategy={verticalListSortingStrategy}
                           >
-                            <div className="space-y-3">
+                            <div className="space-y-3 min-h-[100px] pb-10">
                               {columnTasks.map((task) => (
                                 <TaskCard
                                   key={task.id}
                                   task={task}
                                   isSelected={selectedTaskIds.includes(task.id)}
+                                  isDragOver={overTaskId === task.id}
                                   onEdit={() => handleTaskEdit(task)}
                                   onView={() => handleTaskView(task)}
                                 />
@@ -322,7 +318,7 @@ export default function Index() {
                             </div>
                           </SortableContext>
                         </div>
-                      </DroppableColumn>
+                      </Column>
                     );
                   })}
                 </div>
@@ -380,6 +376,10 @@ export default function Index() {
           setShowTaskDetails(false);
           handleTaskEdit(freshSelectedTask!);
         }}
+        onDocumentClick={(docId) => {
+          setEditingDocumentId(docId);
+          setShowTaskDetails(false);
+        }}
       />
 
       {/* Smart Task Parser Dialog */}
@@ -399,6 +399,13 @@ export default function Index() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Document Editor Dialog */}
+      <DocumentEditorDialog
+        open={!!editingDocumentId}
+        onOpenChange={(open) => !open && setEditingDocumentId(null)}
+        documentId={editingDocumentId}
+      />
     </div>
   );
 }

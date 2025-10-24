@@ -345,3 +345,73 @@ All colors MUST be HSL.
 .bn-block-group:first-child .bn-block-outer .bn-block-side-menu .bn-button[title="Turn into"] {
   display: none !important;
 }
+
+/* ReactFlow Controls Customization */
+/* ReactFlow Controls Customization - High specificity */
+div.custom-controls.react-flow__controls {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+  padding: 4px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 2px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: absolute !important;
+  bottom: 16px !important;
+  right: 16px !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+div.custom-controls.react-flow__controls button {
+  width: 32px !important;
+  height: 32px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  color: #374151 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  pointer-events: auto !important;
+  position: relative !important;
+}
+
+div.custom-controls.react-flow__controls button:hover {
+  background: #f3f4f6 !important;
+}
+
+div.custom-controls.react-flow__controls button:active {
+  background: #e5e7eb !important;
+}
+
+div.custom-controls.react-flow__controls button svg {
+  width: 16px !important;
+  height: 16px !important;
+  pointer-events: none !important;
+}
+
+/* Override any default ReactFlow control styles */
+.custom-controls.react-flow__controls {
+  position: absolute !important;
+  bottom: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+}
+.custom-controls.react-flow__controls {
+  position: absolute !important;
+  bottom: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+}

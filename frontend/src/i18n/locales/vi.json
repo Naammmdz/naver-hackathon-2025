@@ -63,7 +63,9 @@
     "addTask": "Thêm công việc vào {{column}}",
     "taskDetails": "Chi tiết công việc",
     "createTask": "Tạo công việc",
-    "editTask": "Chỉnh sửa công việc"
+    "editTask": "Chỉnh sửa công việc",
+    "cannotMoveToDone": "Không thể chuyển sang Hoàn thành",
+    "incompleteSubtasks": "Vui lòng hoàn thành tất cả công việc con trước khi đánh dấu là hoàn thành"
   },
   "form": {
     "title": "Tiêu Đề",

@@ -7,7 +7,7 @@
         Start Your DevFlow Journey Today
       </h3>
       <div className="tw-mt-8 tw-relative tw-flex max-lg:tw-flex-col tw-gap-5">
-        <a href="#" className="btn  reveal-up !tw-rounded-full !tw-p-4 tw-font-medium">
+        <a href="/app" className="btn  reveal-up !tw-rounded-full !tw-p-4 tw-font-medium">
           Get Started Free
         </a>
       </div>

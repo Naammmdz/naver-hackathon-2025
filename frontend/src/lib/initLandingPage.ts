@@ -193,7 +193,7 @@ export function initLandingPage() {
     cleanupFns.push(() => themeToggleButton.removeEventListener('click', toggleMode));
   }
 
-  const promptWindow = new Prompt('#pixa-playground');
+  const promptWindow = new Prompt('#devflow-playground');
   const dropdowns = document.querySelectorAll<HTMLElement>('.dropdown');
   const dropdownInstances = Array.from(dropdowns).map(
     (dropdown) => new Dropdown(`#${dropdown.id}`, promptWindow.setAIModel.bind(promptWindow)),
@@ -271,19 +271,23 @@ export function initLandingPage() {
     }
   });
 
-  const typed = new Typed('#prompts-sample', {
-    strings: [
-      "How to solve a rubik's cube? Step by step guide",
-      "What's Pixa playground?",
-      'How to build an AI SaaS App?',
-      'How to integrate Pixa API?',
-    ],
-    typeSpeed: 80,
-    smartBackspace: true,
-    loop: true,
-    backDelay: 2000,
-  });
-  cleanupFns.push(() => typed.destroy());
+  // Initialize Typed.js only if element exists
+  const promptsElement = document.querySelector('#prompts-sample');
+  if (promptsElement) {
+    const typed = new Typed('#prompts-sample', {
+      strings: [
+        "How to solve a rubik's cube? Step by step guide",
+        "What's DevFlow playground?",
+        'How to build an AI SaaS App?',
+        'How to integrate DevFlow API?',
+      ],
+      typeSpeed: 80,
+      smartBackspace: true,
+      loop: true,
+      backDelay: 2000,
+    });
+    cleanupFns.push(() => typed.destroy());
+  }
 
   gsap.registerPlugin(ScrollTrigger);
   const gsapContext = gsap.context(() => {
@@ -292,17 +296,18 @@ export function initLandingPage() {
       y: '100%',
     });
 
-    gsap.to('#dashboard', {
-      scale: 1,
-      translateY: 0,
-      rotateX: '0deg',
-      scrollTrigger: {
-        trigger: '#hero-section',
-        start: window.innerWidth > RESPONSIVE_WIDTH ? 'top 95%' : 'top 70%',
-        end: 'bottom bottom',
-        scrub: 1,
-      },
-    });
+    // Comment out dashboard animation as element doesn't exist
+    // gsap.to('#dashboard', {
+    //   scale: 1,
+    //   translateY: 0,
+    //   rotateX: '0deg',
+    //   scrollTrigger: {
+    //     trigger: '#hero-section',
+    //     start: window.innerWidth > RESPONSIVE_WIDTH ? 'top 95%' : 'top 70%',
+    //     end: 'bottom bottom',
+    //     scrub: 1,
+    //   },
+    // });
 
     const sections = gsap.utils.toArray('section') as HTMLElement[];
     sections.forEach((section) => {
@@ -340,14 +345,16 @@ export function initLandingPage() {
         return;
       }
 
+      const iconElement = icon as HTMLElement;
+
       if (content.style.maxHeight === '240px') {
         content.style.maxHeight = '0px';
         content.style.padding = '0px 18px';
-        icon.style.transform = 'rotate(0deg)';
+        iconElement.style.transform = 'rotate(0deg)';
       } else {
         content.style.maxHeight = '240px';
         content.style.padding = '20px 18px';
-        icon.style.transform = 'rotate(45deg)';
+        iconElement.style.transform = 'rotate(45deg)';
       }
     };
 

@@ -7,7 +7,7 @@ export function Footer() {
         <a href="#" className="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6">
           <img src="/assets/logo/logo.png" alt="logo" className="tw-max-w-[120px] dark:tw-invert" />
           <div className="tw-max-w-[120px] tw-text-center tw-text-3xl tw-h-fit">
-            PIXA
+            DevFlow
           </div>
         </a>
         {/* <div class="tw-mt-3 tw-text-lg tw-font-semibold">Follow us</div> */}

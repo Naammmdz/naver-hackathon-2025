@@ -1,11 +1,7 @@
-import React from "react";
-import { format } from "date-fns";
-import { Calendar, CheckSquare, Clock, MoreHorizontal, Plane } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,16 +9,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Task } from "@/types/task";
-import { useTaskStore } from "@/store/taskStore";
-import { cn } from "@/lib/utils";
-import { DraggableAttributes } from "@dnd-kit/core";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useTranslation } from "react-i18next";
+import { Progress } from "@/components/ui/progress";
 import { useFocusFly } from "@/features/focusFly/FocusFlyProvider";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate, formatDateLocalized } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+import { useTaskStore } from "@/store/taskStore";
+import { Task } from "@/types/task";
+import { DraggableAttributes } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Calendar, CheckSquare, Clock, MoreHorizontal, Plane } from "lucide-react";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface TaskCardProps {
   task: Task;
@@ -30,6 +29,7 @@ interface TaskCardProps {
   onEdit: () => void;
   onView: () => void;
   isDragging?: boolean;
+  isDragOver?: boolean;
   dragProps?: DraggableAttributes;
 }
 
@@ -39,6 +39,7 @@ export function TaskCard({
   onEdit, 
   onView, 
   isDragging,
+  isDragOver,
   dragProps 
 }: TaskCardProps) {
   const { t } = useTranslation();
@@ -95,12 +96,14 @@ export function TaskCard({
     >
       <Card 
         className={cn(
-          "task-card cursor-grab group relative",
+          "task-card cursor-grab group relative select-none",
           isDragging && "opacity-50 rotate-2 scale-105",
           isSelected && "ring-2 ring-primary shadow-lg",
+          isDragOver && "ring-2 ring-primary/60 border-primary/40 bg-primary/5 shadow-md",
           isOverdue && "border-destructive/50",
           "hover:shadow-lg transition-all duration-200"
         )}
+        onDoubleClick={() => onView()}
       >
       <CardContent className="p-4">
         {/* Header */}

@@ -4,7 +4,7 @@
 @config "../tailwind-prefixed.config.ts";
 @tailwind utilities;
 
-/* PIXAAI LANDING PAGE STYLES */
+/* DEVFLOW LANDING PAGE STYLES */
 
 /* Apply base styles only to landing page elements */
 #landing-page {
@@ -335,6 +335,46 @@ hr{
     text-align: justify;
     max-height: 0px;
     transition: max-height 0.4s, padding 0.4s;
+}
+
+.rainbow-border {
+    background: linear-gradient(45deg,
+        rgba(0, 191, 255, 0.6),   /* Deep Sky Blue */
+        rgba(30, 144, 255, 0.6),  /* Dodger Blue */
+        rgba(0, 206, 209, 0.6),   /* Dark Turquoise */
+        rgba(32, 178, 170, 0.6),  /* Light Sea Green */
+        rgba(0, 128, 128, 0.6),   /* Teal */
+        rgba(46, 139, 87, 0.6),   /* Sea Green */
+        rgba(60, 179, 113, 0.6),  /* Medium Sea Green */
+        rgba(72, 209, 204, 0.6),  /* Medium Turquoise */
+        rgba(64, 224, 208, 0.6),  /* Turquoise */
+        rgba(102, 205, 170, 0.6), /* Medium Aquamarine */
+        rgba(0, 139, 139, 0.6),   /* Dark Cyan */
+        rgba(0, 191, 255, 0.6)    /* Deep Sky Blue */
+    );
+    background-size: 300% 300%;
+    animation: rainbow-border 8s ease-in-out infinite;
+    padding: 2px;
+    border-radius: 12px;
+    opacity: 0.8;
+}
+
+.rainbow-border > div {
+    background: white;
+    border-radius: 10px;
+    height: 100%;
+}
+
+.tw-dark .rainbow-border > div {
+    background: #1a1a1a;
+}
+
+@keyframes rainbow-border {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 0%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 0% 100%; }
+    100% { background-position: 0% 50%; }
 }
 
 @media not all and (min-width: 1024px) {

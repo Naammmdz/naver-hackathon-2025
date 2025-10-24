@@ -1,3 +1,4 @@
+import { BoardView } from '@/components/board/BoardView';
 import { ClickupAppSidebar } from '@/components/layout/ClickupAppSidebar';
 import { ClickupHeader } from '@/components/layout/ClickupHeader';
 import { useState } from 'react';
@@ -6,7 +7,7 @@ import Docs from './Docs';
 import Index from './Index';
 
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<'tasks' | 'docs'>('tasks');
+  const [currentView, setCurrentView] = useState<'tasks' | 'docs' | 'board'>('tasks');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { t } = useTranslation();
 
@@ -34,7 +35,9 @@ export default function AppWrapper() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          {currentView === 'tasks' ? <Index /> : <Docs />}
+          {currentView === 'tasks' ? <Index onViewChange={setCurrentView} /> :
+           currentView === 'docs' ? <Docs /> :
+           <BoardView />}
         </main>
       </div>
     </div>

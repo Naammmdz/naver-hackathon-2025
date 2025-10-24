@@ -63,7 +63,9 @@
     "addTask": "Add a task to {{column}}",
     "taskDetails": "Task Details",
     "createTask": "Create Task",
-    "editTask": "Edit Task"
+    "editTask": "Edit Task",
+    "cannotMoveToDone": "Cannot move to Done",
+    "incompleteSubtasks": "Please complete all subtasks before marking as done"
   },
   "form": {
     "title": "Title",

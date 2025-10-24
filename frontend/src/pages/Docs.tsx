@@ -1,6 +1,10 @@
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
+import { CustomSlashMenu } from '@/components/documents/LinkTaskSlashItem';
+import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
 import { Button } from '@/components/ui/button';
 import { useDocumentStore } from '@/store/documentStore';
+import { useTaskStore } from '@/store/taskStore';
+import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
@@ -16,10 +20,16 @@ export default function Docs() {
     updateDocument,
     restoreDocument,
     getDocument,
+    setActiveDocument,
   } = useDocumentStore();
+
+  const { tasks } = useTaskStore();
 
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
   const isTrashedDocument = activeDocument?.trashed;
+
+  // Task detail drawer state
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Detect current theme
   const [isDark, setIsDark] = useState(false);
@@ -123,6 +133,35 @@ export default function Docs() {
     }
   }, []);
 
+  // Handle task link clicks
+  useEffect(() => {
+    const handleTaskLinkClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && target.textContent) {
+        const taskMatch = target.textContent.match(/\[TASK:([^:]+):([^\]]+)\]/);
+        if (taskMatch) {
+          const taskId = taskMatch[1];
+          const task = tasks.find(t => t.id === taskId);
+          if (task) {
+            setSelectedTask(task);
+          }
+        }
+      }
+    };
+
+    // Add event listener to editor container
+    const editorContainer = document.querySelector('.bn-editor');
+    if (editorContainer) {
+      editorContainer.addEventListener('click', handleTaskLinkClick);
+    }
+
+    return () => {
+      if (editorContainer) {
+        editorContainer.removeEventListener('click', handleTaskLinkClick);
+      }
+    };
+  }, [tasks]);
+
   return (
     <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
       {/* Document Sidebar - Collapsible on larger screens */}
@@ -208,13 +247,22 @@ export default function Docs() {
 
               {/* Editor Container */}
               <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-4xl mx-auto space-y-6">
+                  {/* Editor with Custom Slash Menu */}
                   <BlockNoteView
                     editor={editor}
                     onChange={handleChange}
                     theme={isDark ? "dark" : "light"}
                     className="rounded-lg border border-border/50 shadow-sm"
-                  />
+                    slashMenu={false}
+                  >
+                    <CustomSlashMenu 
+                      editor={editor} 
+                      docId={activeDocument.id} 
+                      docTitle={activeDocument.title}
+                      onTaskClick={setSelectedTask}
+                    />
+                  </BlockNoteView>
                 </div>
               </div>
             </>
@@ -253,6 +301,18 @@ export default function Docs() {
           </div>
         )}
       </div>
+
+      {/* Task Details Drawer */}
+      <TaskDetailsDrawer
+        task={selectedTask}
+        open={!!selectedTask}
+        onOpenChange={(open) => !open && setSelectedTask(null)}
+        onEdit={() => {}}
+        onDocumentClick={(docId) => {
+          setActiveDocument(docId);
+          setSelectedTask(null); // Close the drawer after navigation
+        }}
+      />
     </div>
   );
 }

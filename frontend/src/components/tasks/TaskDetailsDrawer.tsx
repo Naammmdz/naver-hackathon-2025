@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { format } from "date-fns";
-import { Calendar, Clock, Tag, CheckSquare, Edit, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Drawer,
   DrawerClose,
@@ -10,22 +10,24 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { Task } from "@/types/task";
-import { useTaskStore } from "@/store/taskStore";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { formatRelativeDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
+import { useTaskStore } from "@/store/taskStore";
+import { Task } from "@/types/task";
+import { Calendar, CheckSquare, Clock, Edit, Tag, X } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatRelativeDate, formatDateLocalized } from "@/lib/date-utils";
+import { TaskDocLinker } from "./TaskDocLinker";
 
 interface TaskDetailsDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task: Task | null;
   onEdit: () => void;
+  onDocumentClick?: (docId: string) => void;
 }
 
 export function TaskDetailsDrawer({
@@ -33,6 +35,7 @@ export function TaskDetailsDrawer({
   onOpenChange,
   task,
   onEdit,
+  onDocumentClick,
 }: TaskDetailsDrawerProps) {
   const { t } = useTranslation();
   const { updateTask, addSubtask, updateSubtask, deleteSubtask } = useTaskStore();
@@ -197,15 +200,20 @@ export function TaskDetailsDrawer({
 
             <div className="space-y-2 mb-3">
               {task.subtasks.map((subtask) => (
-                <div key={subtask.id} className="flex items-center gap-2 p-2 rounded border">
+                <div 
+                  key={subtask.id} 
+                  className="group flex items-center gap-2 p-2 rounded border cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleToggleSubtask(subtask.id, !subtask.done)}
+                >
                   <Checkbox
                     checked={subtask.done}
                     onCheckedChange={(checked) => 
                       handleToggleSubtask(subtask.id, !!checked)
                     }
+                    onClick={(e) => e.stopPropagation()} // Prevent double triggering
                   />
                   <span className={cn(
-                    "flex-1 text-sm",
+                    "flex-1 text-sm select-none",
                     subtask.done && "line-through text-muted-foreground"
                   )}>
                     {subtask.title}
@@ -213,8 +221,11 @@ export function TaskDetailsDrawer({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteSubtask(task.id, subtask.id)}
-                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent triggering parent click
+                      deleteSubtask(task.id, subtask.id);
+                    }}
+                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="h-3 w-3" />
                   </Button>
@@ -234,6 +245,12 @@ export function TaskDetailsDrawer({
                 {t('taskDetails.add')}
               </Button>
             </div>
+          </div>
+
+          {/* Linked Documents Section */}
+          <Separator className="my-4" />
+          <div className="space-y-3">
+            <TaskDocLinker taskId={task.id} taskTitle={task.title} onDocumentClick={onDocumentClick} />
           </div>
         </div>
 
