@@ -9,7 +9,7 @@ import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
-import { FileText, PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Docs() {
@@ -165,10 +165,29 @@ export default function Docs() {
   return (
     <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
       {/* Document Sidebar - Collapsible on larger screens */}
-      <div className={`hidden lg:block transition-all duration-300 ease-in-out ${
-        isSidebarCollapsed ? 'w-0 overflow-hidden' : 'w-64'
+      <div className={`hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
+        isSidebarCollapsed ? 'w-0' : 'w-64'
       }`}>
         <DocumentSidebar />
+      </div>
+
+      {/* Drag Handle - Small indicator bar like iPhone navigation */}
+      <div
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        className={`hidden lg:flex relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
+        title={isSidebarCollapsed ? 'Click to show sidebar' : 'Click to hide sidebar'}
+      >
+        {/* Small navigation bar in the middle */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
+        
+        {/* Chevron indicator */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          {isSidebarCollapsed ? (
+            <ChevronRight className="w-4 h-4 text-primary" />
+          ) : (
+            <ChevronLeft className="w-4 h-4 text-primary" />
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
@@ -218,19 +237,6 @@ export default function Docs() {
               <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                      className="h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground transition-colors hidden lg:flex"
-                      title={isSidebarCollapsed ? 'Show Sidebar' : 'Hide Sidebar'}
-                    >
-                      {isSidebarCollapsed ? (
-                        <PanelLeftOpen className="h-4 w-4" />
-                      ) : (
-                        <PanelLeftClose className="h-4 w-4" />
-                      )}
-                    </Button>
                     <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
                     <div className="text-xs text-muted-foreground">
                       {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}

@@ -436,29 +436,40 @@ export function Canvas() {
   const [editor, setEditor] = useState<any>(null);
   const { activeBoardId, boards, updateBoardContent } = useBoardStore();
 
-  // Switch page when active board changes
+  // Initialize pages for all boards when editor mounts
   useEffect(() => {
-    if (editor && activeBoardId) {
+    if (editor && boards.length > 0) {
+      const pages = editor.getPages();
+      
+      // For each board, ensure it has a page
+      boards.forEach(board => {
+        let boardPage = pages.find((p: any) => p.meta?.boardId === board.id);
+        
+        if (!boardPage) {
+          // Create a new page for this board
+          boardPage = editor.createPage({ 
+            name: board.title, 
+            meta: { boardId: board.id } 
+          });
+        }
+      });
+    }
+  }, [editor, boards]);
+
+  // Switch to the active board's page
+  useEffect(() => {
+    if (!editor || !activeBoardId) return;
+
+    const pages = editor.getPages();
+    const activePage = pages.find((p: any) => p.meta?.boardId === activeBoardId);
+    
+    if (activePage && editor.getCurrentPage()?.id !== activePage.id) {
+      editor.setCurrentPage(activePage.id);
+      
+      // Load shapes for this board
       const activeBoard = boards.find(b => b.id === activeBoardId);
-      if (activeBoard) {
-        // Get pages
-        const pages = editor.getPages();
-        let page = pages.find((p: any) => p.meta?.boardId === activeBoardId);
-        
-        if (!page && pages.length > 0) {
-          // Create new page for this board
-          page = editor.createPage({ name: activeBoardId });
-        }
-        
-        if (page) {
-          // Switch to this page
-          editor.setCurrentPage(page.id);
-          
-          // Load shapes if they exist
-          if (activeBoard.nodes.length > 0) {
-            editor.replaceShapes(activeBoard.nodes);
-          }
-        }
+      if (activeBoard && activeBoard.nodes && activeBoard.nodes.length > 0) {
+        editor.replaceShapes(activeBoard.nodes);
       }
     }
   }, [editor, activeBoardId, boards]);
@@ -478,6 +489,7 @@ export function Canvas() {
 
   return (
     <div className="w-full h-full relative" style={{ pointerEvents: 'auto' }}>
+      <style>{`.tlui-menu-zone { display: none !important; } .tl-watermark_SEE-LICENSE { display: none !important; }`}</style>
       {/* Tldraw Canvas */}
       <div className="w-full h-full">
         <Tldraw

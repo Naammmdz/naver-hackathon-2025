@@ -207,6 +207,13 @@ export default function BoardSidebar() {
                       setNewBoardTitle('');
                     }
                   }}
+                  onBlur={() => {
+                    if (newBoardTitle.trim()) {
+                      handleCreateBoard();
+                    } else {
+                      setShowNewBoardInput(false);
+                    }
+                  }}
                   autoFocus
                   className="h-8 text-sm"
                 />
