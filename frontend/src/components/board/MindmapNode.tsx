@@ -1,15 +1,24 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Handle, NodeProps, Position } from '@xyflow/react';
+import { Handle, NodeProps, Position, useReactFlow } from '@xyflow/react';
+import { useState } from 'react';
 
 interface MindmapNodeData {
   label: string;
   children: string[];
 }
 
-export function MindmapNode({ data }: NodeProps) {
+export function MindmapNode({ id, data }: NodeProps) {
   const nodeData = data as unknown as MindmapNodeData;
+  const [isEditing, setIsEditing] = useState(false);
+  const [label, setLabel] = useState(nodeData.label);
+  const { updateNodeData } = useReactFlow();
+
+  const handleSave = () => {
+    setIsEditing(false);
+    updateNodeData(id, { label });
+  };
 
   return (
     <div className="relative group">
@@ -18,9 +27,29 @@ export function MindmapNode({ data }: NodeProps) {
         "bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800"
       )}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-center text-green-800 dark:text-green-200 text-base font-bold">
-            {nodeData.label}
-          </CardTitle>
+          {isEditing ? (
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              className="w-full text-center bg-transparent border-none outline-none text-green-800 dark:text-green-200 text-base font-bold"
+              placeholder="Enter label..."
+              autoFocus
+            />
+          ) : (
+            <CardTitle
+              onClick={() => setIsEditing(true)}
+              className="text-center text-green-800 dark:text-green-200 text-base font-bold cursor-pointer hover:bg-green-100/50 dark:hover:bg-green-900/30 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+            >
+              {label}
+            </CardTitle>
+          )}
           {nodeData.children && nodeData.children.length > 0 && (
             <div className="flex justify-center">
               <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">

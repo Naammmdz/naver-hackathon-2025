@@ -1,281 +1,493 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { useBoardStore } from '@/store/boardStore';
 import {
-    addEdge,
-    Background,
-    Connection,
-    Edge,
-    Node,
-    ReactFlow,
-    useEdgesState,
-    useNodesState,
-    useReactFlow,
-    Viewport
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import {
-    ArrowRight,
-    Columns,
-    FileText,
-    MessageCircle,
-    MoreHorizontal,
-    MousePointer,
-    Network,
-    Sparkles,
-    Square,
-    Type
-} from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+  BaseBoxShapeUtil,
+  HTMLContainer,
+  TLBaseShape,
+  Tldraw,
+  useEditor
+} from '@tldraw/tldraw';
+import '@tldraw/tldraw/tldraw.css';
+import { useEffect, useState } from 'react';
 
-import { CommentNode } from './CommentNode.tsx';
-import { MindmapNode } from './MindmapNode.tsx';
-import { ShapeNode } from './ShapeNode.tsx';
-import { StickyNote as StickyNoteComponent } from './StickyNote.tsx';
-import { TaskColumn } from './TaskColumn.tsx';
-import { TextNode } from './TextNode.tsx';
+// Shape utilities and types...
+// Text Node Shape
+export class TextShapeUtil extends BaseBoxShapeUtil<TLTextShape> {
+  static override type = 'text' as const;
 
-// Define node types
-const nodeTypes = {
-  taskColumn: TaskColumn,
-  stickyNote: StickyNoteComponent,
-  mindmapNode: MindmapNode,
-  textNode: TextNode,
-  shapeNode: ShapeNode,
-  commentNode: CommentNode,
-};
-
-// Define toolbar tools
-const tools = [
-  { id: 'select', icon: MousePointer, label: 'Select', group: 'basic' },
-  { id: 'text', icon: Type, label: 'Text', group: 'basic' },
-  { id: 'stickyNote', icon: FileText, label: 'Sticky Note', group: 'elements' },
-  { id: 'shape', icon: Square, label: 'Shape', group: 'elements' },
-  { id: 'connector', icon: ArrowRight, label: 'Connector', group: 'elements' },
-  { id: 'kanban', icon: Columns, label: 'Kanban', group: 'templates' },
-  { id: 'mindmap', icon: Network, label: 'Mindmap', group: 'templates' },
-  { id: 'comment', icon: MessageCircle, label: 'Comment', group: 'collaboration' },
-  { id: 'ai', icon: Sparkles, label: 'AI Assistant', group: 'ai' },
-  { id: 'more', icon: MoreHorizontal, label: 'More', group: 'other' },
-];
-
-// Initial nodes for the board
-const initialNodes: Node[] = [
-  {
-    id: '1',
-    type: 'taskColumn',
-    position: { x: 100, y: 100 },
-    data: {
-      title: 'To Do',
-      tasks: [
-        { id: 'task-1', title: 'Design new feature', priority: 'high' },
-        { id: 'task-2', title: 'Write documentation', priority: 'medium' },
-      ]
-    },
-  },
-  {
-    id: '2',
-    type: 'taskColumn',
-    position: { x: 400, y: 100 },
-    data: {
-      title: 'In Progress',
-      tasks: [
-        { id: 'task-3', title: 'Implement authentication', priority: 'high' },
-      ]
-    },
-  },
-  {
-    id: '3',
-    type: 'taskColumn',
-    position: { x: 700, y: 100 },
-    data: {
-      title: 'Done',
-      tasks: [
-        { id: 'task-4', title: 'Setup project structure', priority: 'low' },
-      ]
-    },
-  },
-  {
-    id: '4',
-    type: 'stickyNote',
-    position: { x: 200, y: 400 },
-    data: { text: 'Important meeting at 3 PM' },
-  },
-  {
-    id: '5',
-    type: 'mindmapNode',
-    position: { x: 500, y: 400 },
-    data: { label: 'Project Planning', children: ['Design', 'Development', 'Testing'] },
-  },
-];
-
-const initialEdges: Edge[] = [];
-
-export function Canvas() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [activeTool, setActiveTool] = useState('select');
-  const [connectionMode, setConnectionMode] = useState(false);
-  const [currentZoom, setCurrentZoom] = useState(100);
-
-  const { zoomIn, zoomOut, zoomTo, getZoom } = useReactFlow();
-
-  // Update zoom level when viewport changes
-  const onMove = useCallback((event: MouseEvent | TouchEvent | null) => {
-    const currentZoomLevel = getZoom() * 100;
-    setCurrentZoom(currentZoomLevel);
-  }, [getZoom]);  // Initialize zoom level
-  useEffect(() => {
-    setCurrentZoom(getZoom() * 100);
-  }, [getZoom]);
-
-  const onConnect = useCallback(
-    (params: Connection) => {
-      if (connectionMode) {
-        setEdges((eds) => addEdge(params, eds));
-      }
-    },
-    [connectionMode, setEdges]
-  );
-
-  const addNode = useCallback((type: string, position: { x: number; y: number }) => {
-    const newNode: Node = {
-      id: `${nodes.length + 1}`,
-      type,
-      position,
-      data: type === 'taskColumn'
-        ? { title: 'New Column', tasks: [] }
-        : type === 'stickyNote'
-        ? { text: 'New note' }
-        : type === 'mindmapNode'
-        ? { label: 'New Node', children: [] }
-        : type === 'textNode'
-        ? { text: 'New text', fontSize: 14 }
-        : type === 'shapeNode'
-        ? { shape: 'rectangle', width: 100, height: 60, fillColor: '#3b82f6', strokeColor: '#1e40af', strokeWidth: 2 }
-        : type === 'commentNode'
-        ? { text: 'New comment', author: 'You', timestamp: new Date().toLocaleTimeString() }
-        : {},
+  override getDefaultProps(): TLTextShape['props'] {
+    return {
+      text: 'New text',
+      fontSize: 14,
+      w: 200,
+      h: 50,
     };
-    setNodes((nds) => [...nds, newNode]);
-  }, [nodes.length, setNodes]);
+  }
 
-    const handleToolClick = useCallback((toolId: string) => {
-    setActiveTool(toolId);
+  override component(shape: TLTextShape) {
+    const { text, fontSize } = shape.props;
+    const editor = useEditor();
 
-    if (toolId === 'select') {
-      setConnectionMode(false);
-    } else if (toolId === 'text') {
-      const randomX = Math.random() * 300 + 100;
-      const randomY = Math.random() * 200 + 100;
-      addNode('textNode', { x: randomX, y: randomY });
-    } else if (toolId === 'stickyNote') {
-      const randomX = Math.random() * 300 + 100;
-      const randomY = Math.random() * 200 + 100;
-      addNode('stickyNote', { x: randomX, y: randomY });
-    } else if (toolId === 'shape') {
-      const randomX = Math.random() * 300 + 100;
-      const randomY = Math.random() * 200 + 100;
-      addNode('shapeNode', { x: randomX, y: randomY });
-    } else if (toolId === 'connector') {
-      setConnectionMode(true);
-    } else if (toolId === 'kanban') {
-      const randomX = Math.random() * 300 + 100;
-      const randomY = Math.random() * 200 + 100;
-      addNode('taskColumn', { x: randomX, y: randomY });
-    } else if (toolId === 'mindmap') {
-      const randomX = Math.random() * 300 + 100;
-      const randomY = Math.random() * 200 + 100;
-      addNode('mindmapNode', { x: randomX, y: randomY });
-    } else if (toolId === 'comment') {
-      const randomX = Math.random() * 300 + 100;
-      const randomY = Math.random() * 200 + 100;
-      addNode('commentNode', { x: randomX, y: randomY });
-    } else if (toolId === 'ai') {
-  // AI tool - placeholder for future AI features
-    } else if (toolId === 'more') {
-  // More tools - placeholder for additional tools menu
-    }
-  }, [setActiveTool, setConnectionMode, addNode]);
-
-  const renderToolbar = () => {
-    const groups = ['basic', 'elements', 'templates', 'collaboration', 'ai', 'other'];
+    const handleTextChange = (newText: string) => {
+      editor.updateShape({
+        id: shape.id,
+        type: 'text',
+        props: { ...shape.props, text: newText },
+      });
+    };
 
     return (
-      <div className="flex flex-col gap-1 p-2">
-        {groups.map((group, groupIndex) => (
-          <div key={group} className="flex flex-col gap-1">
-            {tools
-              .filter(tool => tool.group === group)
-              .map((tool) => {
-                const Icon = tool.icon;
-                const isActive = activeTool === tool.id;
-
-                return (
-                  <TooltipProvider key={tool.id}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => handleToolClick(tool.id)}
-                          className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 group",
-                            "hover:bg-white/10 hover:scale-110 active:scale-95",
-                            isActive
-                              ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                              : "text-white/70 hover:text-white"
-                          )}
-                        >
-                          <Icon className="w-5 h-5" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="ml-2">
-                        <p>{tool.label}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                );
-              })}
-            {groupIndex < groups.length - 1 && (
-              <div className="w-6 h-px bg-white/20 mx-auto my-2 rounded-full" />
-            )}
-          </div>
-        ))}
-      </div>
+      <HTMLContainer>
+        <div className="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+          <textarea
+            value={text}
+            onChange={(e) => handleTextChange(e.target.value)}
+            className="w-full bg-transparent border-none outline-none resize-none text-sm"
+            style={{ fontSize: `${fontSize}px` }}
+            placeholder="Enter text..."
+          />
+        </div>
+      </HTMLContainer>
     );
-  };
+  }
 
-  return (
-    <TooltipProvider>
-      <div className="w-full h-full relative" style={{ pointerEvents: 'auto' }}>
-        {/* Left Toolbar */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-50">
-          <div className="bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl">
-            {renderToolbar()}
+  override indicator(shape: TLTextShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={8} />;
+  }
+}
+
+// Sticky Note Shape
+export class StickyNoteShapeUtil extends BaseBoxShapeUtil<TLStickyNoteShape> {
+  static override type = 'stickyNote' as const;
+
+  override getDefaultProps(): TLStickyNoteShape['props'] {
+    return {
+      text: 'New note',
+      color: '#fef3c7',
+      w: 150,
+      h: 120,
+    };
+  }
+
+  override component(shape: TLStickyNoteShape) {
+    const { text, color } = shape.props;
+    const editor = useEditor();
+
+    const handleTextChange = (newText: string) => {
+      editor.updateShape({
+        id: shape.id,
+        type: 'stickyNote',
+        props: { ...shape.props, text: newText },
+      });
+    };
+
+    return (
+      <HTMLContainer>
+        <div
+          className="p-3 rounded-lg shadow-md border-2"
+          style={{ backgroundColor: color }}
+        >
+          <textarea
+            value={text}
+            onChange={(e) => handleTextChange(e.target.value)}
+            className="w-full bg-transparent border-none outline-none resize-none text-sm font-medium"
+            placeholder="Write your note..."
+          />
+        </div>
+      </HTMLContainer>
+    );
+  }
+
+  override indicator(shape: TLStickyNoteShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={6} />;
+  }
+}
+
+// Shape Node (Rectangle, Circle, Triangle, Diamond)
+export class ShapeNodeShapeUtil extends BaseBoxShapeUtil<TLShapeNodeShape> {
+  static override type = 'shapeNode' as const;
+
+  override getDefaultProps(): TLShapeNodeShape['props'] {
+    return {
+      shape: 'rectangle',
+      fillColor: '#3b82f6',
+      strokeColor: '#1e40af',
+      strokeWidth: 2,
+      w: 100,
+      h: 60,
+    };
+  }
+
+  override component(shape: TLShapeNodeShape) {
+    const { shape: shapeType, fillColor, strokeColor, strokeWidth } = shape.props;
+
+    return (
+      <HTMLContainer>
+        <div className="flex items-center justify-center w-full h-full">
+          <svg width="100%" height="100%" viewBox="0 0 100 60">
+            {shapeType === 'circle' && (
+              <circle cx="50" cy="30" r="25" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} />
+            )}
+            {shapeType === 'triangle' && (
+              <polygon points="50,5 15,55 85,55" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} />
+            )}
+            {shapeType === 'diamond' && (
+              <polygon points="50,5 80,30 50,55 20,30" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} />
+            )}
+            {shapeType === 'rectangle' && (
+              <rect x="10" y="10" width="80" height="40" fill={fillColor} stroke={strokeColor} strokeWidth={strokeWidth} rx="4" />
+            )}
+          </svg>
+        </div>
+      </HTMLContainer>
+    );
+  }
+
+  override indicator(shape: TLShapeNodeShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={4} />;
+  }
+}
+
+// Comment Node Shape
+export class CommentShapeUtil extends BaseBoxShapeUtil<TLCommentShape> {
+  static override type = 'comment' as const;
+
+  override getDefaultProps(): TLCommentShape['props'] {
+    return {
+      text: 'New comment',
+      author: 'You',
+      timestamp: new Date().toLocaleTimeString(),
+      w: 200,
+      h: 80,
+    };
+  }
+
+  override component(shape: TLCommentShape) {
+    const { text, author, timestamp } = shape.props;
+    const editor = useEditor();
+
+    const handleTextChange = (newText: string) => {
+      editor.updateShape({
+        id: shape.id,
+        type: 'comment',
+        props: { ...shape.props, text: newText },
+      });
+    };
+
+    return (
+      <HTMLContainer>
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+              {author.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-medium text-blue-900 dark:text-blue-100">{author}</div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">{timestamp}</div>
+            </div>
+          </div>
+          <textarea
+            value={text}
+            onChange={(e) => handleTextChange(e.target.value)}
+            className="w-full bg-transparent border-none outline-none resize-none text-sm"
+            placeholder="Write your comment..."
+          />
+        </div>
+      </HTMLContainer>
+    );
+  }
+
+  override indicator(shape: TLCommentShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={8} />;
+  }
+}
+
+// Mindmap Node Shape
+export class MindmapNodeShapeUtil extends BaseBoxShapeUtil<TLMindmapNodeShape> {
+  static override type = 'mindmapNode' as const;
+
+  override getDefaultProps(): TLMindmapNodeShape['props'] {
+    return {
+      label: 'New Node',
+      children: [],
+      level: 0,
+      w: 120,
+      h: 60,
+    };
+  }
+
+  override component(shape: TLMindmapNodeShape) {
+    const { label, level } = shape.props;
+    const editor = useEditor();
+
+    const handleLabelChange = (newLabel: string) => {
+      editor.updateShape({
+        id: shape.id,
+        type: 'mindmapNode',
+        props: { ...shape.props, label: newLabel },
+      });
+    };
+
+    const bgColor = level === 0 ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700' :
+                  level === 1 ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700' :
+                  'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700';
+
+    return (
+      <HTMLContainer>
+        <div className={`p-3 rounded-lg border-2 shadow-sm ${bgColor}`}>
+          <input
+            value={label}
+            onChange={(e) => handleLabelChange(e.target.value)}
+            className="w-full bg-transparent border-none outline-none text-sm font-medium text-center"
+            placeholder="Node label..."
+          />
+        </div>
+      </HTMLContainer>
+    );
+  }
+
+  override indicator(shape: TLMindmapNodeShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={8} />;
+  }
+}
+
+// Task Column Shape
+export class TaskColumnShapeUtil extends BaseBoxShapeUtil<TLTaskColumnShape> {
+  static override type = 'taskColumn' as const;
+
+  override getDefaultProps(): TLTaskColumnShape['props'] {
+    return {
+      title: 'New Column',
+      tasks: [],
+      w: 280,
+      h: 400,
+    };
+  }
+
+  override component(shape: TLTaskColumnShape) {
+    const { title, tasks } = shape.props;
+    const editor = useEditor();
+
+    const handleTitleChange = (newTitle: string) => {
+      editor.updateShape({
+        id: shape.id,
+        type: 'taskColumn',
+        props: { ...shape.props, title: newTitle },
+      });
+    };
+
+    const addTask = () => {
+      const newTask = {
+        id: Date.now().toString(),
+        text: 'New task',
+        completed: false,
+      };
+      editor.updateShape({
+        id: shape.id,
+        type: 'taskColumn',
+        props: { ...shape.props, tasks: [...tasks, newTask] },
+      });
+    };
+
+    const updateTask = (taskId: string, updates: Partial<typeof tasks[0]>) => {
+      const updatedTasks = tasks.map(task =>
+        task.id === taskId ? { ...task, ...updates } : task
+      );
+      editor.updateShape({
+        id: shape.id,
+        type: 'taskColumn',
+        props: { ...shape.props, tasks: updatedTasks },
+      });
+    };
+
+    return (
+      <HTMLContainer>
+        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-md flex flex-col">
+          {/* Column Header */}
+          <div className="p-3 border-b border-gray-300 dark:border-gray-600">
+            <input
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              className="w-full bg-transparent border-none outline-none font-semibold text-gray-900 dark:text-gray-100"
+              placeholder="Column title..."
+            />
+          </div>
+
+          {/* Tasks */}
+          <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+            {tasks.map((task) => (
+              <div key={task.id} className="bg-white dark:bg-gray-700 p-2 rounded border">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
+                    className="rounded"
+                  />
+                  <input
+                    value={task.text}
+                    onChange={(e) => updateTask(task.id, { text: e.target.value })}
+                    className="flex-1 bg-transparent border-none outline-none text-sm"
+                    placeholder="Task description..."
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add Task Button */}
+          <div className="p-2 border-t border-gray-300 dark:border-gray-600">
+            <button
+              onClick={addTask}
+              className="w-full p-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+            >
+              + Add Task
+            </button>
           </div>
         </div>
+      </HTMLContainer>
+    );
+  }
 
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onMove={onMove}
-          nodeTypes={nodeTypes}
-          fitView
-          className="bg-gray-50 dark:bg-gray-900"
-          nodesDraggable={true}
-          nodesConnectable={true}
-          elementsSelectable={true}
-          selectNodesOnDrag={false}
-          panOnDrag={true}
-          zoomOnScroll={true}
-          zoomOnPinch={true}
-          zoomOnDoubleClick={false}
-        >
-          <Background gap={20} />
-          {/* Controls removed, only mouse wheel zoom available */}
-        </ReactFlow>
+  override indicator(shape: TLTaskColumnShape) {
+    return <rect width={shape.props.w} height={shape.props.h} rx={8} />;
+  }
+}
+
+// Shape definitions
+export type TLTextShape = TLBaseShape<
+  'text',
+  {
+    text: string;
+    fontSize: number;
+    w: number;
+    h: number;
+  }
+>;
+
+export type TLStickyNoteShape = TLBaseShape<
+  'stickyNote',
+  {
+    text: string;
+    color: string;
+    w: number;
+    h: number;
+  }
+>;
+
+export type TLShapeNodeShape = TLBaseShape<
+  'shapeNode',
+  {
+    shape: 'rectangle' | 'circle' | 'triangle' | 'diamond';
+    fillColor: string;
+    strokeColor: string;
+    strokeWidth: number;
+    w: number;
+    h: number;
+  }
+>;
+
+export type TLCommentShape = TLBaseShape<
+  'comment',
+  {
+    text: string;
+    author: string;
+    timestamp: string;
+    w: number;
+    h: number;
+  }
+>;
+
+export type TLMindmapNodeShape = TLBaseShape<
+  'mindmapNode',
+  {
+    label: string;
+    children: string[];
+    level: number;
+    w: number;
+    h: number;
+  }
+>;
+
+export type TLTaskColumnShape = TLBaseShape<
+  'taskColumn',
+  {
+    title: string;
+    tasks: Array<{
+      id: string;
+      text: string;
+      completed: boolean;
+    }>;
+    w: number;
+    h: number;
+  }
+>;
+
+// Shape utilities array
+const shapeUtils = [
+  TextShapeUtil,
+  StickyNoteShapeUtil,
+  ShapeNodeShapeUtil,
+  CommentShapeUtil,
+  MindmapNodeShapeUtil,
+  TaskColumnShapeUtil,
+];
+
+export function Canvas() {
+  const [editor, setEditor] = useState<any>(null);
+  const { activeBoardId, boards, updateBoardContent } = useBoardStore();
+
+  // Switch page when active board changes
+  useEffect(() => {
+    if (editor && activeBoardId) {
+      const activeBoard = boards.find(b => b.id === activeBoardId);
+      if (activeBoard) {
+        // Get pages
+        const pages = editor.getPages();
+        let page = pages.find((p: any) => p.meta?.boardId === activeBoardId);
+        
+        if (!page && pages.length > 0) {
+          // Create new page for this board
+          page = editor.createPage({ name: activeBoardId });
+        }
+        
+        if (page) {
+          // Switch to this page
+          editor.setCurrentPage(page.id);
+          
+          // Load shapes if they exist
+          if (activeBoard.nodes.length > 0) {
+            editor.replaceShapes(activeBoard.nodes);
+          }
+        }
+      }
+    }
+  }, [editor, activeBoardId, boards]);
+
+  // Auto-save board content periodically
+  useEffect(() => {
+    if (!editor || !activeBoardId) return;
+
+    const interval = setInterval(() => {
+      const shapes = editor.getShapes();
+      const bindings = editor.getBindings();
+      updateBoardContent(activeBoardId, shapes, bindings);
+    }, 2000); // Save every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [editor, activeBoardId, updateBoardContent]);
+
+  return (
+    <div className="w-full h-full relative" style={{ pointerEvents: 'auto' }}>
+      {/* Tldraw Canvas */}
+      <div className="w-full h-full">
+        <Tldraw
+          shapeUtils={shapeUtils}
+          onMount={(editorInstance) => {
+            setEditor(editorInstance);
+            console.log('Tldraw mounted', editorInstance);
+          }}
+        />
       </div>
-    </TooltipProvider>
+    </div>
   );
 }

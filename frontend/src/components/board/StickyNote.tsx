@@ -1,20 +1,21 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Handle, NodeProps, Position } from '@xyflow/react';
+import { Handle, NodeProps, Position, useReactFlow } from '@xyflow/react';
 import { useState } from 'react';
 
 interface StickyNoteData {
   text: string;
 }
 
-export function StickyNote({ data }: NodeProps) {
+export function StickyNote({ id, data }: NodeProps) {
   const [isEditing, setIsEditing] = useState(false);
   const noteData = data as unknown as StickyNoteData;
   const [text, setText] = useState(noteData.text);
+  const { updateNodeData } = useReactFlow();
 
   const handleSave = () => {
     setIsEditing(false);
-    // Here you would typically update the node data
+    updateNodeData(id, { text });
   };
 
   return (

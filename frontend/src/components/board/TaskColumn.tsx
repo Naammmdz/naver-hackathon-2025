@@ -1,7 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Handle, NodeProps, Position } from '@xyflow/react';
+import { Handle, NodeProps, Position, useReactFlow } from '@xyflow/react';
+import { useState } from 'react';
 
 interface Task {
   id: string;
@@ -14,8 +15,17 @@ interface TaskColumnData {
   tasks: Task[];
 }
 
-export function TaskColumn({ data }: NodeProps) {
+export function TaskColumn({ id, data }: NodeProps) {
   const columnData = data as unknown as TaskColumnData;
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(columnData.title);
+  const { updateNodeData } = useReactFlow();
+
+  const handleSave = () => {
+    setIsEditing(false);
+    updateNodeData(id, { title });
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'destructive';
@@ -35,10 +45,32 @@ export function TaskColumn({ data }: NodeProps) {
   };
 
   return (
-    <Card className={cn("w-72 min-h-96 shadow-lg border-l-4", getColumnColor(columnData.title))}>
+    <Card className={cn("w-72 min-h-96 shadow-lg border-l-4", getColumnColor(title))}>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold flex items-center justify-between">
-          {columnData.title}
+          {isEditing ? (
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              className="flex-1 bg-transparent border-none outline-none text-lg font-semibold"
+              placeholder="Column title..."
+              autoFocus
+            />
+          ) : (
+            <span
+              onClick={() => setIsEditing(true)}
+              className="flex-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+            >
+              {title}
+            </span>
+          )}
           <Badge variant="secondary" className="text-xs">
             {columnData.tasks.length}
           </Badge>

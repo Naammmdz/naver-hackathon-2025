@@ -1,8 +1,9 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Handle, NodeProps, Position } from '@xyflow/react';
+import { Handle, NodeProps, Position, useReactFlow } from '@xyflow/react';
 import { MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 
 interface CommentNodeData {
   text: string;
@@ -11,8 +12,16 @@ interface CommentNodeData {
   color?: string;
 }
 
-export function CommentNode({ data }: NodeProps) {
+export function CommentNode({ id, data }: NodeProps) {
   const nodeData = data as unknown as CommentNodeData;
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(nodeData.text || '');
+  const { updateNodeData } = useReactFlow();
+
+  const handleSave = () => {
+    setIsEditing(false);
+    updateNodeData(id, { text });
+  };
 
   return (
     <div className="relative group">
@@ -39,9 +48,29 @@ export function CommentNode({ data }: NodeProps) {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
-            {nodeData.text || "Add your comment here..."}
-          </div>
+          {isEditing ? (
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              className="w-full bg-transparent border-none outline-none resize-none text-sm text-blue-800 dark:text-blue-200 leading-relaxed"
+              placeholder="Add your comment here..."
+              autoFocus
+            />
+          ) : (
+            <div
+              onClick={() => setIsEditing(true)}
+              className="w-full cursor-pointer text-sm text-blue-800 dark:text-blue-200 leading-relaxed hover:bg-blue-100/50 dark:hover:bg-blue-900/30 rounded p-1 -m-1 transition-colors"
+            >
+              {text || "Add your comment here..."}
+            </div>
+          )}
         </CardContent>
       </Card>
 
