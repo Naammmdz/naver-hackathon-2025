@@ -30,14 +30,15 @@ export default function AppWrapper() {
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           currentView={currentView}
-          onViewChange={setCurrentView}
+          onViewChange={(view) => setCurrentView(view as 'tasks' | 'docs' | 'board')}
         />
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          {currentView === 'tasks' ? <Index onViewChange={setCurrentView} /> :
+          {currentView === 'tasks' ? <Index onViewChange={(view) => setCurrentView(view as 'tasks' | 'docs' | 'board')} /> :
            currentView === 'docs' ? <Docs /> :
-           <BoardView />}
+           currentView === 'board' ? <BoardView /> :
+           <div className="flex items-center justify-center h-full text-muted-foreground">Board view not available</div>}
         </main>
       </div>
     </div>
