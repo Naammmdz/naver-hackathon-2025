@@ -7,8 +7,7 @@ export interface Board {
   title: string;
   createdAt: string;
   updatedAt: string;
-  nodes: any[];
-  edges: any[];
+  snapshot: any; // Tldraw snapshot
 }
 
 interface BoardState {
@@ -20,7 +19,7 @@ interface BoardState {
   deleteBoard: (id: string) => void;
   setActiveBoard: (id: string) => void;
   updateBoard: (id: string, updates: Partial<Board>) => void;
-  updateBoardContent: (id: string, nodes: any[], edges: any[]) => void;
+  updateBoardContent: (id: string, snapshot: any) => void;
 }
 
 export const useBoardStore = create<BoardState>()(
@@ -35,8 +34,7 @@ export const useBoardStore = create<BoardState>()(
           title,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          nodes: [],
-          edges: [],
+          snapshot: null,
         };
         
         set((state) => ({
@@ -77,14 +75,13 @@ export const useBoardStore = create<BoardState>()(
         }));
       },
 
-      updateBoardContent: (id: string, nodes: any[], edges: any[]) => {
+      updateBoardContent: (id: string, snapshot: any) => {
         set((state) => ({
           boards: state.boards.map((board) =>
             board.id === id
               ? {
                   ...board,
-                  nodes,
-                  edges,
+                  snapshot,
                   updatedAt: new Date().toISOString(),
                 }
               : board
