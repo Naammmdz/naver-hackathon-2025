@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-    CheckSquare,
-    FileText,
-    Home,
-    MoreHorizontal,
-    Settings,
-    Users
+  ArrowLeft,
+  CheckSquare,
+  FileText,
+  Home,
+  Settings,
+  Users
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -99,12 +99,13 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
             variant="ghost"
             size="sm"
             className="w-10 h-10 p-0 rounded-lg hover:bg-white/10 text-white"
-            title="More"
+            title="Back to Landing Page"
+            onClick={() => window.location.href = '/'}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <span className="text-[10px] text-white font-medium text-center leading-tight">
-            More
+            Back
           </span>
         </div>
 
