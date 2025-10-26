@@ -24,7 +24,7 @@ import {
     Search,
     Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function BoardSidebar() {
   const {
@@ -34,6 +34,9 @@ export default function BoardSidebar() {
     deleteBoard,
     setActiveBoard,
     updateBoard,
+    fetchBoards,
+    loading,
+    error,
   } = useBoardStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,6 +46,10 @@ export default function BoardSidebar() {
   const [boardToDelete, setBoardToDelete] = useState<string | null>(null);
   const [showNewBoardInput, setShowNewBoardInput] = useState(false);
   const [newBoardTitle, setNewBoardTitle] = useState('');
+
+  useEffect(() => {
+    fetchBoards();
+  }, [fetchBoards]);
 
   const filteredBoards = boards.filter((board) =>
     board.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -220,7 +227,9 @@ export default function BoardSidebar() {
               </div>
             )}
 
-            {filteredBoards.length === 0 ? (
+            {loading && <div className="text-center p-4">Loading...</div>}
+            {error && <div className="text-center p-4 text-red-500">{error}</div>}
+            {!loading && !error && filteredBoards.length === 0 ? (
               <div className="text-center py-12 px-4 text-muted-foreground text-sm">
                 {searchQuery ? (
                   <>
