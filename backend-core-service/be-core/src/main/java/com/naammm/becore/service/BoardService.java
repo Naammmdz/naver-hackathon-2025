@@ -31,8 +31,14 @@ public class BoardService {
     public Board updateBoard(String id, Board boardDetails) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Board not found with id: " + id));
-        board.setTitle(boardDetails.getTitle());
-        board.setSnapshot(boardDetails.getSnapshot());
+
+        if (boardDetails.getTitle() != null) {
+            board.setTitle(boardDetails.getTitle());
+        }
+        if (boardDetails.getSnapshot() != null) {
+            board.setSnapshot(boardDetails.getSnapshot());
+        }
+
         return boardRepository.save(board);
     }
 
