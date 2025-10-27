@@ -21,9 +21,16 @@ export default function Docs() {
     restoreDocument,
     getDocument,
     setActiveDocument,
+    fetchDocuments,
+    loading,
+    error,
   } = useDocumentStore();
 
   const { tasks } = useTaskStore();
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [fetchDocuments]);
 
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
   const isTrashedDocument = activeDocument?.trashed;
@@ -128,10 +135,10 @@ export default function Docs() {
 
   // Create first document if none exists
   useEffect(() => {
-    if (documents.length === 0) {
+    if (documents.length === 0 && !loading && !error) {
       addDocument('Getting Started');
     }
-  }, []);
+  }, [documents, loading, error]);
 
   // Handle task link clicks
   useEffect(() => {
@@ -192,7 +199,9 @@ export default function Docs() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {activeDocument ? (
+        {loading && <div className="flex-1 flex items-center justify-center">Loading...</div>}
+        {error && <div className="flex-1 flex items-center justify-center text-red-500">{error}</div>}
+        {!loading && !error && activeDocument ? (
           isTrashedDocument ? (
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-orange-50/50 to-orange-100/20 dark:from-orange-950/20 dark:to-orange-900/10 p-4">
               <div className="text-center max-w-lg px-6">
@@ -274,37 +283,39 @@ export default function Docs() {
             </>
           )
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5 p-4">
-            <div className="text-center max-w-lg px-6">
-              <div className="relative mb-8">
-                <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto shadow-lg">
-                  <FileText className="h-12 w-12 text-primary" />
+          !loading && !error && (
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5 p-4">
+              <div className="text-center max-w-lg px-6">
+                <div className="relative mb-8">
+                  <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto shadow-lg">
+                    <FileText className="h-12 w-12 text-primary" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Plus className="h-4 w-4 text-primary" />
+                  </div>
                 </div>
-                <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Plus className="h-4 w-4 text-primary" />
+                <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Start Writing
+                </h2>
+                <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
+                  Create your first document and bring your ideas to life. Use the sidebar to organize your thoughts and collaborate with your team.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                    <Plus className="h-5 w-5" />
+                    Create Document
+                  </Button>
+                  <Button variant="outline" size="lg" className="gap-2 hover:bg-muted/50 transition-all">
+                    <FileText className="h-5 w-5" />
+                    Browse Templates
+                  </Button>
                 </div>
-              </div>
-              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Start Writing
-              </h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
-                Create your first document and bring your ideas to life. Use the sidebar to organize your thoughts and collaborate with your team.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
-                  <Plus className="h-5 w-5" />
-                  Create Document
-                </Button>
-                <Button variant="outline" size="lg" className="gap-2 hover:bg-muted/50 transition-all">
-                  <FileText className="h-5 w-5" />
-                  Browse Templates
-                </Button>
-              </div>
-              <div className="mt-8 text-sm text-muted-foreground">
-                <p>💡 Tip: Use keyboard shortcuts for faster editing</p>
+                <div className="mt-8 text-sm text-muted-foreground">
+                  <p>💡 Tip: Use keyboard shortcuts for faster editing</p>
+                </div>
               </div>
             </div>
-          </div>
+          )
         )}
       </div>
 

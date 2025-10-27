@@ -67,8 +67,15 @@ export default function Index({ onViewChange }: { onViewChange: (view: 'tasks' |
     clearSelection,
     deleteTask,
     updateTaskStatus,
-    addTask
+    addTask,
+    fetchTasks,
+    loading,
+    error,
   } = useTaskStore();
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
   
   const [currentView, setCurrentView] = useState<ViewType>("board");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -276,7 +283,9 @@ const handleDragEnd = (event: DragEndEvent) => {
             )}
 
             {/* View Content */}
-            {currentView === "board" && (
+            {loading && <div className="text-center p-4">Loading...</div>}
+            {error && <div className="text-center p-4 text-red-500">{error}</div>}
+            {!loading && !error && currentView === "board" && (
               <DndContext 
                 sensors={sensors}
                 collisionDetection={rectIntersection}
@@ -337,14 +346,14 @@ const handleDragEnd = (event: DragEndEvent) => {
               </DndContext>
             )}
 
-            {currentView === "list" && (
+            {!loading && !error && currentView === "list" && (
               <TaskListView 
                 onTaskEdit={handleTaskEdit}
                 onTaskView={handleTaskView}
               />
             )}
 
-            {currentView === "calendar" && (
+            {!loading && !error && currentView === "calendar" && (
               <TaskCalendarView 
                 onTaskEdit={handleTaskEdit}
                 onTaskView={handleTaskView}
@@ -352,7 +361,7 @@ const handleDragEnd = (event: DragEndEvent) => {
               />
             )}
 
-            {currentView === "analytics" && (
+            {!loading && !error && currentView === "analytics" && (
               <AnalyticsView />
             )}
         </div>
