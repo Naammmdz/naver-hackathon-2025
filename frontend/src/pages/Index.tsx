@@ -45,7 +45,7 @@ export default function Index({ onViewChange }: { onViewChange: (view: 'tasks' |
       description: t('columns.todoDescription'),
     },
     {
-      id: "In Progress",
+      id: "InProgress",
       title: t('tasks.inProgress'),
       description: t('columns.inProgressDescription'),
     },
@@ -118,7 +118,7 @@ const handleDragEnd = (event: DragEndEvent) => {
   if (!draggedTask) return;
 
   // Nếu drop vào column trống (over.id là column)
-  const isColumnDrop = ["Todo", "In Progress", "Done"].includes(overId);
+  const isColumnDrop = ["Todo", "InProgress", "Done"].includes(overId);
   if (isColumnDrop) {
     if (draggedTask.status !== overId) {
       // Check if trying to move to "Done" with incomplete subtasks

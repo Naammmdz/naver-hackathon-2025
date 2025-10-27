@@ -1,5 +1,5 @@
 package com.naammm.becore.entity;
 
 public enum TaskStatus {
-    Todo, In_Progress, Done
+    Todo, InProgress, Done
 }
