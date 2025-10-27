@@ -39,6 +39,7 @@ interface TaskState {
   // UI state
   toggleSidebar: () => void;
 
+  canMoveTaskToDone: (taskId: string) => boolean;
   getTasksByStatus: (status: TaskStatus) => Task[];
   getFilteredTasks: () => Task[];
   getFilteredTasksByStatus: (status: TaskStatus) => Task[];
@@ -200,6 +201,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set((state) => ({
       sidebarCollapsed: !state.sidebarCollapsed,
     }));
+  },
+
+  canMoveTaskToDone: (taskId) => {
+    const task = get().tasks.find((t) => t.id === taskId);
+    if (!task) return false;
+    return task.subtasks.every((subtask) => subtask.done);
   },
 
   getTasksByStatus: (status) => {
