@@ -1,103 +1,155 @@
-import { nanoid } from 'nanoid';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-
-export interface BoardSnapshot {
-  elements: any[];
-  appState: Record<string, any>;
-  files?: Record<string, any>;
-}
-
-export interface Board {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  snapshot: BoardSnapshot | null;
-}
+import { boardApi } from "@/lib/api/boardApi";
+import type { Board, BoardSnapshot } from "@/types/board";
+import { create } from "zustand";
 
 interface BoardState {
   boards: Board[];
   activeBoardId: string | null;
-  
-  // Actions
-  addBoard: (title: string) => void;
-  deleteBoard: (id: string) => void;
-  setActiveBoard: (id: string) => void;
-  updateBoard: (id: string, updates: Partial<Board>) => void;
-  updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => void;
+  isInitialized: boolean;
+  isLoading: boolean;
+  error: string | null;
+  initialize: () => Promise<void>;
+  refreshBoards: () => Promise<void>;
+  addBoard: (title: string) => Promise<void>;
+  deleteBoard: (id: string) => Promise<void>;
+  setActiveBoard: (id: string | null) => void;
+  updateBoard: (id: string, updates: Partial<Pick<Board, "title">>) => Promise<void>;
+  updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => Promise<void>;
 }
 
-export const useBoardStore = create<BoardState>()(
-  persist(
-    (set) => ({
-      boards: [],
-      activeBoardId: null,
+const findFallbackActiveBoard = (boards: Board[]): string | null => {
+  return boards.length > 0 ? boards[0].id : null;
+};
 
-      addBoard: (title: string) => {
-        const newBoard: Board = {
-          id: nanoid(),
-          title,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          snapshot: null,
-        };
-        
-        set((state) => ({
-          boards: [...state.boards, newBoard],
-          activeBoardId: newBoard.id,
-        }));
-      },
+export const useBoardStore = create<BoardState>((set, get) => ({
+  boards: [],
+  activeBoardId: null,
+  isInitialized: false,
+  isLoading: false,
+  error: null,
 
-      deleteBoard: (id: string) => {
-        set((state) => {
-          const newBoards = state.boards.filter(board => board.id !== id);
-          const newActiveBoardId = state.activeBoardId === id 
-            ? (newBoards.length > 0 ? newBoards[0].id : null)
-            : state.activeBoardId;
-          
-          return {
-            boards: newBoards,
-            activeBoardId: newActiveBoardId,
-          };
-        });
-      },
-
-      setActiveBoard: (id: string) => {
-        set({ activeBoardId: id });
-      },
-
-      updateBoard: (id: string, updates: Partial<Board>) => {
-        set((state) => ({
-          boards: state.boards.map((board) =>
-            board.id === id
-              ? {
-                  ...board,
-                  ...updates,
-                  updatedAt: new Date().toISOString(),
-                }
-              : board
-          ),
-        }));
-      },
-
-      updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => {
-        set((state) => ({
-          boards: state.boards.map((board) =>
-            board.id === id
-              ? {
-                  ...board,
-                  snapshot,
-                  updatedAt: new Date().toISOString(),
-                }
-              : board
-          ),
-        }));
-      },
-    }),
-    {
-      name: 'board-store',
-      storage: createJSONStorage(() => localStorage),
+  initialize: async () => {
+    if (get().isInitialized) {
+      return;
     }
-  )
-);
+    await get().refreshBoards();
+    set((state) => ({
+      isInitialized: true,
+      activeBoardId: state.activeBoardId ?? findFallbackActiveBoard(state.boards),
+    }));
+  },
+
+  refreshBoards: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const boards = await boardApi.list();
+      set((state) => {
+        const nextActive = state.activeBoardId && boards.some((board) => board.id === state.activeBoardId)
+          ? state.activeBoardId
+          : findFallbackActiveBoard(boards);
+        return {
+          boards,
+          activeBoardId: nextActive,
+          isLoading: false,
+          error: null,
+        };
+      });
+    } catch (error) {
+      console.error("Failed to load boards", error);
+      set({ isLoading: false, error: error instanceof Error ? error.message : "Failed to load boards" });
+    }
+  },
+
+  addBoard: async (title: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const created = await boardApi.create({ title });
+      set((state) => ({
+        boards: [...state.boards, created],
+        activeBoardId: created.id,
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Failed to create board", error);
+      set({ isLoading: false, error: error instanceof Error ? error.message : "Failed to create board" });
+    }
+  },
+
+  deleteBoard: async (id: string) => {
+    const previousBoards = get().boards;
+    const previousActive = get().activeBoardId;
+    set((state) => {
+      const remaining = state.boards.filter((board) => board.id !== id);
+      return {
+        boards: remaining,
+        activeBoardId: state.activeBoardId === id ? findFallbackActiveBoard(remaining) : state.activeBoardId,
+      };
+    });
+
+    try {
+      await boardApi.delete(id);
+    } catch (error) {
+      console.error("Failed to delete board", error);
+      set({
+        boards: previousBoards,
+        activeBoardId: previousActive,
+        error: error instanceof Error ? error.message : "Failed to delete board",
+      });
+    }
+  },
+
+  setActiveBoard: (id: string | null) => {
+    set({ activeBoardId: id });
+  },
+
+  updateBoard: async (id: string, updates: Partial<Pick<Board, "title">>) => {
+    try {
+      const updated = await boardApi.update(id, { id, title: updates.title });
+      set((state) => ({
+        boards: state.boards.map((board) => (board.id === id ? updated : board)),
+      }));
+    } catch (error) {
+      console.error("Failed to update board", error);
+      set({ error: error instanceof Error ? error.message : "Failed to update board" });
+    }
+  },
+
+  updateBoardContent: async (id: string, snapshot: BoardSnapshot | null) => {
+    const currentBoard = get().boards.find((board) => board.id === id);
+    const previousSnapshot = currentBoard?.snapshot ?? null;
+    const previousUpdatedAt = currentBoard?.updatedAt ?? new Date();
+
+    set((state) => ({
+      boards: state.boards.map((board) =>
+        board.id === id
+          ? {
+              ...board,
+              snapshot,
+              updatedAt: new Date(),
+            }
+          : board,
+      ),
+    }));
+
+    try {
+      const updated = await boardApi.updateSnapshot(id, snapshot);
+      set((state) => ({
+        boards: state.boards.map((board) => (board.id === id ? updated : board)),
+      }));
+    } catch (error) {
+      console.error("Failed to update board snapshot", error);
+      set((state) => ({
+        error: error instanceof Error ? error.message : "Failed to update board snapshot",
+        boards: state.boards.map((board) =>
+          board.id === id
+            ? {
+                ...board,
+                snapshot: previousSnapshot,
+                updatedAt: previousUpdatedAt,
+              }
+            : board,
+        ),
+      }));
+    }
+  },
+}));

@@ -70,7 +70,10 @@ export function ClickupHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      data-app-header
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div className="flex h-10 items-center justify-between px-4 gap-4 mx-2 my-2">
         {/* Left Section - Workspace & Search */}
         <div className="flex items-center gap-3 flex-1">

@@ -5,6 +5,7 @@ import {
   CheckSquare,
   FileText,
   Home,
+  Kanban,
   Settings,
   Users
 } from 'lucide-react';
@@ -31,7 +32,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'home', icon: Home, label: 'Home', color: 'text-blue-500' },
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', color: 'text-green-500', view: 'tasks' as const },
     { id: 'docs', icon: FileText, label: 'Docs', color: 'text-purple-500', view: 'docs' as const },
-    { id: 'board', icon: CheckSquare, label: 'Board', color: 'text-orange-500', view: 'board' as const },
+    { id: 'board', icon: Kanban, label: 'Board', color: 'text-orange-500', view: 'board' as const },
     { id: 'team', icon: Users, label: 'Teams', color: 'text-red-500' },
   ];
 

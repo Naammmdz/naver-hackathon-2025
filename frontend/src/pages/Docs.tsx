@@ -9,7 +9,7 @@ import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
-import { ChevronLeft, ChevronRight, FileText, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Docs() {
@@ -127,13 +127,6 @@ export default function Docs() {
     }
   };
 
-  // Create first document if none exists
-  useEffect(() => {
-    if (!isLoading && documents.length === 0) {
-      void addDocument('Getting Started');
-    }
-  }, [documents.length, isLoading]);
-
   // Handle task link clicks
   useEffect(() => {
     const handleTaskLinkClick = (event: MouseEvent) => {
@@ -193,7 +186,56 @@ export default function Docs() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {activeDocument ? (
+        {documents.filter((doc) => !doc.trashed).length === 0 ? (
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.15),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(244,114,182,0.15),_transparent_55%)]" />
+
+            <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-6 rounded-3xl border border-border/60 bg-background/85 px-10 py-12 text-center shadow-[0_20px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-pink-400/70 to-purple-500/70 text-primary-foreground shadow-lg shadow-primary/40">
+                <FileText className="h-8 w-8" />
+              </span>
+
+              <div className="space-y-3">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                  Kho kiến thức của bạn đang chờ được viết
+                </h2>
+                <p className="text-sm leading-relaxed text-muted-foreground/80">
+                  Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground/70">
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.</span>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.</span>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => void addDocument('Tài liệu mới')}
+                size="lg"
+                className="gap-2"
+                disabled={isLoading}
+              >
+                <Sparkles className="h-4 w-4" />
+                Tạo tài liệu đầu tiên
+              </Button>
+
+              <p className="text-xs text-muted-foreground/70">
+                Hoặc kéo tài liệu đã có vào đây để tiếp tục biên soạn cùng đội ngũ.
+              </p>
+            </div>
+          </div>
+        ) : activeDocument ? (
           isTrashedDocument ? (
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-orange-50/50 to-orange-100/20 dark:from-orange-950/20 dark:to-orange-900/10 p-4">
               <div className="text-center max-w-lg px-6">
@@ -275,35 +317,50 @@ export default function Docs() {
             </>
           )
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-muted/5 p-4">
-            <div className="text-center max-w-lg px-6">
-              <div className="relative mb-8">
-                <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto shadow-lg">
-                  <FileText className="h-12 w-12 text-primary" />
+          <div className="relative flex min-h-[520px] w-full items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-background/85 px-6 py-12 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_55%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(22,163,74,0.18),_transparent_55%)]" />
+
+            <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-3xl border border-border/40 bg-background/95 px-8 py-14 text-center shadow-lg shadow-primary/10">
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-purple-400/70 to-sky-500/70 text-primary-foreground shadow-lg shadow-primary/30">
+                <FileText className="h-8 w-8" />
+              </span>
+
+              <div className="space-y-3">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">Ghi lại kiến thức và chia sẻ với đội ngũ</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground/80">
+                  Xây dựng kho tri thức chung: ghi chú cuộc họp, tài liệu hướng dẫn hay bản thảo ý tưởng.
+                  Bắt đầu bằng việc tạo tài liệu đầu tiên của bạn.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Chèn task, checklist và mention để kết nối mọi thông tin quan trọng.</span>
                 </div>
-                <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Plus className="h-4 w-4 text-primary" />
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Tự động lưu và theo dõi phiên bản cho từng thay đổi.</span>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Slash menu giúp chèn block, bảng và template chỉ trong vài phím.</span>
                 </div>
               </div>
-              <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Start Writing
-              </h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
-                Create your first document and bring your ideas to life. Use the sidebar to organize your thoughts and collaborate with your team.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button onClick={() => addDocument('Untitled')} size="lg" className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
-                  <Plus className="h-5 w-5" />
-                  Create Document
+
+              <div className="flex flex-col items-center gap-3 sm:flex-row">
+                <Button onClick={() => addDocument('Tài liệu mới')} size="lg" className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Tạo tài liệu mới
                 </Button>
-                <Button variant="outline" size="lg" className="gap-2 hover:bg-muted/50 transition-all">
-                  <FileText className="h-5 w-5" />
-                  Browse Templates
+                <Button variant="outline" size="lg" className="gap-2" disabled>
+                  <FileText className="h-4 w-4" />
+                  Thư viện template
                 </Button>
               </div>
-              <div className="mt-8 text-sm text-muted-foreground">
-                <p>💡 Tip: Use keyboard shortcuts for faster editing</p>
-              </div>
+
+              <p className="text-xs text-muted-foreground/70">Mẹo: nhấn <span className="rounded-md bg-muted px-1.5 py-0.5 text-foreground">Ctrl /</span> để mở slash menu và chèn block nhanh chóng.</p>
             </div>
           </div>
         )}

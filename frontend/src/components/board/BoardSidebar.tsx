@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useBoardStore } from '@/store/boardStore';
+import type { Board } from '@/types/board';
 import {
     Edit2,
     Layers,
@@ -24,7 +25,7 @@ import {
     Search,
     Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function BoardSidebar() {
   const {
@@ -34,7 +35,18 @@ export default function BoardSidebar() {
     deleteBoard,
     setActiveBoard,
     updateBoard,
-  } = useBoardStore();
+    isLoading,
+    error,
+  } = useBoardStore((state) => ({
+    boards: state.boards,
+    activeBoardId: state.activeBoardId,
+    addBoard: state.addBoard,
+    deleteBoard: state.deleteBoard,
+    setActiveBoard: state.setActiveBoard,
+    updateBoard: state.updateBoard,
+    isLoading: state.isLoading,
+    error: state.error,
+  }));
 
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -44,11 +56,13 @@ export default function BoardSidebar() {
   const [showNewBoardInput, setShowNewBoardInput] = useState(false);
   const [newBoardTitle, setNewBoardTitle] = useState('');
 
-  const filteredBoards = boards.filter((board) =>
-    board.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBoards = useMemo(
+    () =>
+      boards.filter((board) => board.title.toLowerCase().includes(searchQuery.toLowerCase())),
+    [boards, searchQuery],
   );
 
-  const renderBoardItem = (board: any) => {
+  const renderBoardItem = (board: Board) => {
     return (
       <div key={board.id}>
         <div
@@ -121,7 +135,7 @@ export default function BoardSidebar() {
 
   const handleCreateBoard = () => {
     if (newBoardTitle.trim()) {
-      addBoard(newBoardTitle.trim());
+      void addBoard(newBoardTitle.trim());
       setNewBoardTitle('');
       setShowNewBoardInput(false);
     }
@@ -134,7 +148,7 @@ export default function BoardSidebar() {
 
   const handleDeleteConfirm = () => {
     if (boardToDelete) {
-      deleteBoard(boardToDelete);
+      void deleteBoard(boardToDelete);
       setBoardToDelete(null);
     }
     setDeleteDialogOpen(false);
@@ -147,7 +161,7 @@ export default function BoardSidebar() {
 
   const handleRenameSubmit = (id: string) => {
     if (editingTitle.trim()) {
-      updateBoard(id, { title: editingTitle.trim() });
+      void updateBoard(id, { title: editingTitle.trim() });
     }
     setEditingId(null);
     setEditingTitle('');
@@ -172,6 +186,7 @@ export default function BoardSidebar() {
               variant="ghost"
               onClick={() => setShowNewBoardInput(true)}
               className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
+              disabled={isLoading}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -186,6 +201,9 @@ export default function BoardSidebar() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-8 text-sm bg-muted/50 border-0 focus:bg-background rounded-lg"
             />
+            {error && (
+              <p className="mt-2 text-xs text-destructive">{error}</p>
+            )}
           </div>
         </div>
 
@@ -216,11 +234,16 @@ export default function BoardSidebar() {
                   }}
                   autoFocus
                   className="h-8 text-sm"
+                  disabled={isLoading}
                 />
               </div>
             )}
 
-            {filteredBoards.length === 0 ? (
+            {isLoading && boards.length === 0 ? (
+              <div className="text-center py-12 px-4 text-muted-foreground text-sm">
+                Loading boards...
+              </div>
+            ) : filteredBoards.length === 0 ? (
               <div className="text-center py-12 px-4 text-muted-foreground text-sm">
                 {searchQuery ? (
                   <>
@@ -237,6 +260,7 @@ export default function BoardSidebar() {
                       size="sm"
                       onClick={() => setShowNewBoardInput(true)}
                       className="mt-1 h-auto p-0 text-xs"
+                      disabled={isLoading}
                     >
                       Create your first board
                     </Button>
@@ -244,9 +268,7 @@ export default function BoardSidebar() {
                 )}
               </div>
             ) : (
-              <>
-                {filteredBoards.map(board => renderBoardItem(board))}
-              </>
+              filteredBoards.map((board) => renderBoardItem(board))
             )}
           </div>
         </ScrollArea>

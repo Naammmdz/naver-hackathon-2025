@@ -1,3 +1,4 @@
+import GlobalChatPanel from "@/components/ai/GlobalChatPanel";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +30,7 @@ const App = () => {
         <FocusFlyProvider>
           <Toaster />
           <Sonner />
+          <GlobalChatPanel />
           <BrowserRouter
             future={{
               v7_startTransition: true,

@@ -1,4 +1,5 @@
-import { useBoardStore, type BoardSnapshot } from '@/store/boardStore';
+import { useBoardStore } from '@/store/boardStore';
+import type { BoardSnapshot } from '@/types/board';
 import { CaptureUpdateAction, Excalidraw } from '@excalidraw/excalidraw';
 import type {
   AppState,
