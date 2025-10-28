@@ -2,12 +2,18 @@ import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+export interface BoardSnapshot {
+  elements: any[];
+  appState: Record<string, any>;
+  files?: Record<string, any>;
+}
+
 export interface Board {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
-  snapshot: any; // Excalidraw snapshot
+  snapshot: BoardSnapshot | null;
 }
 
 interface BoardState {
@@ -19,7 +25,7 @@ interface BoardState {
   deleteBoard: (id: string) => void;
   setActiveBoard: (id: string) => void;
   updateBoard: (id: string, updates: Partial<Board>) => void;
-  updateBoardContent: (id: string, snapshot: any) => void;
+  updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => void;
 }
 
 export const useBoardStore = create<BoardState>()(
@@ -75,7 +81,7 @@ export const useBoardStore = create<BoardState>()(
         }));
       },
 
-      updateBoardContent: (id: string, snapshot: any) => {
+      updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => {
         set((state) => ({
           boards: state.boards.map((board) =>
             board.id === id

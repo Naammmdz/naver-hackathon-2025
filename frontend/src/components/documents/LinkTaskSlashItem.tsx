@@ -47,20 +47,24 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
     (task) => !linkedTasks.some((td) => td.taskId === task.id)
   );
 
-  const handleLink = () => {
+  const handleLink = async () => {
     if (!selectedTaskId) return;
 
     const task = tasks.find((t) => t.id === selectedTaskId);
     if (!task) return;
 
     // Add to store
-    addTaskDoc({
+    const created = await addTaskDoc({
       taskId: selectedTaskId,
       docId,
       relationType,
       note: note || undefined,
       createdBy: "user",
     });
+
+    if (!created) {
+      return;
+    }
 
     // Insert mention block into editor
     editor.insertBlocks(

@@ -252,7 +252,7 @@ export function TaskListView({ onTaskEdit, onTaskView }: TaskListViewProps) {
                 <div
                   key={task.id}
                   className={cn(
-                    "p-3 grid grid-cols-12 gap-2 items-center hover:bg-muted/50 cursor-pointer transition-colors",
+                    "p-3 grid grid-cols-12 gap-2 items-center hover-surface cursor-pointer",
                     selectedTaskIds.includes(task.id) && "bg-primary/5",
                     overdue && "border-l-4 border-l-destructive"
                   )}

@@ -202,18 +202,18 @@ hr{
     border-radius: 25px;
 }
 
-.dropdown {
+#landing-page .dropdown {
     position: relative;
     display: inline-block;
     width: 100%;
 }
 
-.dropdown-toggle {
+#landing-page .dropdown-toggle {
     width: 100%;
     outline: none;
 }
 
-.dropdown-menu {
+#landing-page .dropdown-menu {
     display: none;
     position: absolute;
     z-index: 1;
@@ -226,12 +226,12 @@ hr{
     overflow: hidden;
 }
 
-.dropdown-menu li {
+#landing-page .dropdown-menu li {
     padding: 8px 12px;
     cursor: pointer;
 }
 
-.dropdown-menu li:hover {
+#landing-page .dropdown-menu li:hover {
     background-color: var(--dropdown-hover-bg);
 }
 

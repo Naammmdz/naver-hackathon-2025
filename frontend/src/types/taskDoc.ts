@@ -1,23 +1,21 @@
 import { z } from "zod";
 
-// Task-Document relation types
 export type TaskDocRelationType = "reference" | "reflection" | "resource";
 
-// TaskDoc schema for linking tasks with documents
+export const TASK_DOC_RELATION_TYPES = ["reference", "reflection", "resource"] as const;
+
 export const taskDocSchema = z.object({
   id: z.string(),
   taskId: z.string(),
   docId: z.string(),
-  relationType: z.enum(["reference", "reflection", "resource"]),
+  relationType: z.enum(TASK_DOC_RELATION_TYPES),
   createdAt: z.date(),
-  // Optional metadata
-  note: z.string().optional(), // Additional context about the relation
-  createdBy: z.string().optional(), // 'user' or 'ai'
+  note: z.string().optional(),
+  createdBy: z.string().optional(),
 });
 
 export type TaskDoc = z.infer<typeof taskDocSchema>;
 
-// Create TaskDoc input
 export const createTaskDocSchema = taskDocSchema.omit({
   id: true,
   createdAt: true,

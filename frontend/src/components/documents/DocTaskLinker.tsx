@@ -46,16 +46,20 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
     (task) => !linkedTasks.some((td) => td.taskId === task.id)
   );
 
-  const handleLink = () => {
+  const handleLink = async () => {
     if (!selectedTaskId) return;
 
-    addTaskDoc({
+    const created = await addTaskDoc({
       taskId: selectedTaskId,
       docId,
       relationType,
       note: note || undefined,
       createdBy: "user",
     });
+
+    if (!created) {
+      return;
+    }
 
     setSelectedTaskId("");
     setNote("");
@@ -204,9 +208,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
             if (!task) return null;
 
             return (
-              <div
+            <div
                 key={taskDoc.id}
-                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+                className="flex items-start gap-3 p-3 border rounded-lg hover-card"
               >
                 <div className="flex-1 space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -254,7 +258,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0"
-                    onClick={() => removeTaskDoc(taskDoc.id)}
+                    onClick={async () => {
+                      await removeTaskDoc(taskDoc.id);
+                    }}
                   >
                     <X className="h-4 w-4" />
                     <span className="sr-only">Remove link</span>

@@ -1,193 +1,242 @@
-import { CreateTaskDocInput, TaskDoc, TaskDocRelationType } from "@/types/taskDoc";
-import { nanoid } from "nanoid";
+import { taskDocApi } from "@/lib/api/taskDocApi";
+import {
+  CreateTaskDocInput,
+  TaskDoc,
+  TaskDocRelationType,
+} from "@/types/taskDoc";
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
 
-interface TaskDocState {
-  // State
+type TaskDocState = {
   taskDocs: TaskDoc[];
-  
-  // Actions
-  addTaskDoc: (input: CreateTaskDocInput) => void;
-  removeTaskDoc: (id: string) => void;
-  removeTaskDocsByTask: (taskId: string) => void;
-  removeTaskDocsByDoc: (docId: string) => void;
-  
-  // Getters
+  isLoading: boolean;
+  error: string | null;
+
+  loadTaskDocs: () => Promise<void>;
+  addTaskDoc: (input: CreateTaskDocInput) => Promise<TaskDoc | undefined>;
+  removeTaskDoc: (id: string) => Promise<void>;
+  removeTaskDocsByTask: (taskId: string) => Promise<void>;
+  removeTaskDocsByDoc: (docId: string) => Promise<void>;
+  updateTaskDocNote: (id: string, note: string) => Promise<void>;
+  updateTaskDocRelationType: (id: string, relationType: TaskDocRelationType) => Promise<void>;
+  linkMultipleDocsToTask: (
+    taskId: string,
+    docIds: string[],
+    relationType: TaskDocRelationType,
+    createdBy?: string,
+  ) => Promise<void>;
+
   getTaskDocsByTask: (taskId: string) => TaskDoc[];
   getTaskDocsByDoc: (docId: string) => TaskDoc[];
   getTaskDocsByRelationType: (taskId: string, relationType: TaskDocRelationType) => TaskDoc[];
-  getDocsLinkedToTask: (taskId: string) => string[]; // Returns array of docIds
-  getTasksLinkedToDoc: (docId: string) => string[]; // Returns array of taskIds
-  
-  // Check if relation exists
+  getDocsLinkedToTask: (taskId: string) => string[];
+  getTasksLinkedToDoc: (docId: string) => string[];
   hasRelation: (taskId: string, docId: string) => boolean;
   getRelation: (taskId: string, docId: string) => TaskDoc | undefined;
-  
-  // Update relation
-  updateTaskDocNote: (id: string, note: string) => void;
-  updateTaskDocRelationType: (id: string, relationType: TaskDocRelationType) => void;
-  
-  // Bulk operations
-  linkMultipleDocsToTask: (taskId: string, docIds: string[], relationType: TaskDocRelationType, createdBy?: string) => void;
-  
-  // Data management
+
   resetStore: () => void;
   exportTaskDocs: () => TaskDoc[];
   importTaskDocs: (taskDocs: TaskDoc[]) => void;
-}
+};
 
-export const useTaskDocStore = create<TaskDocState>()(
-  persist(
-    (set, get) => ({
-      // Initial state
-      taskDocs: [],
-      
-      // Add a new task-doc relation
-      addTaskDoc: (input) => {
-        const now = new Date();
-        const newTaskDoc: TaskDoc = {
-          ...input,
-          id: nanoid(),
-          createdAt: now,
-        };
-        
-        // Check if relation already exists
-        const existing = get().getRelation(input.taskId, input.docId);
-        if (existing) {
-          console.warn('Relation already exists between task and doc');
-          return;
+const sortByCreatedAt = (taskDocs: TaskDoc[]) =>
+  [...taskDocs].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+export const useTaskDocStore = create<TaskDocState>((set, get) => {
+  const upsertTaskDoc = (taskDoc: TaskDoc) => {
+    set((state) => ({
+      taskDocs: sortByCreatedAt(
+        state.taskDocs.some((td) => td.id === taskDoc.id)
+          ? state.taskDocs.map((td) => (td.id === taskDoc.id ? taskDoc : td))
+          : [...state.taskDocs, taskDoc],
+      ),
+    }));
+  };
+
+  const removeTaskDocs = (predicate: (taskDoc: TaskDoc) => boolean) => {
+    set((state) => ({
+      taskDocs: state.taskDocs.filter(predicate),
+    }));
+  };
+
+  return {
+    taskDocs: [],
+    isLoading: false,
+    error: null,
+
+    loadTaskDocs: async () => {
+      set({ isLoading: true, error: null });
+      try {
+        const taskDocs = await taskDocApi.list();
+        set({ taskDocs: sortByCreatedAt(taskDocs), isLoading: false });
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+          isLoading: false,
+        });
+      }
+    },
+
+    addTaskDoc: async (input) => {
+      try {
+        if (get().hasRelation(input.taskId, input.docId)) {
+          return get().getRelation(input.taskId, input.docId);
         }
-        
-        set((state) => ({
-          taskDocs: [...state.taskDocs, newTaskDoc],
-        }));
-      },
-      
-      // Remove a task-doc relation by id
-      removeTaskDoc: (id) => {
-        set((state) => ({
-          taskDocs: state.taskDocs.filter((td) => td.id !== id),
-        }));
-      },
-      
-      // Remove all relations for a specific task
-      removeTaskDocsByTask: (taskId) => {
-        set((state) => ({
-          taskDocs: state.taskDocs.filter((td) => td.taskId !== taskId),
-        }));
-      },
-      
-      // Remove all relations for a specific document
-      removeTaskDocsByDoc: (docId) => {
-        set((state) => ({
-          taskDocs: state.taskDocs.filter((td) => td.docId !== docId),
-        }));
-      },
-      
-      // Get all task-doc relations for a specific task
-      getTaskDocsByTask: (taskId) => {
-        return get().taskDocs.filter((td) => td.taskId === taskId);
-      },
-      
-      // Get all task-doc relations for a specific document
-      getTaskDocsByDoc: (docId) => {
-        return get().taskDocs.filter((td) => td.docId === docId);
-      },
-      
-      // Get task-doc relations by relation type
-      getTaskDocsByRelationType: (taskId, relationType) => {
-        return get().taskDocs.filter(
-          (td) => td.taskId === taskId && td.relationType === relationType
-        );
-      },
-      
-      // Get all document IDs linked to a task
-      getDocsLinkedToTask: (taskId) => {
-        return get().taskDocs
-          .filter((td) => td.taskId === taskId)
-          .map((td) => td.docId);
-      },
-      
-      // Get all task IDs linked to a document
-      getTasksLinkedToDoc: (docId) => {
-        return get().taskDocs
-          .filter((td) => td.docId === docId)
-          .map((td) => td.taskId);
-      },
-      
-      // Check if a relation exists between task and doc
-      hasRelation: (taskId, docId) => {
-        return get().taskDocs.some(
-          (td) => td.taskId === taskId && td.docId === docId
-        );
-      },
-      
-      // Get specific relation between task and doc
-      getRelation: (taskId, docId) => {
-        return get().taskDocs.find(
-          (td) => td.taskId === taskId && td.docId === docId
-        );
-      },
-      
-      // Update note for a task-doc relation
-      updateTaskDocNote: (id, note) => {
-        set((state) => ({
-          taskDocs: state.taskDocs.map((td) =>
-            td.id === id ? { ...td, note } : td
+
+        const created = await taskDocApi.create(input);
+        upsertTaskDoc(created);
+        return created;
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    removeTaskDoc: async (id) => {
+      try {
+        await taskDocApi.delete(id);
+        removeTaskDocs((taskDoc) => taskDoc.id !== id);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    removeTaskDocsByTask: async (taskId) => {
+      try {
+        await taskDocApi.deleteByTask(taskId);
+        removeTaskDocs((taskDoc) => taskDoc.taskId !== taskId);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    removeTaskDocsByDoc: async (docId) => {
+      try {
+        await taskDocApi.deleteByDoc(docId);
+        removeTaskDocs((taskDoc) => taskDoc.docId !== docId);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    updateTaskDocNote: async (id, note) => {
+      const existing = get().taskDocs.find((taskDoc) => taskDoc.id === id);
+      if (!existing) {
+        return;
+      }
+
+      try {
+        const updated = await taskDocApi.update(id, {
+          relationType: existing.relationType,
+          note,
+          createdBy: existing.createdBy ?? null,
+        });
+        upsertTaskDoc(updated);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    updateTaskDocRelationType: async (id, relationType) => {
+      const existing = get().taskDocs.find((taskDoc) => taskDoc.id === id);
+      if (!existing) {
+        return;
+      }
+
+      try {
+        const updated = await taskDocApi.update(id, {
+          relationType,
+          note: existing.note ?? null,
+          createdBy: existing.createdBy ?? null,
+        });
+        upsertTaskDoc(updated);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    linkMultipleDocsToTask: async (taskId, docIds, relationType, createdBy = "user") => {
+      const newDocIds = docIds.filter((docId) => !get().hasRelation(taskId, docId));
+      if (newDocIds.length === 0) {
+        return;
+      }
+
+      try {
+        const created = await Promise.all(
+          newDocIds.map((docId) =>
+            taskDocApi.create({
+              taskId,
+              docId,
+              relationType,
+              createdBy,
+            }),
           ),
-        }));
-      },
-      
-      // Update relation type
-      updateTaskDocRelationType: (id, relationType) => {
+        );
         set((state) => ({
-          taskDocs: state.taskDocs.map((td) =>
-            td.id === id ? { ...td, relationType } : td
-          ),
+          taskDocs: sortByCreatedAt([...state.taskDocs, ...created]),
         }));
-      },
-      
-      // Link multiple documents to a task at once
-      linkMultipleDocsToTask: (taskId, docIds, relationType, createdBy = 'user') => {
-        const now = new Date();
-        const newTaskDocs: TaskDoc[] = docIds
-          .filter((docId) => !get().hasRelation(taskId, docId))
-          .map((docId) => ({
-            id: nanoid(),
-            taskId,
-            docId,
-            relationType,
-            createdAt: now,
-            createdBy,
-          }));
-        
-        if (newTaskDocs.length > 0) {
-          set((state) => ({
-            taskDocs: [...state.taskDocs, ...newTaskDocs],
-          }));
-        }
-      },
-      
-      // Reset store
-      resetStore: () => {
-        set({ taskDocs: [] });
-      },
-      
-      // Export task-docs
-      exportTaskDocs: () => {
-        return get().taskDocs;
-      },
-      
-      // Import task-docs
-      importTaskDocs: (taskDocs) => {
-        set({ taskDocs });
-      },
-    }),
-    {
-      name: "taskdoc-store",
-      storage: createJSONStorage(() => localStorage),
-      version: 1,
-    }
-  )
-);
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+
+    getTaskDocsByTask: (taskId) =>
+      get()
+        .taskDocs.filter((taskDoc) => taskDoc.taskId === taskId)
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+
+    getTaskDocsByDoc: (docId) =>
+      get()
+        .taskDocs.filter((taskDoc) => taskDoc.docId === docId)
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+
+    getTaskDocsByRelationType: (taskId, relationType) =>
+      get()
+        .taskDocs.filter(
+          (taskDoc) => taskDoc.taskId === taskId && taskDoc.relationType === relationType,
+        )
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+
+    getDocsLinkedToTask: (taskId) =>
+      get()
+        .taskDocs.filter((taskDoc) => taskDoc.taskId === taskId)
+        .map((taskDoc) => taskDoc.docId),
+
+    getTasksLinkedToDoc: (docId) =>
+      get()
+        .taskDocs.filter((taskDoc) => taskDoc.docId === docId)
+        .map((taskDoc) => taskDoc.taskId),
+
+    hasRelation: (taskId, docId) =>
+      get().taskDocs.some((taskDoc) => taskDoc.taskId === taskId && taskDoc.docId === docId),
+
+    getRelation: (taskId, docId) =>
+      get().taskDocs.find((taskDoc) => taskDoc.taskId === taskId && taskDoc.docId === docId),
+
+    resetStore: () => {
+      set({ taskDocs: [], error: null, isLoading: false });
+    },
+
+    exportTaskDocs: () => get().taskDocs,
+
+    importTaskDocs: (taskDocs) => {
+      set({ taskDocs: sortByCreatedAt(taskDocs), error: null });
+    },
+  };
+});
+
+if (typeof window !== "undefined") {
+  void useTaskDocStore.getState().loadTaskDocs();
+}

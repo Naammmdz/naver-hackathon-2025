@@ -303,6 +303,31 @@ All colors MUST be HSL.
   .status-done {
     @apply bg-success text-success-foreground;
   }
+
+  /* Shared hover surfaces */
+  .hover-surface {
+    @apply transition-colors duration-150 rounded-md;
+  }
+
+  .hover-surface:hover {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .hover-card {
+    @apply transition-colors duration-150 rounded-lg;
+  }
+
+  .hover-card:hover {
+    @apply bg-primary/5 border-primary/30;
+  }
+
+  .dark .hover-surface:hover {
+    @apply bg-muted/40 text-muted-foreground;
+  }
+
+  .dark .hover-card:hover {
+    @apply bg-muted/40 border-muted-foreground/30 text-muted-foreground;
+  }
 }
 
 @keyframes fadeIn {

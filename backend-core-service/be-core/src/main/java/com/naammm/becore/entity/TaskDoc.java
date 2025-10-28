@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "task_docs")
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TaskDoc {

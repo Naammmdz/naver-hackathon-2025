@@ -1,21 +1,118 @@
-import { useBoardStore } from '@/store/boardStore';
-import { Excalidraw } from '@excalidraw/excalidraw';
-import "@excalidraw/excalidraw/index.css";
-import { useEffect, useRef, useState } from 'react';
+import { useBoardStore, type BoardSnapshot } from '@/store/boardStore';
+import { CaptureUpdateAction, Excalidraw } from '@excalidraw/excalidraw';
+import type {
+  AppState,
+  BinaryFiles,
+  ExcalidrawImperativeAPI,
+  ExcalidrawInitialDataState,
+} from '@excalidraw/excalidraw/types';
+import '@excalidraw/excalidraw/index.css';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+type StoredScene = BoardSnapshot | null;
+
+const sanitizeAppStateForStorage = (appState: AppState): Record<string, any> => {
+  const sanitized: Record<string, any> = {
+    ...appState,
+    collaborators: undefined,
+    editingLinearElement: null,
+    editingTextElement: null,
+    openDialog: null,
+    openMenu: null,
+    openPopup: null,
+    openSidebar: null,
+    toast: null,
+    frameToHighlight: null,
+    elementsToHighlight: null,
+    suggestedBindings: [],
+    pendingElements: [],
+    pendingImageElementId: null,
+    selectedElementIds: {},
+    previousSelectedElementIds: {},
+    hoveredElementIds: {},
+    zenModeEnabled: false,
+  };
+
+  return JSON.parse(JSON.stringify(sanitized));
+};
+
+const serializeSceneForStorage = (
+  elements: readonly any[],
+  appState: AppState,
+  files: BinaryFiles,
+): BoardSnapshot => {
+  return {
+    elements: JSON.parse(JSON.stringify(elements)),
+    appState: sanitizeAppStateForStorage(appState),
+    files: JSON.parse(JSON.stringify(files)),
+  };
+};
+
+const prepareSceneForEditor = (snapshot: StoredScene): ExcalidrawInitialDataState | null => {
+  if (!snapshot) {
+    return null;
+  }
+
+  const { elements = [], appState = {}, files = {} } = snapshot;
+  const { collaborators, ...restAppState } = appState;
+
+  return {
+    elements,
+    appState: {
+      ...restAppState,
+      zenModeEnabled: false,
+    },
+    files,
+  };
+};
 
 export function Canvas() {
   const { activeBoardId, boards, updateBoardContent } = useBoardStore();
-  const [initialData, setInitialData] = useState<any>(null);
   const [isDark, setIsDark] = useState(false);
-  const activeBoardIdRef = useRef(activeBoardId);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const activeBoardIdRef = useRef<string | null>(activeBoardId ?? null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
+  const [isApiReady, setIsApiReady] = useState(false);
+  const lastAppliedRef = useRef<{ id: string | null; hasSnapshot: boolean }>({
+    id: null,
+    hasSnapshot: false,
+  });
+
+  const activeBoard = useMemo(
+    () => boards.find((board) => board.id === activeBoardId) ?? null,
+    [activeBoardId, boards],
+  );
+
+  const initialScene = useMemo(
+    () => prepareSceneForEditor(activeBoard?.snapshot ?? null),
+    [activeBoard?.snapshot],
+  );
+
+  useEffect(() => {
+    activeBoardIdRef.current = activeBoardId ?? null;
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+  }, [activeBoardId]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Detect current theme (watch for documentElement 'dark' class or saved preference)
   useEffect(() => {
     const checkTheme = () => {
       const savedTheme = localStorage.getItem('theme');
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const shouldBeDark = savedTheme === 'dark' || (!savedTheme && systemDark) || document.documentElement.classList.contains('dark');
+      const shouldBeDark =
+        savedTheme === 'dark' ||
+        (!savedTheme && systemDark) ||
+        document.documentElement.classList.contains('dark');
       setIsDark(shouldBeDark);
     };
 
@@ -27,72 +124,90 @@ export function Canvas() {
     return () => observer.disconnect();
   }, []);
 
-  // Load board content when activeBoardId changes
-  useEffect(() => {
-    if (activeBoardId) {
-      const board = boards.find(b => b.id === activeBoardId);
-      if (board && board.snapshot) {
-        try {
-          if (!board.snapshot.appState || !board.snapshot.appState.collaborators) {
-            const newSnapshot = {
-              ...board.snapshot,
-              appState: {
-                ...(board.snapshot.appState || {}),
-                collaborators: [],
-                zenModeEnabled: false,
-              },
-            };
-            setInitialData(newSnapshot);
-          } else {
-            setInitialData({
-              ...board.snapshot,
-              appState: {
-                ...board.snapshot.appState,
-                zenModeEnabled: false,
-              },
-            });
-          }
-        } catch (error) {
-          console.error('Error loading board snapshot:', error);
-          setInitialData(null);
-        }
-      } else {
-        setInitialData(null);
-      }
-    } else {
-      setInitialData(null);
+  const applySceneToCanvas = useCallback((snapshot: StoredScene) => {
+    const api = excalidrawAPIRef.current;
+    if (!api) {
+      return;
     }
-  }, [activeBoardId, boards]);
 
-  const onChange = (elements: any, appState: any) => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
+    const scene = prepareSceneForEditor(snapshot);
+
+    api.resetScene();
+
+    if (!scene) {
+      return;
     }
-    saveTimeoutRef.current = setTimeout(() => {
-      if (activeBoardIdRef.current) {
+
+    api.updateScene({
+      elements: scene.elements ?? [],
+      appState: scene.appState,
+      captureUpdate: CaptureUpdateAction.NEVER,
+    });
+
+    const fileValues = scene.files ? Object.values(scene.files) : [];
+    if (fileValues.length) {
+      api.addFiles(fileValues);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isApiReady) {
+      return;
+    }
+
+    const boardId = activeBoard?.id ?? null;
+    const hasSnapshot = Boolean(activeBoard?.snapshot);
+
+    if (
+      boardId === lastAppliedRef.current.id &&
+      hasSnapshot === lastAppliedRef.current.hasSnapshot
+    ) {
+      return;
+    }
+
+    applySceneToCanvas(activeBoard?.snapshot ?? null);
+    lastAppliedRef.current = {
+      id: boardId,
+      hasSnapshot,
+    };
+  }, [applySceneToCanvas, activeBoard?.id, activeBoard?.snapshot, isApiReady]);
+
+  const handleSceneChange = useCallback(
+    (elements: readonly any[], appState: AppState, files: BinaryFiles) => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        const boardId = activeBoardIdRef.current;
+        if (!boardId) {
+          return;
+        }
+
         try {
-          const sceneData = {
-            elements: elements,
-            appState: appState,
-          };
-          updateBoardContent(activeBoardIdRef.current, sceneData);
+          const sceneData = serializeSceneForStorage(elements, appState, files);
+          updateBoardContent(boardId, sceneData);
         } catch (error) {
           console.error('Error saving board snapshot:', error);
         }
-      }
-    }, 1000); // Save after 1 second of inactivity
-  }
+      }, 1000);
+    },
+    [updateBoardContent],
+  );
 
+  const handleApiReady = useCallback((api: ExcalidrawImperativeAPI) => {
+    excalidrawAPIRef.current = api;
+    setIsApiReady(true);
+  }, []);
 
   return (
-    <div 
-      className="w-full h-full relative"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="w-full h-full relative" onClick={(event) => event.stopPropagation()}>
       <Excalidraw
-        initialData={initialData}
-        onChange={onChange}
+        key={activeBoard?.id ?? 'default'}
+        initialData={initialScene ?? undefined}
+        onChange={handleSceneChange}
         theme={isDark ? 'dark' : 'light'}
+        excalidrawAPI={handleApiReady}
       />
     </div>
   );

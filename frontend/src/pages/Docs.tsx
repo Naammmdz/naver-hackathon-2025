@@ -21,6 +21,7 @@ export default function Docs() {
     restoreDocument,
     getDocument,
     setActiveDocument,
+    isLoading,
   } = useDocumentStore();
 
   const { tasks } = useTaskStore();
@@ -128,10 +129,10 @@ export default function Docs() {
 
   // Create first document if none exists
   useEffect(() => {
-    if (documents.length === 0) {
-      addDocument('Getting Started');
+    if (!isLoading && documents.length === 0) {
+      void addDocument('Getting Started');
     }
-  }, []);
+  }, [documents.length, isLoading]);
 
   // Handle task link clicks
   useEffect(() => {

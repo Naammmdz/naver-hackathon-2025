@@ -47,6 +47,7 @@ public class Task {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<Subtask> subtasks = new ArrayList<>();
 
     @Column(nullable = false)

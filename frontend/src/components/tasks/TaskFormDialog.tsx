@@ -159,15 +159,19 @@ export function TaskFormDialog({
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.title')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t('form.titlePlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>{t('form.title')}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t('form.titlePlaceholder')}
+                  className="hover-surface focus-visible:ring-primary"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
             <FormField
               control={form.control}
@@ -175,13 +179,13 @@ export function TaskFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('form.description')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('form.descriptionPlaceholder')}
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
+            <FormControl>
+                <Textarea
+                  placeholder={t('form.descriptionPlaceholder')}
+                  className="min-h-[80px] hover:bg-primary/5 focus-visible:ring-primary"
+                  {...field}
+                />
+            </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -194,12 +198,12 @@ export function TaskFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('form.status')}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('form.selectStatus')} />
-                        </SelectTrigger>
-                      </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                      <SelectValue placeholder={t('form.selectStatus')} />
+                    </SelectTrigger>
+                  </FormControl>
                       <SelectContent>
                         <SelectItem value="Todo">{t('tasks.status.todo')}</SelectItem>
                         <SelectItem value="In Progress">{t('tasks.status.inProgress')}</SelectItem>
@@ -219,9 +223,9 @@ export function TaskFormDialog({
                     <FormLabel>{t('form.priority')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('form.selectPriority')} />
-                        </SelectTrigger>
+                    <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                      <SelectValue placeholder={t('form.selectPriority')} />
+                    </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Low">{t('tasks.priority.low')}</SelectItem>

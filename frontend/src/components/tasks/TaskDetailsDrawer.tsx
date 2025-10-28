@@ -202,7 +202,7 @@ export function TaskDetailsDrawer({
               {task.subtasks.map((subtask) => (
                 <div 
                   key={subtask.id} 
-                  className="group flex items-center gap-2 p-2 rounded border cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="group flex items-center gap-2 p-2 rounded border cursor-pointer hover-surface"
                   onClick={() => handleToggleSubtask(subtask.id, !subtask.done)}
                 >
                   <Checkbox

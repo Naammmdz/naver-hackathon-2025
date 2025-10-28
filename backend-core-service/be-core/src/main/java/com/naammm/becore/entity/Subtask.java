@@ -26,5 +26,6 @@ public class Subtask {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonBackReference
     private Task task;
 }

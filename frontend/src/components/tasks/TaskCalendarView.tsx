@@ -116,7 +116,7 @@ export function TaskCalendarView({ onTaskEdit, onTaskView, onNewTask }: TaskCale
                   key={day.toISOString()}
                   className={cn(
                     "min-h-[120px] p-2 border-b border-r last:border-r-0",
-                    "hover:bg-muted/50 transition-colors cursor-pointer group",
+                    "hover-surface cursor-pointer group",
                     !isCurrentMonth && "bg-muted/20 text-muted-foreground",
                     isTodayDate && "bg-primary/5 border-l-2 border-l-primary"
                   )}
@@ -153,7 +153,7 @@ export function TaskCalendarView({ onTaskEdit, onTaskView, onNewTask }: TaskCale
                           key={task.id}
                           className={cn(
                             "text-xs p-1 rounded cursor-pointer transition-colors",
-                            "hover:bg-background border border-transparent",
+                            "hover:bg-primary/5 border border-transparent",
                             task.status === "Done" && "bg-success/10 text-success border-success/20",
                             task.status === "In Progress" && "bg-accent/10 text-accent border-accent/20",
                             task.status === "Todo" && "bg-muted text-muted-foreground border-muted",
@@ -179,7 +179,7 @@ export function TaskCalendarView({ onTaskEdit, onTaskView, onNewTask }: TaskCale
                     
                     {dayTasks.length > 3 && (
                       <div 
-                        className="text-xs text-center py-1 cursor-pointer hover:bg-muted/50 rounded transition-colors"
+                        className="text-xs text-center py-1 cursor-pointer hover-surface rounded"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleDayExpansion(day);

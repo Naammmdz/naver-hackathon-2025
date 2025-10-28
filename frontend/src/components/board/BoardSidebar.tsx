@@ -54,8 +54,8 @@ export default function BoardSidebar() {
         <div
           className={`group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-all ${
             activeBoardId === board.id 
-              ? 'bg-accent text-accent-foreground' 
-              : 'hover:bg-accent/50'
+              ? 'bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-muted/50 dark:text-muted-foreground dark:ring-muted-foreground/20 hover-surface' 
+              : 'hover-surface text-muted-foreground'
           }`}
           onClick={() => setActiveBoard(board.id)}
         >
@@ -77,7 +77,7 @@ export default function BoardSidebar() {
             />
           ) : (
             <>
-              <Layers className="h-4 w-4 flex-shrink-0" />
+              <Layers className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-primary dark:group-hover:text-muted-foreground" />
               <span className="flex-1 truncate text-sm">{board.title}</span>
             </>
           )}

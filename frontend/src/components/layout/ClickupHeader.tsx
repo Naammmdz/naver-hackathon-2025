@@ -78,7 +78,7 @@ export function ClickupHeader({
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2 hidden sm:flex"
+            className="flex items-center gap-2 hidden sm:flex hover-surface"
           >
             <span className="text-sm font-semibold">Giang Nam's Workspace</span>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -100,7 +100,7 @@ export function ClickupHeader({
               placeholder={t('header.searchPlaceholder', 'Search everything...')}
               value={filters.search || ''}
               onChange={e => handleSearchChange(e.target.value)}
-              className="pl-10 bg-muted/50 border-0 focus:bg-background h-9 text-sm rounded-lg"
+              className="pl-10 bg-muted/40 border-0 h-9 text-sm rounded-lg hover:bg-primary/5 focus:ring-primary focus:ring-offset-0"
             />
           </div>
         </div>
@@ -122,7 +122,7 @@ export function ClickupHeader({
           <Button
             variant="ghost"
             size="sm"
-            className="relative hidden sm:flex"
+            className="relative hidden sm:flex hover-surface"
           >
             <Bell className="h-4 w-4" />
             <span className="absolute top-1 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
@@ -133,7 +133,7 @@ export function ClickupHeader({
             variant="ghost"
             size="sm"
             onClick={toggleLanguage}
-            className="hidden sm:flex gap-1"
+            className="hidden sm:flex gap-1 hover-surface"
             title={
               i18n.language === 'en'
                 ? 'Switch to Vietnamese'
@@ -148,7 +148,7 @@ export function ClickupHeader({
             variant="ghost"
             size="sm"
             onClick={toggleDarkMode}
-            className="hidden sm:flex"
+            className="hidden sm:flex hover-surface"
           >
             {isDark ? (
               <Sun className="h-4 w-4" />
@@ -158,7 +158,7 @@ export function ClickupHeader({
           </Button>
 
           {/* Settings */}
-          <Button variant="ghost" size="sm" className="hidden sm:flex">
+          <Button variant="ghost" size="sm" className="hidden sm:flex hover-surface">
             <Settings className="h-4 w-4" />
           </Button>
 
@@ -167,7 +167,7 @@ export function ClickupHeader({
             variant="ghost"
             size="sm"
             onClick={onMenuClick}
-            className="sm:hidden"
+            className="sm:hidden hover-surface"
           >
             <Menu className="h-4 w-4" />
           </Button>

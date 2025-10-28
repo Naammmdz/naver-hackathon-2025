@@ -239,7 +239,7 @@ export function SmartTaskParser({
                   <button
                     key={index}
                     onClick={() => setInput(example)}
-                    className="text-left text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                    className="text-left text-xs text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-primary/10"
                   >
                     "{example}"
                   </button>
