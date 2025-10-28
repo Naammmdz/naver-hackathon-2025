@@ -1,20 +1,14 @@
 import { useBoardStore } from '@/store/boardStore';
-import { Tldraw, TLEditorSnapshot } from '@tldraw/tldraw';
-import '@tldraw/tldraw/tldraw.css';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Excalidraw } from '@excalidraw/excalidraw';
+import "@excalidraw/excalidraw/index.css";
+import { useEffect, useRef, useState } from 'react';
 
 export function Canvas() {
   const { activeBoardId, boards, updateBoardContent } = useBoardStore();
-  const [snapshot, setSnapshot] = useState<TLEditorSnapshot | null>(null);
+  const [initialData, setInitialData] = useState<any>(null);
   const [isDark, setIsDark] = useState(false);
   const activeBoardIdRef = useRef(activeBoardId);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
-  const editorRef = useRef<any>(null);
-
-  // Update ref when activeBoardId changes
-  useEffect(() => {
-    activeBoardIdRef.current = activeBoardId;
-  }, [activeBoardId]);
 
   // Detect current theme (watch for documentElement 'dark' class or saved preference)
   useEffect(() => {
@@ -33,80 +27,73 @@ export function Canvas() {
     return () => observer.disconnect();
   }, []);
 
-  // Update Tldraw theme when app theme changes
-  useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.user.updateUserPreferences({
-        colorScheme: isDark ? 'dark' : 'light'
-      });
-    }
-  }, [isDark]);
-
   // Load board content when activeBoardId changes
   useEffect(() => {
     if (activeBoardId) {
       const board = boards.find(b => b.id === activeBoardId);
       if (board && board.snapshot) {
         try {
-          setSnapshot(board.snapshot);
+          if (!board.snapshot.appState || !board.snapshot.appState.collaborators) {
+            const newSnapshot = {
+              ...board.snapshot,
+              appState: {
+                ...(board.snapshot.appState || {}),
+                collaborators: [],
+                zenModeEnabled: false,
+              },
+            };
+            setInitialData(newSnapshot);
+          } else {
+            setInitialData({
+              ...board.snapshot,
+              appState: {
+                ...board.snapshot.appState,
+                zenModeEnabled: false,
+              },
+            });
+          }
         } catch (error) {
           console.error('Error loading board snapshot:', error);
-          setSnapshot(null);
+          setInitialData(null);
         }
       } else {
-        setSnapshot(null);
+        setInitialData(null);
       }
     } else {
-      setSnapshot(null);
+      setInitialData(null);
     }
-  }, [activeBoardId]); // Only depend on activeBoardId, not boards
+  }, [activeBoardId, boards]);
 
-  // Auto-save function - using onMount to get editor instance
-  const handleMount = useCallback((editor: any) => {
-    // Store editor reference for theme updates
-    editorRef.current = editor;
-
-    let lastSavedSnapshot = null;
-
-    // Debounced save function
-    const debouncedSave = () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-      saveTimeoutRef.current = setTimeout(() => {
-        if (activeBoardIdRef.current) {
-          try {
-            const currentSnapshot = editor.getSnapshot();
-            updateBoardContent(activeBoardIdRef.current, currentSnapshot);
-          } catch (error) {
-            console.error('Error saving board snapshot:', error);
-          }
+  const onChange = (elements: any, appState: any) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      if (activeBoardIdRef.current) {
+        try {
+          const sceneData = {
+            elements: elements,
+            appState: appState,
+          };
+          updateBoardContent(activeBoardIdRef.current, sceneData);
+        } catch (error) {
+          console.error('Error saving board snapshot:', error);
         }
-      }, 1000); // Save after 1 second of inactivity
-    };
-
-    // Save when content changes
-    const unsubscribe = editor.store.listen(() => {
-      debouncedSave();
-    });
-
-    return () => {
-      unsubscribe();
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
       }
-    };
-  }, [updateBoardContent, isDark]);
+    }, 1000); // Save after 1 second of inactivity
+  }
+
 
   return (
-    <div className="w-full h-full relative" style={{ pointerEvents: 'auto' }}>
-      <style>{`.tlui-menu-zone { display: none !important; } .tl-watermark_SEE-LICENSE { display: none !important; }`}</style>
-      <div className="w-full h-full" data-theme={isDark ? 'dark' : 'light'}>
-        <Tldraw
-          snapshot={snapshot}
-          onMount={handleMount}
-        />
-      </div>
+    <div 
+      className="w-full h-full relative"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Excalidraw
+        initialData={initialData}
+        onChange={onChange}
+        theme={isDark ? 'dark' : 'light'}
+      />
     </div>
   );
 }

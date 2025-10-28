@@ -7,7 +7,7 @@ export interface Board {
   title: string;
   createdAt: string;
   updatedAt: string;
-  snapshot: any; // Tldraw snapshot
+  snapshot: any; // Excalidraw snapshot
 }
 
 interface BoardState {

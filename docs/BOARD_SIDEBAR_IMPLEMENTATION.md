@@ -26,10 +26,10 @@
 - Icons từ lucide-react
 
 ### 3. **Canvas Integration** (`Canvas.tsx`)
-- Tích hợp với Tldraw
+- Tích hợp với Excalidraw
 - Kết nối với Board Store:
   - Tự động tạo board đầu tiên khi không có board nào
-  - Tạo/chuyển trang Tldraw khi chuyển board
+  - Tạo/chuyển trang Excalidraw khi chuyển board
   - Auto-save nội dung board mỗi 2 giây
   - Load nội dung board từ store khi chuyển sang board khác
 
@@ -54,7 +54,7 @@
 
 - **Storage**: localStorage (có thể nâng cấp lên backend sau)
 - **Auto-save**: 2 giây một lần để không gây lag
-- **Page Management**: Tldraw pages được tạo theo board ID
+- **Page Management**: Excalidraw pages được tạo theo board ID
 - **State Management**: Zustand + localStorage persistence
 - **UI Components**: Radix UI (shadcn/ui)
 

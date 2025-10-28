@@ -1,4 +1,3 @@
-import { ReactFlowProvider } from '@xyflow/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import BoardSidebar from './BoardSidebar';
@@ -48,9 +47,7 @@ export function BoardView() {
 
       {/* Canvas Area */}
       <div className="flex-1 overflow-hidden relative">
-        <ReactFlowProvider>
-          <CanvasContainer />
-        </ReactFlowProvider>
+        <CanvasContainer />
       </div>
 
       {/* Show sidebar button when hidden */}

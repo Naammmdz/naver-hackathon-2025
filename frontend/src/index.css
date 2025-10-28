@@ -407,11 +407,12 @@ div.custom-controls.react-flow__controls button svg {
   top: auto !important;
   transform: none !important;
 }
-.custom-controls.react-flow__controls {
-  position: absolute !important;
-  bottom: 16px !important;
-  right: 16px !important;
-  left: auto !important;
-  top: auto !important;
-  transform: none !important;
+
+/* Force pointer events on Excalidraw buttons */
+button.dropdown-menu-button {
+  pointer-events: auto !important;
+}
+
+button.dropdown-menu-button svg {
+  pointer-events: none !important;
 }
