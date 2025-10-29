@@ -28,6 +28,7 @@ export const taskSchema = z.object({
   order: z.number().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  userId: z.string(),
 });
 
 export type Task = z.infer<typeof taskSchema>;

@@ -1,4 +1,5 @@
 import type { Board, BoardSnapshot, CreateBoardInput, UpdateBoardInput } from "@/types/board";
+import { apiAuthContext } from "./authContext";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8989";
@@ -9,11 +10,13 @@ interface BoardApiResponse {
   snapshot?: string | null;
   createdAt: string;
   updatedAt: string;
+  userId?: string | null;
 }
 
 interface BoardApiRequest {
   title: string;
   snapshot?: string | null;
+  userId?: string | null;
 }
 
 const parseDate = (value?: string): Date => {
@@ -60,6 +63,7 @@ const mapBoardFromApi = (board: BoardApiResponse): Board => ({
   snapshot: parseSnapshot(board.snapshot),
   createdAt: parseDate(board.createdAt),
   updatedAt: parseDate(board.updatedAt),
+  userId: board.userId ?? apiAuthContext.getCurrentUserId() ?? "",
 });
 
 const serializeBoardPayload = (
@@ -68,6 +72,7 @@ const serializeBoardPayload = (
 ): BoardApiRequest => {
   const body: BoardApiRequest = {
     title: payload.title ?? "Untitled Board",
+    userId: payload.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
   };
 
   if (includeSnapshot || payload.snapshot !== undefined) {
@@ -78,11 +83,12 @@ const serializeBoardPayload = (
 };
 
 const request = async <T>(input: RequestInfo, init?: RequestInit, parseJson = true): Promise<T> => {
+  const headers = await apiAuthContext.getAuthHeaders(init?.headers ?? {});
   const response = await fetch(input, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
+      ...headers,
     },
   });
 
@@ -100,42 +106,59 @@ const request = async <T>(input: RequestInfo, init?: RequestInit, parseJson = tr
 
 export const boardApi = {
   async list(): Promise<Board[]> {
-    const data = await request<BoardApiResponse[]>(`${API_BASE_URL}/api/boards`);
+    const data = await request<BoardApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards`),
+    );
     return data.map(mapBoardFromApi);
   },
 
   async get(id: string): Promise<Board> {
-    const data = await request<BoardApiResponse>(`${API_BASE_URL}/api/boards/${id}`);
+    const data = await request<BoardApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards/${id}`),
+    );
     return mapBoardFromApi(data);
   },
 
   async create(payload: CreateBoardInput): Promise<Board> {
     const body = serializeBoardPayload(payload, true);
-    const data = await request<BoardApiResponse>(`${API_BASE_URL}/api/boards`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    const data = await request<BoardApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards`),
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
     return mapBoardFromApi(data);
   },
 
   async update(id: string, payload: Partial<UpdateBoardInput>): Promise<Board> {
     const body = serializeBoardPayload(payload);
-    const data = await request<BoardApiResponse>(`${API_BASE_URL}/api/boards/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
+    const data = await request<BoardApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards/${id}`),
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      },
+    );
     return mapBoardFromApi(data);
   },
 
   async updateSnapshot(id: string, snapshot: BoardSnapshot | null): Promise<Board> {
-    const data = await request<BoardApiResponse>(`${API_BASE_URL}/api/boards/${id}/snapshot`, {
-      method: "PATCH",
-      body: JSON.stringify({ snapshot: serializeSnapshot(snapshot) }),
-    });
+    const data = await request<BoardApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards/${id}/snapshot`),
+      {
+        method: "PATCH",
+        body: JSON.stringify({ snapshot: serializeSnapshot(snapshot) }),
+      },
+    );
     return mapBoardFromApi(data);
   },
 
   async delete(id: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/boards/${id}`, { method: "DELETE" }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards/${id}`),
+      { method: "DELETE" },
+      false,
+    );
   },
 };

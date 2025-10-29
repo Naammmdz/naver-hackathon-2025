@@ -8,6 +8,7 @@ interface BoardState {
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
+  currentUserId: string | null;
   initialize: () => Promise<void>;
   refreshBoards: () => Promise<void>;
   addBoard: (title: string) => Promise<void>;
@@ -15,6 +16,7 @@ interface BoardState {
   setActiveBoard: (id: string | null) => void;
   updateBoard: (id: string, updates: Partial<Pick<Board, "title">>) => Promise<void>;
   updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => Promise<void>;
+  setCurrentUser: (userId: string | null) => void;
 }
 
 const findFallbackActiveBoard = (boards: Board[]): string | null => {
@@ -27,6 +29,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   isInitialized: false,
   isLoading: false,
   error: null,
+  currentUserId: null,
 
   initialize: async () => {
     if (get().isInitialized) {
@@ -40,13 +43,20 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   refreshBoards: async () => {
+    const userId = get().currentUserId;
+    if (!userId) {
+      set({ boards: [], activeBoardId: null, isLoading: false, error: null });
+      return;
+    }
+
     set({ isLoading: true, error: null });
     try {
-      const boards = await boardApi.list();
+      const boards = (await boardApi.list()).filter((board) => board.userId === userId);
       set((state) => {
-        const nextActive = state.activeBoardId && boards.some((board) => board.id === state.activeBoardId)
-          ? state.activeBoardId
-          : findFallbackActiveBoard(boards);
+        const nextActive =
+          state.activeBoardId && boards.some((board) => board.id === state.activeBoardId)
+            ? state.activeBoardId
+            : findFallbackActiveBoard(boards);
         return {
           boards,
           activeBoardId: nextActive,
@@ -56,14 +66,23 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       });
     } catch (error) {
       console.error("Failed to load boards", error);
-      set({ isLoading: false, error: error instanceof Error ? error.message : "Failed to load boards" });
+      set({
+        isLoading: false,
+        error: error instanceof Error ? error.message : "Failed to load boards",
+      });
     }
   },
 
   addBoard: async (title: string) => {
+    const userId = get().currentUserId;
+    if (!userId) {
+      set({ error: "Bạn cần đăng nhập để tạo bảng mới.", isLoading: false });
+      return;
+    }
+
     set({ isLoading: true, error: null });
     try {
-      const created = await boardApi.create({ title });
+      const created = await boardApi.create({ title, userId });
       set((state) => ({
         boards: [...state.boards, created],
         activeBoardId: created.id,
@@ -104,7 +123,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   updateBoard: async (id: string, updates: Partial<Pick<Board, "title">>) => {
     try {
-      const updated = await boardApi.update(id, { id, title: updates.title });
+      const existing = get().boards.find((board) => board.id === id);
+      const updated = await boardApi.update(id, {
+        id,
+        title: updates.title,
+        userId: existing?.userId ?? get().currentUserId ?? undefined,
+      });
       set((state) => ({
         boards: state.boards.map((board) => (board.id === id ? updated : board)),
       }));
@@ -151,5 +175,22 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         ),
       }));
     }
+  },
+
+  setCurrentUser: (userId) => {
+    set((state) => ({
+      currentUserId: userId,
+      boards:
+        userId && userId === state.currentUserId
+          ? state.boards
+          : [],
+      activeBoardId:
+        userId && userId === state.currentUserId
+          ? state.activeBoardId
+          : null,
+      isInitialized: false,
+      error: null,
+      isLoading: false,
+    }));
   },
 }));

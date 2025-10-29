@@ -38,6 +38,9 @@ public class Task {
 
     private LocalDateTime dueDate;
 
+    @Column(name = "user_id", nullable = false, length = 160)
+    private String userId;
+
     @ElementCollection
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "tag")

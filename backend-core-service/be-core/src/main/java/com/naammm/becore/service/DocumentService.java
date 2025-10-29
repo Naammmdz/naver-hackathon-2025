@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Optional;
 
 import com.naammm.becore.entity.Document;
+import com.naammm.becore.exception.ResourceNotFoundException;
+import com.naammm.becore.repository.DocumentRepository;
+import com.naammm.becore.security.UserContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
-import com.naammm.becore.repository.DocumentRepository;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -19,61 +21,77 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
 
     public List<Document> getAllDocuments() {
-        return documentRepository.findByTrashedFalse();
+        String userId = UserContext.requireUserId();
+        return documentRepository.findByUserIdAndTrashedFalseOrderByUpdatedAtDesc(userId);
     }
 
     public Optional<Document> getDocumentById(String id) {
-        return documentRepository.findById(id);
+        String userId = UserContext.requireUserId();
+        return documentRepository.findByIdAndUserId(id, userId);
     }
 
     public List<Document> getDocumentsByParentId(String parentId) {
-        return documentRepository.findByParentIdAndTrashedFalse(parentId);
+        String userId = UserContext.requireUserId();
+        return documentRepository.findByUserIdAndParentIdAndTrashedFalseOrderByUpdatedAtDesc(userId, parentId);
     }
 
     public List<Document> getTrashedDocuments() {
-        return documentRepository.findByTrashedTrue();
+        String userId = UserContext.requireUserId();
+        return documentRepository.findByUserIdAndTrashedTrueOrderByUpdatedAtDesc(userId);
     }
 
     public Document createDocument(Document document) {
+        String userId = UserContext.requireUserId();
+        document.setUserId(userId);
         return documentRepository.save(document);
     }
 
     public Document updateDocument(String id, Document updatedDocument) {
-        return documentRepository.findById(id)
+        String userId = UserContext.requireUserId();
+        return documentRepository.findByIdAndUserId(id, userId)
                 .map(document -> {
-                    document.setTitle(updatedDocument.getTitle());
-                    document.setContent(updatedDocument.getContent());
-                    document.setIcon(updatedDocument.getIcon());
+                    if (updatedDocument.getTitle() != null) {
+                        document.setTitle(updatedDocument.getTitle());
+                    }
+                    if (updatedDocument.getContent() != null) {
+                        document.setContent(updatedDocument.getContent());
+                    }
+                    if (updatedDocument.getIcon() != null) {
+                        document.setIcon(updatedDocument.getIcon());
+                    }
                     document.setParentId(updatedDocument.getParentId());
                     return documentRepository.save(document);
                 })
-                .orElseThrow(() -> new RuntimeException("Document not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
     }
 
     public void deleteDocument(String id) {
-        documentRepository.findById(id).ifPresent(document -> {
-            document.setTrashed(true);
-            document.setTrashedAt(LocalDateTime.now());
-            documentRepository.save(document);
-        });
+        Document document = documentRepository.findByIdAndUserId(id, UserContext.requireUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        document.setTrashed(true);
+        document.setTrashedAt(LocalDateTime.now());
+        documentRepository.save(document);
     }
 
     public void permanentlyDeleteDocument(String id) {
-        documentRepository.deleteById(id);
+        Document document = documentRepository.findByIdAndUserId(id, UserContext.requireUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        documentRepository.delete(document);
     }
 
     public void restoreDocument(String id) {
-        documentRepository.findById(id).ifPresent(document -> {
-            document.setTrashed(false);
-            document.setTrashedAt(null);
-            documentRepository.save(document);
-        });
+        Document document = documentRepository.findByIdAndUserId(id, UserContext.requireUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        document.setTrashed(false);
+        document.setTrashedAt(null);
+        documentRepository.save(document);
     }
 
     public List<Document> searchDocuments(String search) {
-        if (search == null || search.trim().isEmpty()) {
-            return getAllDocuments();
+        String userId = UserContext.requireUserId();
+        if (!StringUtils.hasText(search)) {
+            return documentRepository.findByUserIdAndTrashedFalseOrderByUpdatedAtDesc(userId);
         }
-        return documentRepository.searchDocuments(search.trim());
+        return documentRepository.searchDocuments(userId, search.trim());
     }
 }

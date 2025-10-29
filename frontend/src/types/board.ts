@@ -10,15 +10,18 @@ export interface Board {
   createdAt: Date;
   updatedAt: Date;
   snapshot: BoardSnapshot | null;
+  userId: string;
 }
 
 export interface CreateBoardInput {
   title: string;
   snapshot?: BoardSnapshot | null;
+  userId: string;
 }
 
 export interface UpdateBoardInput {
   id: string;
   title?: string;
   snapshot?: BoardSnapshot | null;
+  userId?: string;
 }

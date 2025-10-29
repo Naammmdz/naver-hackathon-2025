@@ -12,6 +12,7 @@ export const taskDocSchema = z.object({
   createdAt: z.date(),
   note: z.string().optional(),
   createdBy: z.string().optional(),
+  userId: z.string(),
 });
 
 export type TaskDoc = z.infer<typeof taskDocSchema>;

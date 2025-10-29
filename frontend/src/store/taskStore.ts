@@ -18,9 +18,10 @@ interface TaskState {
   sidebarCollapsed: boolean;
   isLoading: boolean;
   error: string | null;
+  currentUserId: string | null;
 
   loadTasks: () => Promise<void>;
-  addTask: (input: CreateTaskInput) => Promise<Task | undefined>;
+  addTask: (input: Omit<CreateTaskInput, "userId">) => Promise<Task | undefined>;
   updateTask: (input: UpdateTaskInput) => Promise<Task | undefined>;
   deleteTask: (id: string) => Promise<void>;
   deleteTasks: (ids: string[]) => Promise<void>;
@@ -57,6 +58,7 @@ interface TaskState {
   getAllTags: () => string[];
   canMoveTaskToDone: (taskId: string) => boolean;
   updateTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
+  setCurrentUser: (userId: string | null) => void;
 }
 
 const defaultFilters: TaskFilters = {
@@ -74,7 +76,10 @@ const defaultSort: TaskSort = {
 
 export const useTaskStore = create<TaskState>((set, get) => {
   const setTasks = (tasks: Task[]) => {
-    set({ tasks });
+    const userId = get().currentUserId;
+    set({
+      tasks: userId ? tasks.filter((task) => task.userId === userId) : [],
+    });
   };
 
   const updateTaskInState = (updated: Task) => {
@@ -116,8 +121,15 @@ export const useTaskStore = create<TaskState>((set, get) => {
     sidebarCollapsed: false,
     isLoading: false,
     error: null,
+    currentUserId: null,
 
     loadTasks: async () => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ tasks: [], isLoading: false });
+        return;
+      }
+
       set({ isLoading: true, error: null });
       try {
         const tasks = await taskApi.list();
@@ -131,9 +143,15 @@ export const useTaskStore = create<TaskState>((set, get) => {
     },
 
     addTask: async (input) => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ error: "Bạn cần đăng nhập để tạo công việc mới." });
+        return undefined;
+      }
+
       try {
         const order = getNextOrderIndex(input.status);
-        const created = await taskApi.create({ ...input, order });
+        const created = await taskApi.create({ ...input, order, userId });
         updateTaskInState(created);
         return created;
       } catch (error) {
@@ -368,6 +386,7 @@ export const useTaskStore = create<TaskState>((set, get) => {
         sort: defaultSort,
         sidebarCollapsed: false,
         error: null,
+        isLoading: false,
       });
       await get().loadTasks();
     },
@@ -538,12 +557,21 @@ export const useTaskStore = create<TaskState>((set, get) => {
       return Array.from(tags).sort();
     },
 
+    setCurrentUser: (userId) => {
+      set((state) => ({
+        currentUserId: userId,
+        tasks:
+          userId && userId === state.currentUserId
+            ? state.tasks
+            : [],
+        selectedTaskIds: [],
+        error: null,
+        isLoading: false,
+      }));
+    },
+
     updateTaskStatus: async (id, status) => {
       await get().moveTask(id, status);
     },
   };
 });
-
-if (typeof window !== "undefined") {
-  void useTaskStore.getState().loadTasks();
-}

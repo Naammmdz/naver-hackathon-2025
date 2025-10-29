@@ -10,6 +10,7 @@ type TaskDocState = {
   taskDocs: TaskDoc[];
   isLoading: boolean;
   error: string | null;
+  currentUserId: string | null;
 
   loadTaskDocs: () => Promise<void>;
   addTaskDoc: (input: CreateTaskDocInput) => Promise<TaskDoc | undefined>;
@@ -36,6 +37,7 @@ type TaskDocState = {
   resetStore: () => void;
   exportTaskDocs: () => TaskDoc[];
   importTaskDocs: (taskDocs: TaskDoc[]) => void;
+  setCurrentUser: (userId: string | null) => void;
 };
 
 const sortByCreatedAt = (taskDocs: TaskDoc[]) =>
@@ -62,11 +64,18 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     taskDocs: [],
     isLoading: false,
     error: null,
+    currentUserId: null,
 
     loadTaskDocs: async () => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ taskDocs: [], isLoading: false });
+        return;
+      }
+
       set({ isLoading: true, error: null });
       try {
-        const taskDocs = await taskDocApi.list();
+        const taskDocs = (await taskDocApi.list()).filter((taskDoc) => taskDoc.userId === userId);
         set({ taskDocs: sortByCreatedAt(taskDocs), isLoading: false });
       } catch (error) {
         set({
@@ -77,12 +86,22 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     addTaskDoc: async (input) => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ error: "Bạn cần đăng nhập để liên kết tài liệu với công việc." });
+        return undefined;
+      }
+
       try {
         if (get().hasRelation(input.taskId, input.docId)) {
           return get().getRelation(input.taskId, input.docId);
         }
 
-        const created = await taskDocApi.create(input);
+        const created = await taskDocApi.create({
+          ...input,
+          userId,
+          createdBy: input.createdBy ?? userId,
+        });
         upsertTaskDoc(created);
         return created;
       } catch (error) {
@@ -136,6 +155,7 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
           relationType: existing.relationType,
           note,
           createdBy: existing.createdBy ?? null,
+          userId: existing.userId ?? get().currentUserId ?? null,
         });
         upsertTaskDoc(updated);
       } catch (error) {
@@ -156,6 +176,7 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
           relationType,
           note: existing.note ?? null,
           createdBy: existing.createdBy ?? null,
+          userId: existing.userId ?? get().currentUserId ?? null,
         });
         upsertTaskDoc(updated);
       } catch (error) {
@@ -166,19 +187,27 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     linkMultipleDocsToTask: async (taskId, docIds, relationType, createdBy = "user") => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ error: "Bạn cần đăng nhập để liên kết tài liệu." });
+        return;
+      }
+
       const newDocIds = docIds.filter((docId) => !get().hasRelation(taskId, docId));
       if (newDocIds.length === 0) {
         return;
       }
 
       try {
+        const author = createdBy ?? userId;
         const created = await Promise.all(
           newDocIds.map((docId) =>
             taskDocApi.create({
               taskId,
               docId,
               relationType,
-              createdBy,
+              createdBy: author,
+              userId,
             }),
           ),
         );
@@ -226,17 +255,32 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
       get().taskDocs.find((taskDoc) => taskDoc.taskId === taskId && taskDoc.docId === docId),
 
     resetStore: () => {
-      set({ taskDocs: [], error: null, isLoading: false });
+      set((state) => ({
+        taskDocs: [],
+        error: null,
+        isLoading: false,
+        currentUserId: state.currentUserId,
+      }));
     },
 
     exportTaskDocs: () => get().taskDocs,
 
     importTaskDocs: (taskDocs) => {
-      set({ taskDocs: sortByCreatedAt(taskDocs), error: null });
+      const userId = get().currentUserId;
+      const filtered = userId ? taskDocs.filter((doc) => doc.userId === userId) : [];
+      set({ taskDocs: sortByCreatedAt(filtered), error: null });
+    },
+
+    setCurrentUser: (userId) => {
+      set((state) => ({
+        currentUserId: userId,
+        taskDocs:
+          userId && userId === state.currentUserId
+            ? state.taskDocs
+            : [],
+        isLoading: false,
+        error: null,
+      }));
     },
   };
 });
-
-if (typeof window !== "undefined") {
-  void useTaskDocStore.getState().loadTaskDocs();
-}

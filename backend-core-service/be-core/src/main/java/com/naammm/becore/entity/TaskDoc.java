@@ -36,6 +36,9 @@ public class TaskDoc {
 
     private String createdBy;
 
+    @Column(name = "user_id", nullable = false, length = 160)
+    private String userId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

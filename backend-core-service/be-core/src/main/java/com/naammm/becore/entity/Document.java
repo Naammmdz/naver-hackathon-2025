@@ -26,6 +26,9 @@ public class Document {
     @Column(columnDefinition = "TEXT")
     private String content; // JSON string for BlockNote content
 
+    @Column(name = "user_id", nullable = false, length = 160)
+    private String userId;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

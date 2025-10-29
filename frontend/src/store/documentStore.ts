@@ -11,6 +11,7 @@ const SAVE_INTERVAL_MS = 600;
 const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 type DocumentState = DocumentStore & {
+  currentUserId: string | null;
   loadDocuments: () => Promise<void>;
   addDocument: (title?: string, parentId?: string | null) => Promise<string | undefined>;
   updateDocument: (id: string, updates: UpdateDocumentInput) => Promise<void>;
@@ -20,6 +21,7 @@ type DocumentState = DocumentStore & {
   setActiveDocument: (id: string | null) => void;
   getDocument: (id: string) => Document | undefined;
   getTrashedDocuments: () => Document[];
+  setCurrentUser: (userId: string | null) => void;
 };
 
 const defaultContent = (title: string) => [
@@ -94,15 +96,24 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
     activeDocumentId: null,
     isLoading: false,
     error: null,
+    currentUserId: null,
 
     loadDocuments: async () => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ documents: [], activeDocumentId: null, isLoading: false });
+        return;
+      }
+
       set({ isLoading: true, error: null });
       try {
         const [activeDocs, trashedDocs] = await Promise.all([
           documentApi.list(),
           documentApi.listTrashed(),
         ]);
-        const documents = mergeDocuments(activeDocs, trashedDocs);
+        const documents = mergeDocuments(activeDocs, trashedDocs).filter(
+          (doc) => doc.userId === userId,
+        );
         set((state) => ({
           documents,
           activeDocumentId:
@@ -120,13 +131,20 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
     },
 
     addDocument: async (title = "Untitled", parentId = null) => {
+      const userId = get().currentUserId;
+      if (!userId) {
+        set({ error: "Bạn cần đăng nhập để tạo tài liệu mới." });
+        return undefined;
+      }
+
       try {
         const created = await documentApi.create({
           title,
           content: defaultContent(title),
           icon: "📄",
           parentId,
-        } satisfies CreateDocumentInput);
+          userId,
+        });
 
         set((state) => ({
           documents: [...state.documents, created],
@@ -235,6 +253,22 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       }
     },
 
+    setCurrentUser: (userId) => {
+      set((state) => ({
+        currentUserId: userId,
+        documents:
+          userId && userId === state.currentUserId
+            ? state.documents
+            : [],
+        activeDocumentId:
+          userId && userId === state.currentUserId
+            ? state.activeDocumentId
+            : null,
+        error: null,
+        isLoading: false,
+      }));
+    },
+
     setActiveDocument: (id) => {
       set({ activeDocumentId: id });
     },
@@ -248,7 +282,3 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
     },
   };
 });
-
-if (typeof window !== "undefined") {
-  void useDocumentStore.getState().loadDocuments();
-}

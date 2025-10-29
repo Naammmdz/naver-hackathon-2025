@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTaskStore } from '@/store/taskStore';
+import { UserButton } from '@clerk/clerk-react';
 import { Bell, ChevronDown, Languages, Menu, Moon, Search, Settings, Sun, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -174,6 +175,14 @@ export function ClickupHeader({
           >
             <Menu className="h-4 w-4" />
           </Button>
+
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'h-8 w-8',
+              },
+            }}
+          />
         </div>
       </div>
     </header>

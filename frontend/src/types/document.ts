@@ -8,6 +8,7 @@ export interface Document {
   parentId?: string | null;
   trashed: boolean;
   trashedAt?: Date | null;
+  userId: string;
 }
 
 export interface DocumentStore {
@@ -22,6 +23,7 @@ export interface CreateDocumentInput {
   content: any[];
   icon?: string | null;
   parentId?: string | null;
+  userId: string;
 }
 
 export interface UpdateDocumentInput {
@@ -29,4 +31,5 @@ export interface UpdateDocumentInput {
   content?: any[];
   icon?: string | null;
   parentId?: string | null;
+  userId?: string;
 }

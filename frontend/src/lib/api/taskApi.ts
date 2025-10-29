@@ -1,4 +1,5 @@
 import type { CreateTaskInput, Subtask, Task, TaskStatus, UpdateTaskInput } from "@/types/task";
+import { apiAuthContext } from "./authContext";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8989";
@@ -24,6 +25,7 @@ interface TaskApiResponse {
   orderIndex?: number | null;
   createdAt: string;
   updatedAt: string;
+  userId?: string | null;
 }
 
 interface TaskApiRequest {
@@ -37,6 +39,7 @@ interface TaskApiRequest {
   orderIndex?: number | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  userId?: string | null;
 }
 
 const toDate = (value?: string | null): Date | undefined => {
@@ -71,6 +74,7 @@ const mapTaskFromApi = (task: TaskApiResponse): Task => ({
   order: task.orderIndex ?? 0,
   createdAt: toDate(task.createdAt) ?? new Date(),
   updatedAt: toDate(task.updatedAt) ?? new Date(),
+  userId: task.userId ?? apiAuthContext.getCurrentUserId() ?? "",
 });
 
 const serializeSubtasks = (subtasks: Subtask[]): Array<{ id?: string; title: string; done: boolean }> =>
@@ -93,14 +97,16 @@ const serializeTaskPayload = (
   orderIndex: payload.order ?? null,
   createdAt: payload.createdAt ? payload.createdAt.toISOString() : undefined,
   updatedAt: payload.updatedAt ? payload.updatedAt.toISOString() : undefined,
+  userId: payload.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
 });
 
 const request = async <T>(input: RequestInfo, init?: RequestInit, parseJson = true): Promise<T> => {
+  const headers = await apiAuthContext.getAuthHeaders(init?.headers ?? {});
   const response = await fetch(input, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
+      ...headers,
     },
   });
 
@@ -118,18 +124,22 @@ const request = async <T>(input: RequestInfo, init?: RequestInit, parseJson = tr
 
 export const taskApi = {
   async list(): Promise<Task[]> {
-    const data = await request<TaskApiResponse[]>(`${API_BASE_URL}/api/tasks`);
+    const data = await request<TaskApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks`),
+    );
     return data.map(mapTaskFromApi);
   },
 
   async get(id: string): Promise<Task> {
-    const data = await request<TaskApiResponse>(`${API_BASE_URL}/api/tasks/${id}`);
+    const data = await request<TaskApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${id}`),
+    );
     return mapTaskFromApi(data);
   },
 
   async create(payload: CreateTaskInput): Promise<Task> {
     const body = serializeTaskPayload(payload);
-    const data = await request<TaskApiResponse>(`${API_BASE_URL}/api/tasks`, {
+    const data = await request<TaskApiResponse>(apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks`), {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -139,7 +149,7 @@ export const taskApi = {
   async update(payload: UpdateTaskInput): Promise<Task> {
     const { id, ...rest } = payload;
     const body = serializeTaskPayload(rest);
-    const data = await request<TaskApiResponse>(`${API_BASE_URL}/api/tasks/${id}`, {
+    const data = await request<TaskApiResponse>(apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${id}`), {
       method: "PUT",
       body: JSON.stringify(body),
     });
@@ -147,44 +157,68 @@ export const taskApi = {
   },
 
   async delete(id: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/tasks/${id}`, { method: "DELETE" }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${id}`),
+      { method: "DELETE" },
+      false,
+    );
   },
 
   async move(id: string, status: TaskStatus): Promise<void> {
-    await request(`${API_BASE_URL}/api/tasks/${id}/status`, {
-      method: "PATCH",
-      body: JSON.stringify({ status: mapStatusToApi(status) }),
-    }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${id}/status`),
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: mapStatusToApi(status) }),
+      },
+      false,
+    );
   },
 
   async reorder(status: TaskStatus, sourceIndex: number, destinationIndex: number): Promise<void> {
-    await request(`${API_BASE_URL}/api/tasks/reorder`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        status: mapStatusToApi(status),
-        sourceIndex,
-        destinationIndex,
-      }),
-    }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/reorder`),
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: mapStatusToApi(status),
+          sourceIndex,
+          destinationIndex,
+        }),
+      },
+      false,
+    );
   },
 
   async addSubtask(taskId: string, title: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/tasks/${taskId}/subtasks`, {
-      method: "POST",
-      body: JSON.stringify({ title }),
-    }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${taskId}/subtasks`),
+      {
+        method: "POST",
+        body: JSON.stringify({ title }),
+      },
+      false,
+    );
   },
 
   async updateSubtask(taskId: string, subtaskId: string, updates: Partial<Pick<Subtask, "title" | "done">>): Promise<void> {
-    await request(`${API_BASE_URL}/api/tasks/${taskId}/subtasks/${subtaskId}`, {
-      method: "PUT",
-      body: JSON.stringify(updates),
-    }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${taskId}/subtasks/${subtaskId}`),
+      {
+        method: "PUT",
+        body: JSON.stringify(updates),
+      },
+      false,
+    );
   },
 
   async deleteSubtask(taskId: string, subtaskId: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/tasks/${taskId}/subtasks/${subtaskId}`, {
-      method: "DELETE",
-    }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${taskId}/subtasks/${subtaskId}`),
+      {
+        method: "DELETE",
+      },
+      false,
+    );
   },
 };

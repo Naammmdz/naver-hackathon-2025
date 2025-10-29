@@ -3,6 +3,7 @@ import type {
   Document,
   UpdateDocumentInput,
 } from "@/types/document";
+import { apiAuthContext } from "./authContext";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8989";
@@ -17,6 +18,7 @@ interface DocumentApiResponse {
   parentId?: string | null;
   trashed?: boolean | null;
   trashedAt?: string | null;
+  userId?: string | null;
 }
 
 interface DocumentApiRequest {
@@ -25,6 +27,7 @@ interface DocumentApiRequest {
   icon?: string | null;
   parentId?: string | null;
   trashed?: boolean | null;
+  userId?: string | null;
 }
 
 const toDate = (value?: string | null): Date => {
@@ -65,6 +68,7 @@ const mapDocumentFromApi = (document: DocumentApiResponse): Document => ({
   parentId: document.parentId ?? null,
   trashed: Boolean(document.trashed),
   trashedAt: document.trashedAt ? toDate(document.trashedAt) : null,
+  userId: document.userId ?? apiAuthContext.getCurrentUserId() ?? "",
 });
 
 const serializeDocumentPayload = (
@@ -86,6 +90,7 @@ const serializeDocumentPayload = (
         ? defaults.parentId
         : null,
   trashed: defaults?.trashed ?? false,
+  userId: payload.userId ?? defaults?.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
 });
 
 const request = async <T>(
@@ -93,11 +98,12 @@ const request = async <T>(
   init?: RequestInit,
   parseJson = true,
 ): Promise<T> => {
+  const headers = await apiAuthContext.getAuthHeaders(init?.headers ?? {});
   const response = await fetch(input, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
+      ...headers,
     },
   });
 
@@ -115,60 +121,86 @@ const request = async <T>(
 
 export const documentApi = {
   async list(): Promise<Document[]> {
-    const data = await request<DocumentApiResponse[]>(`${API_BASE_URL}/api/documents`);
+    const data = await request<DocumentApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents`),
+    );
     return data.map(mapDocumentFromApi);
   },
 
   async listTrashed(): Promise<Document[]> {
-    const data = await request<DocumentApiResponse[]>(`${API_BASE_URL}/api/documents/trashed`);
+    const data = await request<DocumentApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/trashed`),
+    );
     return data.map(mapDocumentFromApi);
   },
 
   async get(id: string): Promise<Document> {
-    const data = await request<DocumentApiResponse>(`${API_BASE_URL}/api/documents/${id}`);
+    const data = await request<DocumentApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/${id}`),
+    );
     return mapDocumentFromApi(data);
   },
 
   async create(payload: CreateDocumentInput): Promise<Document> {
     const body = serializeDocumentPayload(payload);
-    const data = await request<DocumentApiResponse>(`${API_BASE_URL}/api/documents`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    const data = await request<DocumentApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents`),
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
     return mapDocumentFromApi(data);
   },
 
   async update(id: string, payload: UpdateDocumentInput, defaults: Document): Promise<Document> {
     const body = serializeDocumentPayload(payload, defaults);
-    const data = await request<DocumentApiResponse>(`${API_BASE_URL}/api/documents/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
+    const data = await request<DocumentApiResponse>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/${id}`),
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+      },
+    );
     return mapDocumentFromApi(data);
   },
 
   async delete(id: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/documents/${id}`, { method: "DELETE" }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/${id}`),
+      { method: "DELETE" },
+      false,
+    );
   },
 
   async deletePermanent(id: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/documents/${id}/permanent`, { method: "DELETE" }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/${id}/permanent`),
+      { method: "DELETE" },
+      false,
+    );
   },
 
   async restore(id: string): Promise<void> {
-    await request(`${API_BASE_URL}/api/documents/${id}/restore`, { method: "PATCH" }, false);
+    await request(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/${id}/restore`),
+      { method: "PATCH" },
+      false,
+    );
   },
 
   async search(query: string): Promise<Document[]> {
     const data = await request<DocumentApiResponse[]>(
-      `${API_BASE_URL}/api/documents/search?q=${encodeURIComponent(query)}`,
+      apiAuthContext.appendUserIdQuery(
+        `${API_BASE_URL}/api/documents/search?q=${encodeURIComponent(query)}`,
+      ),
     );
     return data.map(mapDocumentFromApi);
   },
 
   async listByParent(parentId: string): Promise<Document[]> {
     const data = await request<DocumentApiResponse[]>(
-      `${API_BASE_URL}/api/documents/parent/${parentId}`,
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/parent/${parentId}`),
     );
     return data.map(mapDocumentFromApi);
   },
