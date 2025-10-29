@@ -112,11 +112,11 @@ export function HeroSection() {
           DevFlow helps developers stay in flow — it merges tasks, documentation, and Git activity into a single workspace. Write Markdown inline, track progress with Kanban tasks, and visualize Git branches.
         </div>
         <div className="reveal-up tw-mt-10 max-md:tw-flex-col tw-flex tw-place-items-center tw-gap-4">
-          <button onClick={() => window.openVideo?.()} className="btn !tw-w-[170px] max-lg:!tw-w-[160px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-flex tw-gap-2 tw-group !tw-bg-transparent !tw-text-black dark:!tw-text-white tw-transition-colors 
-                                  tw-duration-[0.3s] tw-border-[1px] tw-border-black dark:tw-border-white">
+          <button onClick={() => window.openVideo?.()} className="btn !tw-w-[170px] max-lg:!tw-w-[160px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-flex tw-gap-2 tw-group !tw-bg-transparent !tw-text-[#16a34a] dark:!tw-text-[#16a34a] tw-transition-colors 
+                                  tw-duration-[0.3s] tw-border-[1px] tw-border-[#16a34a] dark:tw-border-[#16a34a]">
             <div className="tw-relative tw-flex tw-place-items-center tw-place-content-center tw-w-6 tw-h-6">
               <div className="tw-absolute tw-inset-0 tw-top-0 tw-left-0 tw-scale-0 tw-duration-300 group-hover:tw-scale-100 tw-border-2
-                                       tw-border-gray-600 dark:tw-border-gray-200 tw-rounded-full tw-w-full tw-h-full" />
+                                       tw-border-[#16a34a] dark:tw-border-[#16a34a] tw-rounded-full tw-w-full tw-h-full" />
               <span className="bi bi-play-circle-fill" />
             </div>
             <span>Watch video</span>

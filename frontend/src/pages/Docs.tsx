@@ -187,11 +187,11 @@ export default function Docs() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {documents.filter((doc) => !doc.trashed).length === 0 ? (
-          <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+          <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.15),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(244,114,182,0.15),_transparent_55%)]" />
 
-            <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center gap-6 rounded-3xl border border-border/60 bg-background/85 px-10 py-12 text-center shadow-[0_20px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
+            <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
               <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-pink-400/70 to-purple-500/70 text-primary-foreground shadow-lg shadow-primary/40">
                 <FileText className="h-8 w-8" />
               </span>
@@ -317,11 +317,11 @@ export default function Docs() {
             </>
           )
         ) : (
-          <div className="relative flex min-h-[520px] w-full items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-background/85 px-6 py-12 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
+          <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_55%)]" />
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(22,163,74,0.18),_transparent_55%)]" />
 
-            <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-3xl border border-border/40 bg-background/95 px-8 py-14 text-center shadow-lg shadow-primary/10">
+            <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
               <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-purple-400/70 to-sky-500/70 text-primary-foreground shadow-lg shadow-primary/30">
                 <FileText className="h-8 w-8" />
               </span>

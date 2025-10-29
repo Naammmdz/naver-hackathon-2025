@@ -19,7 +19,7 @@
     --primary-text-color: #000;
     --bg-color: #ffffff;
     --btn-color: #fdfdfd;
-    --btn-bg: #000;
+    --btn-bg: #16a34a;
     --header-link-hover: #000000;
     --header-link-hover-bg: #bababa36;
     --input-hover-bd-color: #232323;
@@ -40,8 +40,8 @@
 .tw-dark {
     --primary-text-color: #fff;
     --bg-color: #000000;
-    --btn-color: #000000;
-    --btn-bg: #ffffff;
+    --btn-color: #fdfdfd;
+    --btn-bg: #16a34a;
     --header-link-hover: #ffffff;
     --header-link-hover-bg: #8a8a8a5e;
     --input-hover-bd-color: #f8f8f8;

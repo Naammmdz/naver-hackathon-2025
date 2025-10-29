@@ -15,7 +15,7 @@
       </p>
       <div className="reveal-up tw-flex tw-mt-8">
         <a href="#" target="_blank" rel="noopener" className="tw-shadow-md hover:tw-shadow-xl dark:tw-shadow-gray-800 tw-transition-all tw-duration-300 
-                                  tw-border-[1px] tw-p-3 tw-px-4 tw-border-black dark:tw-border-white tw-rounded-md">
+                                  tw-border-[1px] tw-p-3 tw-px-4 tw-border-[#16a34a] dark:tw-border-[#16a34a] tw-rounded-md tw-text-[#16a34a] dark:tw-text-[#16a34a]">
           Get Started
         </a>
       </div>

@@ -10,9 +10,9 @@
         <div className="tw-text-gray-700 dark:tw-text-gray-300">Get product insights and updates.</div>
       </div>
       <div className="tw-flex tw-h-[60px] tw-place-items-center tw-gap-2 tw-overflow-hidden tw-p-2">
-        <input type="email" className="input tw-h-full tw-w-full !tw-border-gray-600 tw-p-2 tw-outline-none" placeholder="email" />
-        <a className="btn !tw-rounded-full !tw-border-[1px] !tw-text-black !tw-border-solid !tw-border-black  dark:!tw-text-white
-                      dark:!tw-border-gray-300 !tw-bg-transparent tw-transition-colors tw-duration-[0.3s]" href="#">
+        <input type="email" className="input tw-h-full tw-w-full !tw-border-[#16a34a] tw-p-2 tw-outline-none" placeholder="email" />
+        <a className="btn !tw-rounded-full !tw-border-[1px] !tw-text-[#16a34a] !tw-border-solid !tw-border-[#16a34a]  dark:!tw-text-[#16a34a]
+                      dark:!tw-border-[#16a34a] !tw-bg-transparent tw-transition-colors tw-duration-[0.3s]" href="#">
           Signup
         </a>
       </div>

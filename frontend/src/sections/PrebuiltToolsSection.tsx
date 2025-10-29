@@ -10,9 +10,9 @@
           <h2 className="tw-text-5xl tw-font-serif tw-text-center tw-font-medium  max-md:tw-text-3xl">
             Built-in Development Tools
           </h2>
-          <a href="http://" className="btn !tw-mt-8 !tw-bg-transparent !tw-text-black 
-                                          !tw-border-[1px] !tw-border-black 
-                                          dark:!tw-border-white dark:!tw-text-white">
+          <a href="http://" className="btn !tw-mt-8 !tw-bg-transparent !tw-text-[#16a34a] 
+                                          !tw-border-[1px] !tw-border-[#16a34a] 
+                                          dark:!tw-border-[#16a34a] dark:!tw-text-[#16a34a]">
             Start Chat
           </a>
         </div>

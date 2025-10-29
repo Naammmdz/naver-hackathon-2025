@@ -272,7 +272,7 @@ const handleDragEnd = (event: DragEndEvent) => {
     }
 
     return (
-      <div className="relative flex min-h-[520px] w-full items-center justify-center overflow-hidden rounded-3xl border border-border/60 bg-background/85 px-6 py-12 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
+      <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.2),_transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.16),_transparent_55%)]" />
 
@@ -366,133 +366,133 @@ const handleDragEnd = (event: DragEndEvent) => {
         <FocusFlyModal onComplete={handleFocusComplete} />
 
         <div className="relative h-full overflow-auto">
-          <div className="relative mx-auto h-full max-w-7xl px-4 pb-8 pt-6 sm:px-6 lg:px-8">
-          {/* Header with View Switcher */}
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <ViewSwitcher 
-                currentView={currentView} 
-                onViewChange={setCurrentView}
-              />
-              <div className="flex items-center gap-2">
-                {currentView === "list" && (
-                  <Button onClick={() => handleNewTask()} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    {t('header.newTask')}
+          {hasTasks ? (
+            <div className="relative mx-auto h-full max-w-7xl px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+              {/* Header with View Switcher */}
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <ViewSwitcher
+                  currentView={currentView}
+                  onViewChange={setCurrentView}
+                />
+                <div className="flex items-center gap-2">
+                  {currentView === "list" && (
+                    <Button onClick={() => handleNewTask()} className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      {t('header.newTask')}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Bulk Actions */}
+              {selectedTaskIds.length > 0 && (
+                <div className="mb-6 flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/50 px-4 py-3 text-sm text-foreground sm:flex-row sm:items-center">
+                  <span className="font-medium">
+                    {t('bulk.selected', { count: selectedTaskIds.length })}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={clearSelection}>
+                    {t('bulk.clearSelection')}
                   </Button>
-                )}
-              </div>
-            </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      selectedTaskIds.forEach(id => deleteTask(id));
+                      clearSelection();
+                    }}
+                  >
+                    {t('common.delete')} {t('bulk.selected', { count: selectedTaskIds.length })}
+                  </Button>
+                </div>
+              )}
 
-            {/* Bulk Actions */}
-            {selectedTaskIds.length > 0 && (
-              <div className="mb-6 flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/50 px-4 py-3 text-sm text-foreground sm:flex-row sm:items-center">
-                <span className="font-medium">
-                  {t('bulk.selected', { count: selectedTaskIds.length })}
-                </span>
-                <Button variant="outline" size="sm" onClick={clearSelection}>
-                  {t('bulk.clearSelection')}
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    selectedTaskIds.forEach(id => deleteTask(id));
-                    clearSelection();
-                  }}
-                >
-                  {t('common.delete')} {t('bulk.selected', { count: selectedTaskIds.length })}
-                </Button>
-              </div>
-            )}
-
-            {/* View Content */}
-            {!hasTasks ? (
-              renderEmptyTasksState()
-            ) : (
+              {/* View Content */}
               <>
                 {currentView === "board" && (
-              <DndContext 
-                sensors={sensors}
-                collisionDetection={rectIntersection}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnd={handleDragEnd}
-              >
-                {/* Kanban Board */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[600px]">
-          {COLUMNS.map((column) => {
-                    const columnTasks = getColumnTasks(column.id);
-                    
-                    return (
-            <Column key={column.id} column={column}>
-                        {/* Column Header */}
-                        <ColumnHeader 
-                          column={column} 
-                          taskCount={columnTasks.length}
-                          onAddTask={() => handleNewTask(undefined, column.id)}
-                        />
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={rectIntersection}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                  >
+                    {/* Kanban Board */}
+                    <div className="grid grid-cols-1 gap-6 min-h-[600px] md:grid-cols-3">
+                      {COLUMNS.map((column) => {
+                        const columnTasks = getColumnTasks(column.id);
 
-                        {/* Column Content */}
-                        <div className="flex-1 p-3 overflow-y-auto">
-                          <SortableContext
-                            items={columnTasks.map(t => t.id)}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            <div className="space-y-3 min-h-[100px] pb-10">
-                              {columnTasks.map((task) => (
-                                <TaskCard
-                                  key={task.id}
-                                  task={task}
-                                  isSelected={selectedTaskIds.includes(task.id)}
-                                  isDragOver={overTaskId === task.id}
-                                  onEdit={() => handleTaskEdit(task)}
-                                  onView={() => handleTaskView(task)}
-                                />
-                              ))}
+                        return (
+                          <Column key={column.id} column={column}>
+                            {/* Column Header */}
+                            <ColumnHeader
+                              column={column}
+                              taskCount={columnTasks.length}
+                              onAddTask={() => handleNewTask(undefined, column.id)}
+                            />
+
+                            {/* Column Content */}
+                            <div className="flex-1 overflow-y-auto p-3">
+                              <SortableContext
+                                items={columnTasks.map(t => t.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <div className="min-h-[100px] space-y-3 pb-10">
+                                  {columnTasks.map((task) => (
+                                    <TaskCard
+                                      key={task.id}
+                                      task={task}
+                                      isSelected={selectedTaskIds.includes(task.id)}
+                                      isDragOver={overTaskId === task.id}
+                                      onEdit={() => handleTaskEdit(task)}
+                                      onView={() => handleTaskView(task)}
+                                    />
+                                  ))}
+                                </div>
+                              </SortableContext>
                             </div>
-                          </SortableContext>
-                        </div>
-                      </Column>
-                    );
-                  })}
-                </div>
+                          </Column>
+                        );
+                      })}
+                    </div>
 
-                {/* Drag Overlay */}
-                <DragOverlay>
-                  {activeTask && (
-                    <TaskCard
-                      task={activeTask}
-                      onEdit={() => {}}
-                      onView={() => {}}
-                      isDragging
-                    />
-                  )}
-                </DragOverlay>
-              </DndContext>
+                    {/* Drag Overlay */}
+                    <DragOverlay>
+                      {activeTask && (
+                        <TaskCard
+                          task={activeTask}
+                          onEdit={() => {}}
+                          onView={() => {}}
+                          isDragging
+                        />
+                      )}
+                    </DragOverlay>
+                  </DndContext>
                 )}
 
                 {currentView === "list" && (
-              <TaskListView 
-                onTaskEdit={handleTaskEdit}
-                onTaskView={handleTaskView}
-              />
+                  <TaskListView
+                    onTaskEdit={handleTaskEdit}
+                    onTaskView={handleTaskView}
+                  />
                 )}
 
                 {currentView === "calendar" && (
-              <TaskCalendarView 
-                onTaskEdit={handleTaskEdit}
-                onTaskView={handleTaskView}
-                onNewTask={handleNewTask}
-              />
+                  <TaskCalendarView
+                    onTaskEdit={handleTaskEdit}
+                    onTaskView={handleTaskView}
+                    onNewTask={handleNewTask}
+                  />
                 )}
 
                 {currentView === "analytics" && (
-              <AnalyticsView />
+                  <AnalyticsView />
                 )}
               </>
-            )}
+            </div>
+          ) : (
+            renderEmptyTasksState()
+          )}
         </div>
-      </div>
       </div>
 
       {/* Task Form Dialog */}

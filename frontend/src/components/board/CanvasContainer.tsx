@@ -56,11 +56,11 @@ export function CanvasContainer() {
 
   if (boards.length === 0) {
     return (
-      <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+      <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(30,64,175,0.25),_transparent_55%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(168,85,247,0.15),_transparent_50%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(124,58,237,0.2),_transparent_50%)]" />
 
-        <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-3xl border border-border/60 bg-background/85 px-8 py-14 text-center shadow-[0_20px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
+        <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
           <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-sky-400/60 to-purple-400/70 text-primary-foreground shadow-lg shadow-primary/40">
             <Layers className="h-8 w-8" />
           </span>
