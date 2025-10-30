@@ -87,10 +87,6 @@ export default function AppWrapper() {
       <ClickupHeader
         currentView={currentView}
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-        onSmartCreate={() => {
-          const event = new CustomEvent('openSmartParser');
-          window.dispatchEvent(event);
-        }}
       />
 
       {/* Main Layout - ClickUp 3-Column Layout */}
@@ -105,7 +101,10 @@ export default function AppWrapper() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
-          {currentView === 'tasks' ? <Index onViewChange={setCurrentView} /> :
+          {currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
+            const event = new CustomEvent('openSmartParser');
+            window.dispatchEvent(event);
+          }} /> :
            currentView === 'docs' ? <Docs /> :
            <BoardView />}
         </main>

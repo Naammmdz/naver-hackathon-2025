@@ -1,5 +1,4 @@
-﻿import { BlockNoteView } from "@blocknote/mantine";
-import "@blocknote/mantine/style.css";
+﻿import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useState } from "react";
 
@@ -102,14 +101,14 @@ export function HeroSection() {
     <div className="hero-bg-gradient tw-relative tw-flex tw-h-full tw-min-h-[100vh] tw-w-full tw-flex-col tw-place-content-center tw-gap-6 tw-p-[5%] max-xl:tw-place-items-center max-lg:tw-p-4">
       <div className="purple-bg-grad  reveal-up tw-absolute tw-left-1/2 tw--translate-1/2 tw-top-[10%] tw-h-[120px] tw-w-[120px]" /> 
       <div className="tw-flex tw-flex-col tw-min-h-[60vh] tw-place-content-center tw-items-center">
-        <h2 className="reveal-up tw-text-center tw-text-7xl tw-font-semibold tw-uppercase tw-leading-[90px] max-lg:tw-text-4xl max-md:tw-leading-snug">
+        <h2 className="reveal-up tw-text-center tw-text-7xl tw-font-semibold tw-uppercase tw-leading-tight max-lg:tw-text-4xl max-md:tw-leading-snug">
           <span> Stay in flow </span>
           <br />
-          <span className="tw-font-thin tw-font-serif"> with DevFlow </span>
+          <span className="tw-font-thin tw-font-serif tw-text-[#16a34a]"> with DevFlow </span>
         </h2>
         <div className="reveal-up tw-mt-8 tw-max-w-[450px] tw-text-lg max-lg:tw-text-base tw-p-2 tw-text-center
                    tw-text-gray-800 dark:tw-text-white max-lg:tw-max-w-full">
-          DevFlow helps developers stay in flow — it merges tasks, documentation, and Git activity into a single workspace. Write Markdown inline, track progress with Kanban tasks, and visualize Git branches.
+          DevFlow merges tasks, documentation, and Git into one workspace. Write Markdown, track Kanban tasks, and visualize branches.
         </div>
         <div className="reveal-up tw-mt-10 max-md:tw-flex-col tw-flex tw-place-items-center tw-gap-4">
           <button onClick={() => window.openVideo?.()} className="btn !tw-w-[170px] max-lg:!tw-w-[160px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-flex tw-gap-2 tw-group !tw-bg-transparent !tw-text-[#16a34a] dark:!tw-text-[#16a34a] tw-transition-colors 
@@ -127,12 +126,30 @@ export function HeroSection() {
           </a>
         </div>
       </div>
-      {/* BlockNote Editor Demo */}
+      {/* BlockNote Editor Demo - Temporarily commented */}
+      {/*
       <div className="reveal-up tw-relative tw-mt-8 tw-flex tw-w-full tw-place-content-center tw-place-items-center" id="editor-container">
         <div className="rainbow-border tw-max-w-[90%] lg:tw-w-[1000px] tw-shadow-2xl tw-overflow-hidden" id="editor-demo">
           <div className="tw-p-6 tw-h-[500px] tw-overflow-auto">
             <BlockNoteView editor={editor} theme={theme} />
           </div>
+        </div>
+      </div>
+      */}
+
+      {/* Video Demo */}
+      <div className="reveal-up tw-relative tw-mt-8 tw-flex tw-w-full tw-place-content-center tw-place-items-center" id="video-demo-container">
+        <div className="rainbow-border tw-max-w-[90%] lg:tw-w-[1000px] tw-shadow-2xl tw-overflow-hidden">
+          <video
+            className="tw-w-full tw-aspect-video tw-object-cover tw-rounded-[10px]"
+            controls
+            autoPlay
+            muted
+            loop
+            src="/devflow-intro.mp4"
+          >
+            Your browser does not support the video tag.
+          </video>
         </div>
       </div>
     </div>

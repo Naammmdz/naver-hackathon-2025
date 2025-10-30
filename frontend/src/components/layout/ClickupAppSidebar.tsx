@@ -1,12 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { UserButton } from '@clerk/clerk-react';
 import {
-  ArrowLeft,
   CheckSquare,
   FileText,
   Home,
   Kanban,
-  Settings,
   Users
 } from 'lucide-react';
 import { useState } from 'react';
@@ -58,8 +57,12 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
       <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1" style={{ backgroundColor: 'hsl(142 71% 35%)' }}>
-        <div className="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center text-white font-bold text-xs hover:shadow-lg transition-all cursor-pointer">
-          TF
+        <div className="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center hover:shadow-lg transition-all cursor-pointer" onClick={() => window.location.href = '/'}>
+          <img
+            src="/devflow-demo.png"
+            alt="DevFlow Logo"
+            className="w-8 h-8 object-contain"
+          />
         </div>
 
         <div className="h-px w-6 bg-white/20 my-1" />
@@ -95,32 +98,16 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
 
         <div className="h-px w-6 bg-white/20 my-1" />
 
-        <div className="flex flex-col items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-10 h-10 p-0 rounded-lg hover:bg-white/10 text-white"
-            title="Back to Landing Page"
-            onClick={() => window.location.href = '/'}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+        <div className="flex flex-col items-center gap-0.5 mt-2">
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'h-8 w-8 rounded-lg',
+              },
+            }}
+          />
           <span className="text-[10px] text-white font-medium text-center leading-tight">
-            Back
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-10 h-10 p-0 rounded-lg hover:bg-white/10 text-white"
-            title="Settings"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-          <span className="text-[10px] text-white font-medium text-center leading-tight">
-            Settings
+            Profile
           </span>
         </div>
       </div>

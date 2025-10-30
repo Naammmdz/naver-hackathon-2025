@@ -1,11 +1,11 @@
 ﻿export function BuildAppsSection() {
   return (
-  <section className="tw-relative tw-flex  tw-w-full tw-min-h-[100vh] max-lg:tw-min-h-[80vh] tw-flex-col tw-place-content-center tw-place-items-center tw-overflow-hidden">   
+  <section className="tw-relative tw-flex  tw-w-full tw-min-h-[100vh] max-lg:tw-min-h-[80vh] tw-flex-col tw-place-content-center tw-place-items-center tw-overflow-hidden" id="solutions">   
     <div className="tw-w-full  tw-place-content-center tw-items-center 
                   tw-flex tw-flex-col tw-max-w-[900px] tw-gap-4 tw-p-4">
       <div className="purple-bg-grad  reveal-up tw-absolute tw-right-[20%] tw-top-[20%] tw-h-[200px] tw-w-[200px]" />
-      <h2 className="reveal-up tw-text-6xl max-lg:tw-text-4xl tw-text-center tw-leading-normal tw-uppercase">
-        <span className="tw-font-semibold">Streamline Your Development </span>
+      <h2 className="reveal-up tw-text-6xl max-lg:tw-text-4xl tw-text-center tw-leading-tight tw-uppercase">
+        <span className="tw-font-semibold">Streamline Your Development</span>
         <br />
         <span className="tw-font-serif">Workflow</span>
       </h2>

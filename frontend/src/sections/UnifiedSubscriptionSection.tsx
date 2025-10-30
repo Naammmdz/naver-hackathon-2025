@@ -3,7 +3,7 @@
   <section className="tw-relative tw-flex  tw-w-full tw-min-h-[100vh] max-md:tw-min-h-[80vh] tw-flex-col tw-place-content-center tw-place-items-center tw-overflow-hidden">   
     <div className="tw-w-full max-lg:tw-max-w-full tw-place-content-center tw-place-items-center 
                   tw-flex tw-flex-col tw-max-w-[80%] tw-gap-4 tw-p-4">
-      <h3 className="reveal-up tw-text-5xl tw-font-medium max-md:tw-text-3xl tw-text-center tw-leading-normal">
+      <h3 className="reveal-up tw-text-5xl tw-font-medium max-md:tw-text-3xl tw-text-center tw-leading-tight">
         One Workspace for Everything
       </h3>
       <p className="reveal-up tw-mt-3 tw-max-w-[600px] tw-text-center ">

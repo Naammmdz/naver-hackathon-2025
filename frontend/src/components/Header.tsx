@@ -6,11 +6,11 @@ export function Header() {
               lg:tw-justify-around lg:!tw-backdrop-blur-lg lg:tw-opacity-[0.99]"
     >
       <a className="tw-flex tw-p-[4px] tw-gap-2 tw-place-items-center" href="#">
-        <div className="tw-h-[30px] tw-max-w-[100px]">
+        <div className="tw-h-[60px] tw-max-w-[160px]">
           <img
-            src="/assets/logo/logo.png"
+            src="/devflow-demo.png"
             alt="logo"
-            className="tw-object-contain tw-h-full tw-w-full dark:tw-invert"
+            className="tw-object-contain tw-h-full tw-w-full"
           />
         </div>
         <span className="tw-uppercase tw-text-base tw-font-medium">DevFlow</span>
@@ -49,7 +49,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
                     <i className="bi bi-grid-1x2-fill" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -59,7 +59,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
                     <i className="bi bi-globe" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -69,7 +69,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
                     <i className="bi bi-image-fill" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -79,7 +79,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
                     <i className="bi bi-calendar-range" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -89,7 +89,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
                     <i className="bi bi-translate" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -100,13 +100,13 @@ export function Header() {
               </div>
             </nav>
           </div>
-          <a className="header-links" href="#">
-            Solutions
+          <a className="header-links" href="#prebuilt">
+            Tools
           </a>
-          <a className="header-links" href="#">
-            API
+          <a className="header-links" href="#benefits">
+            Benefits
           </a>
-          <a className="header-links" href="#">
+          <a className="header-links" href="#blog">
             Blog
           </a>
           <a className="header-links" href="#pricing">

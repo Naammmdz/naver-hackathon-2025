@@ -6,14 +6,15 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
 import type { TaskStatus } from "@/types/task";
-import { AlertCircle, Calendar, CheckSquare, Clock, Filter, Search, Sparkles, Tag } from "lucide-react";
+import { AlertCircle, Calendar, CheckSquare, Clock, Filter, Search, Tag, Zap } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 interface AppSidebarProps {
   className?: string;
+  onSmartCreate?: () => void;
 }
 
-export function AppSidebar({ className }: AppSidebarProps) {
+export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
   const {
     tasks,
     filters,
@@ -188,16 +189,18 @@ export function AppSidebar({ className }: AppSidebarProps) {
       <div className="border-b px-3 py-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-foreground">Task</h2>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 w-7 rounded-full p-0"
-            onClick={openTaskForm}
-            disabled={isLoading}
-          >
-            <Sparkles className="h-4 w-4" />
-            <span className="sr-only">Tạo task mới</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 rounded-full p-0"
+              onClick={onSmartCreate}
+              disabled={isLoading}
+            >
+              <Zap className="h-4 w-4" />
+              <span className="sr-only">Smart Create</span>
+            </Button>
+          </div>
         </div>
 
         <div className="relative mt-3">

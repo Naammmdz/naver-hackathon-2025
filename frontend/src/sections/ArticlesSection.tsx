@@ -1,6 +1,6 @@
 ﻿export function ArticlesSection() {
   return (
-  <section className="tw-mt-5 tw-flex tw-min-h-[80vh] tw-w-full tw-flex-col tw-place-content-center tw-place-items-center tw-p-[2%] max-lg:tw-p-3">
+  <section className="tw-mt-5 tw-flex tw-min-h-[80vh] tw-w-full tw-flex-col tw-place-content-center tw-place-items-center tw-p-[2%] max-lg:tw-p-3" id="blog">
     <h3 className="reveal-up tw-text-4xl tw-font-medium max-md:tw-text-2xl">
       Latest from the DevFlow blog
     </h3>

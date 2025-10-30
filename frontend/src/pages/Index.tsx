@@ -1,7 +1,7 @@
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
 import { DocumentEditorDialog } from "@/components/documents/DocumentEditorDialog";
-import { ViewSwitcher, ViewType } from "@/components/layout/ViewSwitcher";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { ViewSwitcher, ViewType } from "@/components/layout/ViewSwitcher";
 import { Column } from "@/components/tasks/Column";
 import { ColumnHeader } from "@/components/tasks/ColumnHeader";
 import SmartTaskParser from "@/components/tasks/SmartTaskParser";
@@ -18,13 +18,13 @@ import { ParsedTask } from "@/lib/parseNatural";
 import { useDocumentStore } from "@/store/documentStore";
 import { useTaskStore } from "@/store/taskStore";
 import { Task, TaskStatus } from "@/types/task";
-import { DndContext, DragEndEvent, DragOverlay, DragOverEvent, DragStartEvent, MouseSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, MouseSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CheckSquare, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles, Zap } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export default function Index({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board') => void }) {
+export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (view: 'tasks' | 'docs' | 'board') => void; onSmartCreate?: () => void }) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { setActiveDocument } = useDocumentStore();
@@ -337,7 +337,7 @@ const handleDragEnd = (event: DragEndEvent) => {
           sidebarCollapsed ? "w-0" : "w-64"
         }`}
       >
-        <AppSidebar className="h-full" />
+        <AppSidebar className="h-full" onSmartCreate={onSmartCreate} />
       </div>
       <div
         className="group relative hidden w-1 flex-shrink-0 cursor-pointer select-none items-center justify-center bg-border transition hover:bg-primary/60 lg:flex"

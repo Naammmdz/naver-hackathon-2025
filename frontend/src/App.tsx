@@ -4,10 +4,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { apiAuthContext } from "@/lib/api/authContext";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAuth } from "@clerk/clerk-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { FocusFlyProvider } from "./features/focusFly/FocusFlyProvider";
 import AppWrapper from "./pages/AppWrapper";
 import Landing from "./pages/Landing";
@@ -18,16 +18,24 @@ import SignUpPage from "./pages/SignUp";
 const queryClient = new QueryClient();
 
 const App = () => {
+  const location = useLocation();
+  const isLandingPage = location.pathname === "/";
+
   // Initialize theme on app load
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const shouldBeDark = savedTheme === "dark" || (!savedTheme && systemDark);
+    
+    // Main app always uses dark mode
+    const isMainApp = location.pathname.startsWith("/app");
+    const shouldBeDark = isMainApp || savedTheme !== "light" && (savedTheme === "dark" || systemDark || !savedTheme);
     
     if (shouldBeDark) {
       document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
-  }, []);
+  }, [location.pathname]);
 
   const { isLoaded, getToken, userId } = useAuth();
   const tokenTemplate = import.meta.env.VITE_CLERK_JWT_TEMPLATE;
@@ -82,7 +90,7 @@ const App = () => {
         <FocusFlyProvider>
           <Toaster />
           <Sonner />
-          <GlobalChatPanel />
+          {!isLandingPage && <GlobalChatPanel />}
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route

@@ -1,19 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTaskStore } from '@/store/taskStore';
-import { UserButton } from '@clerk/clerk-react';
-import { Bell, ChevronDown, Languages, Menu, Moon, Search, Settings, Sun, Zap } from 'lucide-react';
+import { Bell, ChevronDown, Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ClickupHeaderProps {
-  onSmartCreate?: () => void;
   onMenuClick?: () => void;
   currentView: 'tasks' | 'docs' | 'board';
 }
 
 export function ClickupHeader({
-  onSmartCreate,
   onMenuClick,
   currentView,
 }: ClickupHeaderProps) {
@@ -111,17 +108,6 @@ export function ClickupHeader({
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1">
-          {currentView === 'tasks' && (
-            <Button
-              onClick={onSmartCreate}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 rounded-lg hidden sm:flex"
-              size="sm"
-            >
-              <Zap className="h-4 w-4" />
-              <span className="text-sm font-medium">Smart Create</span>
-            </Button>
-          )}
-
           {/* Notifications */}
           <Button
             variant="ghost"
@@ -161,11 +147,6 @@ export function ClickupHeader({
             )}
           </Button>
 
-          {/* Settings */}
-          <Button variant="ghost" size="sm" className="hidden sm:flex hover-surface">
-            <Settings className="h-4 w-4" />
-          </Button>
-
           {/* Mobile Menu */}
           <Button
             variant="ghost"
@@ -175,14 +156,6 @@ export function ClickupHeader({
           >
             <Menu className="h-4 w-4" />
           </Button>
-
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: 'h-8 w-8',
-              },
-            }}
-          />
         </div>
       </div>
     </header>
