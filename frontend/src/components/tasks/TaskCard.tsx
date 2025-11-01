@@ -64,6 +64,11 @@ export function TaskCard({
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
   const isDueToday = task.dueDate && 
     new Date(task.dueDate).toDateString() === new Date().toDateString();
+  const dueStatusColor = isOverdue
+    ? "hsl(var(--priority-high))"
+    : isDueToday
+      ? "hsl(var(--priority-medium))"
+      : undefined;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -200,13 +205,15 @@ export function TaskCard({
 
         {/* Due date */}
         {task.dueDate && (
-          <div className={cn(
-            "flex items-center gap-1 mb-3 text-xs",
-            isOverdue && "text-destructive",
-            isDueToday && "text-warning"
-          )}>
-            <Calendar className="h-3 w-3" />
-            <span>
+          <div
+            className={cn("flex items-center gap-1 mb-3 text-xs")}
+            style={dueStatusColor ? { color: dueStatusColor } : undefined}
+          >
+            <Calendar
+              className="h-3 w-3"
+              style={dueStatusColor ? { color: dueStatusColor } : undefined}
+            />
+            <span className="leading-none">
               {isOverdue ? t('taskCard.overdue') + " " : t('taskCard.due') + " "}
               {formatDateLocalized(task.dueDate)}
             </span>

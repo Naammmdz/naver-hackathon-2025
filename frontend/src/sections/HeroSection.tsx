@@ -104,18 +104,18 @@ export function HeroSection() {
         <h2 className="reveal-up tw-text-center tw-text-7xl tw-font-semibold tw-uppercase tw-leading-tight max-lg:tw-text-4xl max-md:tw-leading-snug">
           <span> Stay in flow </span>
           <br />
-          <span className="tw-font-thin tw-font-serif tw-text-[#16a34a]"> with DevFlow </span>
+          <span className="tw-font-thin tw-font-serif tw-text-black dark:tw-text-white"> with DevFlow </span>
         </h2>
         <div className="reveal-up tw-mt-8 tw-max-w-[450px] tw-text-lg max-lg:tw-text-base tw-p-2 tw-text-center
                    tw-text-gray-800 dark:tw-text-white max-lg:tw-max-w-full">
           DevFlow merges tasks, documentation, and Git into one workspace. Write Markdown, track Kanban tasks, and visualize branches.
         </div>
         <div className="reveal-up tw-mt-10 max-md:tw-flex-col tw-flex tw-place-items-center tw-gap-4">
-          <button onClick={() => window.openVideo?.()} className="btn !tw-w-[170px] max-lg:!tw-w-[160px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-flex tw-gap-2 tw-group !tw-bg-transparent !tw-text-[#16a34a] dark:!tw-text-[#16a34a] tw-transition-colors 
-                                  tw-duration-[0.3s] tw-border-[1px] tw-border-[#16a34a] dark:tw-border-[#16a34a]">
+          <button onClick={() => window.openVideo?.()} className="btn !tw-w-[170px] max-lg:!tw-w-[160px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-flex tw-gap-2 tw-group !tw-bg-transparent !tw-text-black dark:!tw-text-white tw-transition-colors 
+                                  tw-duration-[0.3s] tw-border-[1px] tw-border-black dark:tw-border-white hover:!tw-bg-neutral-200 dark:hover:!tw-bg-neutral-900">
             <div className="tw-relative tw-flex tw-place-items-center tw-place-content-center tw-w-6 tw-h-6">
               <div className="tw-absolute tw-inset-0 tw-top-0 tw-left-0 tw-scale-0 tw-duration-300 group-hover:tw-scale-100 tw-border-2
-                                       tw-border-[#16a34a] dark:tw-border-[#16a34a] tw-rounded-full tw-w-full tw-h-full" />
+                                       tw-border-black dark:tw-border-white tw-rounded-full tw-w-full tw-h-full" />
               <span className="bi bi-play-circle-fill" />
             </div>
             <span>Watch video</span>

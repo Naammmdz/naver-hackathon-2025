@@ -83,10 +83,33 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>("Todo");
   const [defaultDate, setDefaultDate] = useState<Date | undefined>(undefined);
+  const [isDark, setIsDark] = useState(false);
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
 
   // Get fresh task from store instead of using stale selectedTask state
   const freshSelectedTask = selectedTask ? tasks.find(t => t.id === selectedTask.id) : null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const checkTheme = () => {
+      const savedTheme = localStorage.getItem("theme");
+      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const shouldBeDark = savedTheme === "dark" || (!savedTheme && systemDark);
+      setIsDark(shouldBeDark);
+    };
+
+    checkTheme();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
 // ============================================================================
 // Drag and Drop Handlers
@@ -272,12 +295,45 @@ const handleDragEnd = (event: DragEndEvent) => {
     }
 
     return (
-      <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.2),_transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.16),_transparent_55%)]" />
+      <div
+        className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden px-6 py-12 transition-colors"
+        style={{
+          background: isDark
+            ? 'linear-gradient(145deg, #0f1117 0%, #111827 55%, #1e293b 100%)'
+            : 'linear-gradient(140deg, #f5f3ff 0%, #e0f2fe 45%, #fef3c7 100%)',
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute -left-24 top-20 h-64 w-64 rounded-full blur-3xl mix-blend-screen opacity-45 dark:opacity-75"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle, rgba(56,189,248,0.55) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(56,189,248,0.35) 0%, transparent 72%)',
+            }}
+          />
+          <div
+            className="absolute -right-28 bottom-16 h-72 w-72 rounded-full blur-[120px] mix-blend-screen opacity-40 dark:opacity-70"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle, rgba(16,185,129,0.55) 0%, transparent 75%)'
+                : 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, transparent 75%)',
+            }}
+          />
+          <div
+            className="absolute left-1/2 top-6 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl mix-blend-screen opacity-35 dark:opacity-55"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle, rgba(244,114,182,0.45) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(244,114,182,0.3) 0%, transparent 70%)',
+            }}
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.12),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.18),_transparent_55%)]" />
 
         <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
-          <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-emerald-400/70 to-sky-500/70 text-primary-foreground shadow-lg shadow-primary/30">
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg shadow-pink-500/35">
             <CheckSquare className="h-8 w-8" />
           </span>
 
@@ -293,15 +349,15 @@ const handleDragEnd = (event: DragEndEvent) => {
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
               <span>Auto-save và đồng bộ trạng thái giữa chế độ Kanban, List và Calendar.</span>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
               <span>Dùng Smart Parser để tạo task từ mô tả tự nhiên chỉ với vài giây.</span>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
               <span>Kéo thả để sắp xếp ưu tiên và tự động cập nhật hạn hoàn thành.</span>
             </div>
           </div>

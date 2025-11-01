@@ -163,10 +163,10 @@ export function SmartTaskParser({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "High": return "bg-red-100 text-red-800 border-red-300";
-      case "Medium": return "bg-yellow-100 text-yellow-800 border-yellow-300";
-      case "Low": return "bg-green-100 text-green-800 border-green-300";
-      default: return "bg-gray-100 text-gray-800 border-gray-300";
+      case "High": return "bg-destructive text-destructive-foreground border-destructive";
+      case "Medium": return "bg-muted text-foreground border-border";
+      case "Low": return "bg-primary text-primary-foreground border-primary";
+      default: return "bg-secondary text-secondary-foreground border-border";
     }
   };
 
@@ -185,12 +185,12 @@ export function SmartTaskParser({
           <div className="flex items-center gap-1">
             {parseMethod === 'openai' && (
               <div title="Powered by OpenAI">
-                <Sparkles className="h-4 w-4 text-blue-500" />
+                <Sparkles className="h-4 w-4 text-primary" />
               </div>
             )}
             {parseMethod === 'local' && (
               <div title="Local parser">
-                <Zap className="h-4 w-4 text-orange-500" />
+                <Zap className="h-4 w-4 text-foreground" />
               </div>
             )}
           </div>

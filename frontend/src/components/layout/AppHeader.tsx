@@ -106,7 +106,7 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
           {onSmartCreate && (
             <Button 
               onClick={onSmartCreate}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90"
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/60 hover:from-primary/90 hover:to-primary/70"
               size="sm"
             >
               <Zap className="h-4 w-4" />

@@ -115,7 +115,7 @@ export function ClickupHeader({
             className="relative hidden sm:flex hover-surface"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute top-1 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
+            <span className="absolute top-1 right-0.5 h-2 w-2 bg-primary rounded-full" />
           </Button>
 
           {/* Language Toggle */}

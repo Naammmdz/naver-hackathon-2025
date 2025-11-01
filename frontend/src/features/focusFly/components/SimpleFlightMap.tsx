@@ -354,7 +354,7 @@ export const SimpleFlightMap: React.FC<SimpleFlightMapProps> = ({
                   textAnchor="middle"
                   style={{ 
                     fontFamily: "system-ui", 
-                    fill: "#f59e0b", 
+                    fill: "#111111", 
                     fontSize: "14px", 
                     fontWeight: "900",
                     textShadow: "2px 2px 4px rgba(255,255,255,0.9)"
@@ -370,11 +370,11 @@ export const SimpleFlightMap: React.FC<SimpleFlightMapProps> = ({
 
       {/* Loading indicator */}
       {!mapLoaded && !mapError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/90">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/90">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600 mx-auto mb-3"></div>
-            <div className="text-sm text-gray-700 font-medium">{t('focusFly.map.loadingRoute')}</div>
-            <div className="text-xs text-gray-500 mt-1">Powered by OSM</div>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3"></div>
+            <div className="text-sm text-foreground font-medium">{t('focusFly.map.loadingRoute')}</div>
+            <div className="text-xs text-muted-foreground mt-1">Powered by OSM</div>
           </div>
         </div>
       )}
@@ -390,18 +390,18 @@ export const SimpleFlightMap: React.FC<SimpleFlightMapProps> = ({
       )}
 
       {/* Compact Flight Info Panel */}
-      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-md p-2 shadow-md border border-green-200 text-xs">
+      <div className="absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm rounded-md p-2 shadow-md border border-border text-xs">
         <div className="flex items-center gap-1 mb-1">
-          <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></div>
-          <div className="text-xs font-medium text-gray-900">Flight Info</div>
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+          <div className="text-xs font-medium text-foreground">Flight Info</div>
         </div>
-        <div className="w-24 h-1 bg-gray-200 rounded-full overflow-hidden mb-2">
+        <div className="w-24 h-1 bg-muted rounded-full overflow-hidden mb-2">
           <div 
-            className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-1000 ease-linear"
+            className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-1000 ease-linear"
             style={{ width: `${progress * 100}%` }}
           />
         </div>
-        <div className="text-xs text-gray-600 space-y-0.5">
+        <div className="text-xs text-muted-foreground space-y-0.5">
           <div className="flex justify-between">
             <span>{origin.code}</span>
             <span>→</span>
@@ -416,23 +416,23 @@ export const SimpleFlightMap: React.FC<SimpleFlightMapProps> = ({
             <div className="flex items-center gap-1">
               {isShowingTicket ? (
                 <>
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></div>
-                  <span className="font-medium text-yellow-700 text-xs">Ready</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></div>
+                  <span className="font-medium text-accent-foreground text-xs">Ready</span>
                 </>
               ) : !hasStarted ? (
                 <>
-                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                  <span className="font-medium text-yellow-700 text-xs">Wait</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-muted"></div>
+                  <span className="font-medium text-foreground text-xs">Wait</span>
                 </>
               ) : !isRunning ? (
                 <>
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                  <span className="font-medium text-red-700 text-xs">Pause</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-destructive"></div>
+                  <span className="font-medium text-destructive text-xs">Pause</span>
                 </>
               ) : (
                 <>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="font-medium text-green-700 text-xs">Flying</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                  <span className="font-medium text-primary text-xs">Flying</span>
                 </>
               )}
             </div>
@@ -441,12 +441,12 @@ export const SimpleFlightMap: React.FC<SimpleFlightMapProps> = ({
       </div>
 
       {/* OpenStreetMap Attribution */}
-      <div className="absolute bottom-2 right-2 text-xs text-gray-500 bg-white/90 px-2 py-1 rounded border">
+      <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-card/90 px-2 py-1 rounded border border-border">
         <a 
           href="https://www.openstreetmap.org/" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="hover:text-green-600"
+          className="hover:text-primary"
         >
           © OpenStreetMap
         </a>

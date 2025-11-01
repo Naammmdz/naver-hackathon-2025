@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useBoardStore } from '@/store/boardStore';
 import { Layers, Sparkles } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Canvas } from './Canvas';
 
 export function CanvasContainer() {
@@ -24,6 +24,29 @@ export function CanvasContainer() {
     addBoard: state.addBoard,
     setActiveBoard: state.setActiveBoard,
   }));
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const checkTheme = () => {
+      const savedTheme = localStorage.getItem("theme");
+      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const shouldBeDark = savedTheme === "dark" || (!savedTheme && systemDark);
+      setIsDark(shouldBeDark);
+    };
+
+    checkTheme();
+
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     void initialize();
@@ -56,12 +79,45 @@ export function CanvasContainer() {
 
   if (boards.length === 0) {
     return (
-      <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(30,64,175,0.25),_transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(168,85,247,0.15),_transparent_50%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(124,58,237,0.2),_transparent_50%)]" />
+      <div
+        className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden px-6 py-12 transition-colors"
+        style={{
+          background: isDark
+            ? 'linear-gradient(145deg, #0f1117 0%, #111827 55%, #1e293b 100%)'
+            : 'linear-gradient(140deg, #f5f3ff 0%, #e0f2fe 45%, #fef3c7 100%)',
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute -left-28 top-16 h-64 w-64 rounded-full blur-3xl mix-blend-screen opacity-45 dark:opacity-75"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle, rgba(56,189,248,0.55) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(56,189,248,0.35) 0%, transparent 72%)',
+            }}
+          />
+          <div
+            className="absolute -right-24 bottom-12 h-72 w-72 rounded-full blur-[120px] mix-blend-screen opacity-40 dark:opacity-70"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle, rgba(168,85,247,0.55) 0%, transparent 75%)'
+                : 'radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 75%)',
+            }}
+          />
+          <div
+            className="absolute left-1/2 top-8 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl mix-blend-screen opacity-35 dark:opacity-55"
+            style={{
+              background: isDark
+                ? 'radial-gradient(circle, rgba(251,191,36,0.45) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(251,191,36,0.3) 0%, transparent 70%)',
+            }}
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.12),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.18),_transparent_55%)]" />
 
         <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
-          <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-sky-400/60 to-purple-400/70 text-primary-foreground shadow-lg shadow-primary/40">
+          <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg shadow-pink-500/35">
             <Layers className="h-8 w-8" />
           </span>
 
@@ -75,15 +131,15 @@ export function CanvasContainer() {
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
               <span>Tự động lưu từng nét vẽ và đồng bộ với team theo thời gian thực.</span>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
               <span>Nhúng icon, link, hình ảnh để kể câu chuyện sản phẩm hấp dẫn.</span>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
               <span>Kéo thả khối, sticky note và khung để tổ chức ý tưởng dễ dàng.</span>
             </div>
           </div>

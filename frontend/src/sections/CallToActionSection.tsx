@@ -7,7 +7,7 @@
         Start Your DevFlow Journey Today
       </h3>
       <div className="tw-mt-8 tw-relative tw-flex max-lg:tw-flex-col tw-gap-5">
-        <a href="/app" className="btn reveal-up !tw-rounded-full !tw-p-4 tw-font-medium !tw-bg-[#16a34a] !tw-text-white hover:!tw-bg-[#15803d] tw-transition-colors tw-duration-300">
+        <a href="/app" className="btn reveal-up !tw-rounded-full !tw-p-4 tw-font-medium !tw-bg-black !tw-text-white hover:!tw-bg-neutral-900 dark:!tw-bg-white dark:!tw-text-black dark:hover:!tw-bg-neutral-200 tw-transition-colors tw-duration-300">
           Get Started Free
         </a>
       </div>

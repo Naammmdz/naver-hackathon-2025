@@ -81,11 +81,11 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
   const getRelationColor = (type: TaskDocRelationType) => {
     switch (type) {
       case "reference":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-secondary text-secondary-foreground";
       case "reflection":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-muted text-foreground";
       case "resource":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+        return "bg-primary text-primary-foreground";
     }
   };
 

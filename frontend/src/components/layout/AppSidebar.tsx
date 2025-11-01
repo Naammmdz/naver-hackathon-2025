@@ -175,6 +175,53 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
     [clearFilters, counts, filters.dueDateFilter, filters.priority, filters.status, filters.tags, setFilters],
   );
 
+  const priorityPalette = useMemo(
+    () => [
+      { id: "High", label: "Cao", token: "--priority-high", count: counts.high },
+      { id: "Medium", label: "Trung bình", token: "--priority-medium", count: counts.medium },
+      { id: "Low", label: "Thấp", token: "--priority-low", count: counts.low },
+    ],
+    [counts.high, counts.low, counts.medium],
+  );
+
+  const getPriorityColor = useCallback((token: string) => `hsl(var(${token}))`, []);
+
+  const statusPalette = useMemo(
+    () => [
+      {
+        id: "Todo",
+        label: "Đang lên kế hoạch",
+        count: counts.todo,
+        colors: {
+          base: "hsl(215 16% 47%)",
+          tint: "hsla(215, 16%, 47%, 0.12)",
+          border: "hsla(215, 16%, 47%, 0.25)",
+        },
+      },
+      {
+        id: "In Progress",
+        label: "Đang thực hiện",
+        count: counts.progress,
+        colors: {
+          base: "hsl(38 92% 52%)",
+          tint: "hsla(38, 92%, 52%, 0.16)",
+          border: "hsla(38, 92%, 52%, 0.28)",
+        },
+      },
+      {
+        id: "Done",
+        label: "Hoàn thành",
+        count: counts.done,
+        colors: {
+          base: "hsl(142 72% 38%)",
+          tint: "hsla(142, 72%, 38%, 0.18)",
+          border: "hsla(142, 72%, 38%, 0.3)",
+        },
+      },
+    ],
+    [counts.done, counts.progress, counts.todo],
+  );
+
   if (sidebarCollapsed) {
     return null;
   }
@@ -264,24 +311,52 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
           <section>
             <h3 className="mb-2 text-sm font-medium text-foreground">Theo tình trạng</h3>
             <div className="space-y-1.5 text-xs">
-              {[
-                { id: "Todo", label: "Đang lên kế hoạch", count: counts.todo },
-                { id: "In Progress", label: "Đang thực hiện", count: counts.progress },
-                { id: "Done", label: "Hoàn thành", count: counts.done },
-              ].map((status) => {
+              {statusPalette.map((status) => {
                 const isActive = filters.status?.includes(status.id as TaskStatus);
                 return (
                   <Button
                     key={status.id}
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleStatusFilter(status.id as TaskStatus)}
-                    className={cn("flex w-full items-center justify-between rounded-lg px-3 py-1 text-[11px]", {
-                      "border border-primary/30 bg-primary/10 text-primary": isActive,
-                    })}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-lg px-3 py-1 text-[11px]",
+                      isActive
+                        ? "border border-transparent"
+                        : "border border-transparent hover:bg-muted/40",
+                    )}
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: status.colors.tint,
+                            color: status.colors.base,
+                          }
+                        : undefined
+                    }
                   >
-                    <span className="whitespace-normal text-left leading-tight">{status.label}</span>
-                    <Badge variant={isActive ? "default" : "secondary"}>{status.count}</Badge>
+                    <span
+                      className="whitespace-normal text-left leading-tight text-[inherit]"
+                      style={{ color: status.colors.base }}
+                    >
+                      {status.label}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "border-border/50 px-2 py-0.5 text-[10px] font-semibold",
+                        isActive && "bg-transparent",
+                      )}
+                      style={
+                        isActive
+                          ? {
+                              color: "inherit",
+                              borderColor: status.colors.border,
+                            }
+                          : { color: status.colors.base }
+                      }
+                    >
+                      {status.count}
+                    </Badge>
                   </Button>
                 );
               })}
@@ -293,27 +368,54 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
           <section>
             <h3 className="mb-2 text-sm font-medium text-foreground">Theo độ ưu tiên</h3>
             <div className="space-y-1.5 text-xs">
-              {[
-                { id: "High", label: "Cao", hue: "text-destructive", count: counts.high },
-                { id: "Medium", label: "Trung bình", hue: "text-amber-500", count: counts.medium },
-                { id: "Low", label: "Thấp", hue: "text-muted-foreground", count: counts.low },
-              ].map((priority) => {
+              {priorityPalette.map((priority) => {
                 const isActive = filters.priority?.includes(priority.id as "High" | "Medium" | "Low");
+                const priorityColor = getPriorityColor(priority.token);
                 return (
                   <Button
                     key={priority.id}
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant="ghost"
                     size="sm"
                     onClick={() => handlePriorityFilter(priority.id as "High" | "Medium" | "Low")}
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg px-3 py-1 text-[11px]",
-                      isActive && "border border-primary/30 bg-primary/10 text-primary",
+                      isActive
+                        ? "border border-transparent"
+                        : "border border-transparent hover:bg-muted/40",
                     )}
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: `hsl(var(${priority.token}) / 0.18)`,
+                            color: `hsl(var(${priority.token}))`,
+                          }
+                        : undefined
+                    }
+                    aria-pressed={isActive}
                   >
-                    <span className={cn(priority.hue, "whitespace-normal text-left leading-tight")}>
+                    <span
+                      className="whitespace-normal text-left leading-tight text-[inherit]"
+                      style={{ color: priorityColor }}
+                    >
                       {priority.label}
                     </span>
-                    <Badge variant={isActive ? "default" : "secondary"}>{priority.count}</Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "border-border/50 px-2 py-0.5 text-[10px] font-semibold",
+                        isActive && "bg-transparent",
+                      )}
+                      style={
+                        isActive
+                          ? {
+                              color: "inherit",
+                              borderColor: `hsl(var(${priority.token}) / 0.35)`,
+                            }
+                          : { color: priorityColor }
+                      }
+                    >
+                      {priority.count}
+                    </Badge>
                   </Button>
                 );
               })}

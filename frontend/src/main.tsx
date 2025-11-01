@@ -26,7 +26,7 @@ const ClerkProviderWithRouter = ({ children }: { children: ReactNode }) => {
       signUpFallbackRedirectUrl="/app"
       appearance={{
         variables: {
-          colorPrimary: "#6d3df6",
+          colorPrimary: "#000000",
         },
       }}
     >

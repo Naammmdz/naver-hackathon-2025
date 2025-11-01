@@ -199,9 +199,9 @@ export const GoogleFlightMap: React.FC<GoogleFlightMapProps> = ({
       
       {/* Loading overlay */}
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+        <div className="absolute inset-0 bg-secondary dark:bg-secondary rounded-lg flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
             <p className="text-sm text-muted-foreground">Loading flight map...</p>
           </div>
         </div>
@@ -209,28 +209,28 @@ export const GoogleFlightMap: React.FC<GoogleFlightMapProps> = ({
 
       {/* Flight Info Overlay */}
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-          <div className="font-semibold text-green-600 dark:text-green-400">Origin</div>
+        <div className="bg-card dark:bg-card rounded-lg p-3 border border-border">
+          <div className="font-semibold text-primary">Origin</div>
           <div className="text-muted-foreground">Focus Start</div>
           <div className="text-xs text-muted-foreground">New York, NY</div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-          <div className="font-semibold text-red-600 dark:text-red-400">Destination</div>
+        <div className="bg-card dark:bg-card rounded-lg p-3 border border-border">
+          <div className="font-semibold text-destructive">Destination</div>
           <div className="text-muted-foreground">Task Complete</div>
           <div className="text-xs text-muted-foreground">Los Angeles, CA</div>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+      <div className="mt-4 bg-card dark:bg-card rounded-lg p-3 border border-border">
         <div className="flex justify-between text-sm mb-2">
           <span className="font-semibold">Flight Progress</span>
-          <span className="text-blue-600 dark:text-blue-400">{Math.round(progress * 100)}%</span>
+          <span className="text-primary">{Math.round(progress * 100)}%</span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-muted dark:bg-muted rounded-full h-2">
           <motion.div
-            className="bg-blue-500 h-2 rounded-full"
+            className="bg-primary h-2 rounded-full"
             initial={{ width: "0%" }}
             animate={{ width: `${progress * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}

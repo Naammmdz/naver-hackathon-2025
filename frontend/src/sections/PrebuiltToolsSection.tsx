@@ -10,9 +10,9 @@
           <h2 className="tw-text-5xl tw-font-serif tw-text-center tw-font-medium tw-leading-tight max-md:tw-text-3xl">
             Built-in Development Tools
           </h2>
-          <a href="http://" className="btn !tw-mt-8 !tw-bg-transparent !tw-text-[#16a34a] 
-                                          !tw-border-[1px] !tw-border-[#16a34a] 
-                                          dark:!tw-border-[#16a34a] dark:!tw-text-[#16a34a]">
+          <a href="http://" className="btn !tw-mt-8 !tw-bg-transparent !tw-text-black dark:!tw-text-white 
+                                          !tw-border-[1px] !tw-border-black 
+                                          dark:!tw-border-white">
             Start Chat
           </a>
         </div>
@@ -25,7 +25,7 @@
           <a href="#" className="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl 
                               hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all
                             tw-p-8 tw-group/card">
-            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-[#16a34a]">
+            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-black dark:tw-text-white">
               <i className="bi bi-kanban-fill" />
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
@@ -35,7 +35,7 @@
               <p className="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm">
                 Organize and track your development tasks with intuitive Kanban boards. Drag and drop tasks between columns to manage your workflow efficiently.
               </p>
-              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-[#16a34a] tw-font-medium">
+              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-up-right group-hover/card:tw--translate-y-1
                                           group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform" />
@@ -46,7 +46,7 @@
         <div className="reveal-up tw-h-[240px] tw-w-[450px] max-md:tw-w-full">
           <a href="#" className="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl
                            hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card">
-            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-[#16a34a]">
+            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-black dark:tw-text-white">
               <i className="bi bi-markdown-fill" />
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
@@ -56,7 +56,7 @@
               <p className="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm">
                 Write and edit documentation with rich Markdown support. Create READMEs, project notes, and technical documentation without leaving your workspace.
               </p>
-              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-[#16a34a] tw-font-medium">
+              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-up-right group-hover/card:tw--translate-y-1
                                           group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform" />
@@ -67,7 +67,7 @@
         <div className="reveal-up tw-h-[240px] tw-w-[450px] max-md:tw-w-full">
           <a href="#" className="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl hover:tw-shadow-lg tw-duration-300 
                           tw-transition-all dark:tw-shadow-[#171717] tw-p-8 tw-group/card">
-            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-[#16a34a]">
+            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-black dark:tw-text-white">
               <i className="bi bi-git" />
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
@@ -77,7 +77,7 @@
               <p className="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm">
                 Visualize your Git repository structure with interactive branch diagrams. Track commits, merges, and project history at a glance.
               </p>
-              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-[#16a34a] tw-font-medium">
+              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-up-right group-hover/card:tw--translate-y-1
                                           group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform" />
@@ -88,7 +88,7 @@
         <div className="reveal-up tw-h-[240px] tw-w-[450px] max-md:tw-w-full">
           <a href="#" className="tw-flex tw-w-full dark:tw-shadow-[#171717] tw-h-full tw-gap-8 tw-rounded-xl  hover:tw-shadow-lg tw-duration-300 
                       tw-transition-all tw-p-8 tw-group/card">
-            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-[#16a34a]">
+            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-black dark:tw-text-white">
               <i className="bi bi-diagram-3-fill" />
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
@@ -98,7 +98,7 @@
               <p className="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm">
                 Bring together tasks, documentation, and Git activity in one seamless workspace. No more context switching between different tools and platforms.
               </p>
-              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-[#16a34a] tw-font-medium">
+              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-up-right group-hover/card:tw--translate-y-1
                                           group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform" />
@@ -109,7 +109,7 @@
         <div className="reveal-up tw-h-[240px] tw-w-[450px] max-md:tw-w-full">
           <a href="#" className="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl dark:tw-shadow-[#171717] hover:tw-shadow-lg tw-duration-300 
                           tw-transition-all tw-p-8 tw-group/card">
-            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-[#16a34a]">
+            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-black dark:tw-text-white">
               <i className="bi bi-graph-up" />
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
@@ -119,7 +119,7 @@
               <p className="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm">
                 Track your development productivity with built-in analytics. Monitor task completion, time spent, and workflow efficiency to optimize your development process.
               </p>
-              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-[#16a34a] tw-font-medium">
+              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-up-right group-hover/card:tw--translate-y-1
                                           group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform" />
@@ -130,7 +130,7 @@
         <div className="reveal-up tw-h-[240px] tw-w-[450px] max-md:tw-w-full">
           <a href="#" className="tw-flex tw-w-full tw-h-full tw-gap-8 tw-rounded-xl 
                               hover:tw-shadow-lg dark:tw-shadow-[#171717] tw-duration-300 tw-transition-all tw-p-8 tw-group/card">
-            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-[#16a34a]">
+            <div className="tw-text-4xl max-md:tw-text-2xl tw-text-black dark:tw-text-white">
               <i className="bi bi-code-slash" />
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
@@ -140,7 +140,7 @@
               <p className="tw-text-gray-800 dark:tw-text-gray-100 max-md:tw-text-sm">
                 Seamlessly integrate with your favorite code editors and IDEs. Push commits, create branches, and manage pull requests directly from DevFlow.
               </p>
-              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-[#16a34a] tw-font-medium">
+              <div className="tw-mt-auto tw-flex tw-gap-2 tw-underline tw-underline-offset-4 tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-up-right group-hover/card:tw--translate-y-1
                                           group-hover/card:tw-translate-x-1 tw-duration-300 tw-transition-transform" />

@@ -187,12 +187,45 @@ export default function Docs() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {documents.filter((doc) => !doc.trashed).length === 0 ? (
-          <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.15),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(244,114,182,0.15),_transparent_55%)]" />
+          <div
+            className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden px-6 py-12 transition-colors"
+            style={{
+              background: isDark
+                ? 'linear-gradient(145deg, #0f1117 0%, #111827 55%, #1e293b 100%)'
+                : 'linear-gradient(140deg, #f5f3ff 0%, #e0f2fe 45%, #fef3c7 100%)',
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div
+                className="absolute -left-24 top-16 h-64 w-64 rounded-full blur-3xl mix-blend-screen opacity-50 dark:opacity-80"
+                style={{
+                  background: isDark
+                    ? 'radial-gradient(circle, rgba(129,140,248,0.55) 0%, transparent 68%)'
+                    : 'radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%)',
+                }}
+              />
+              <div
+                className="absolute -right-32 bottom-12 h-72 w-72 rounded-full blur-[120px] mix-blend-screen opacity-40 dark:opacity-70"
+                style={{
+                  background: isDark
+                    ? 'radial-gradient(circle, rgba(236,72,153,0.55) 0%, transparent 75%)'
+                    : 'radial-gradient(circle, rgba(14,165,233,0.35) 0%, transparent 70%)',
+                }}
+              />
+              <div
+                className="absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl mix-blend-screen opacity-35 dark:opacity-60"
+                style={{
+                  background: isDark
+                    ? 'radial-gradient(circle, rgba(16,185,129,0.5) 0%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(244,114,182,0.35) 0%, transparent 70%)',
+                }}
+              />
+            </div>
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_55%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(236,72,153,0.12),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(244,114,182,0.18),_transparent_55%)]" />
 
             <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-pink-400/70 to-purple-500/70 text-primary-foreground shadow-lg shadow-primary/40">
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg shadow-pink-500/40">
                 <FileText className="h-8 w-8" />
               </span>
 
@@ -207,15 +240,15 @@ export default function Docs() {
 
               <div className="flex flex-col gap-2 text-sm text-muted-foreground/70">
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
                   <span>Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
                   <span>Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
                   <span>Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.</span>
                 </div>
               </div>
@@ -237,17 +270,17 @@ export default function Docs() {
           </div>
         ) : activeDocument ? (
           isTrashedDocument ? (
-            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-orange-50/50 to-orange-100/20 dark:from-orange-950/20 dark:to-orange-900/10 p-4">
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-secondary/60 to-muted/20 dark:from-secondary/40 dark:to-muted/20 p-4">
               <div className="text-center max-w-lg px-6">
                 <div className="relative mb-8">
-                  <div className="h-24 w-24 rounded-3xl bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center mx-auto shadow-lg">
-                    <FileText className="h-12 w-12 text-orange-600 dark:text-orange-400" />
+                  <div className="h-24 w-24 rounded-3xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mx-auto shadow-lg">
+                    <FileText className="h-12 w-12 text-primary" />
                   </div>
-                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center">
-                    <div className="h-3 w-3 rounded-full bg-orange-500"></div>
+                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="h-3 w-3 rounded-full bg-primary"></div>
                   </div>
                 </div>
-                <h2 className="text-3xl font-bold mb-4 text-orange-900 dark:text-orange-100">
+                <h2 className="text-3xl font-bold mb-4 text-foreground">
                   Document in Trash
                 </h2>
                 <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
@@ -258,7 +291,7 @@ export default function Docs() {
                     onClick={() => restoreDocument(activeDocumentId!)}
                     variant="outline"
                     size="lg"
-                    className="gap-2 border-orange-200 hover:bg-orange-50 dark:border-orange-800 dark:hover:bg-orange-950/50"
+                    className="gap-2 border-border hover:bg-muted/60 dark:border-border dark:hover:bg-muted/40"
                   >
                     <FileText className="h-5 w-5" />
                     Restore Document
@@ -317,12 +350,29 @@ export default function Docs() {
             </>
           )
         ) : (
-          <div className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden bg-background px-6 py-12">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_55%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(22,163,74,0.18),_transparent_55%)]" />
+          <div
+            className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden px-6 py-12 transition-colors"
+            style={{
+              background: isDark
+                ? 'linear-gradient(145deg, #0f1117 0%, #111827 55%, #1e293b 100%)'
+                : 'linear-gradient(140deg, #f5f3ff 0%, #e0f2fe 45%, #fef3c7 100%)',
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_55%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(22,163,74,0.18),_transparent_55%)]" />
+              <div
+                className="absolute left-1/2 top-10 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl mix-blend-screen opacity-35 dark:opacity-55"
+                style={{
+                  background: isDark
+                    ? 'radial-gradient(circle, rgba(236,72,153,0.45) 0%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(244,114,182,0.3) 0%, transparent 70%)',
+                }}
+              />
+            </div>
 
             <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/80 via-purple-400/70 to-sky-500/70 text-primary-foreground shadow-lg shadow-primary/30">
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg shadow-pink-500/30">
                 <FileText className="h-8 w-8" />
               </span>
 
@@ -336,15 +386,15 @@ export default function Docs() {
 
               <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
                   <span>Chèn task, checklist và mention để kết nối mọi thông tin quan trọng.</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
                   <span>Tự động lưu và theo dõi phiên bản cho từng thay đổi.</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
                   <span>Slash menu giúp chèn block, bảng và template chỉ trong vài phím.</span>
                 </div>
               </div>

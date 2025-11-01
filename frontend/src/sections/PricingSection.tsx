@@ -39,8 +39,8 @@
           </li>
         </ul>
         <a href="#" className="btn tw-mt-auto !tw-w-full tw-transition-transform tw-duration-[0.3s] 
-                          hover:tw-scale-x-[1.02] !tw-text-[#16a34a] !tw-bg-transparent !tw-border-[1px]
-                           tw-border-[#16a34a] dark:tw-border-[#16a34a] dark:!tw-text-[#16a34a]">
+                          hover:tw-scale-x-[1.02] !tw-text-black dark:!tw-text-white !tw-bg-transparent !tw-border-[1px]
+                           tw-border-black dark:tw-border-white">
           Choose plan
         </a>
       </div>
@@ -114,8 +114,8 @@
           </li>
         </ul>
         <a href="#" className="btn tw-mt-8 !tw-w-full tw-transition-transform tw-duration-[0.3s] 
-                          hover:tw-scale-x-[1.02] !tw-text-[#16a34a] !tw-bg-transparent 
-                          !tw-border-[1px] tw-border-[#16a34a] dark:tw-border-[#16a34a] dark:!tw-text-[#16a34a]">
+                          hover:tw-scale-x-[1.02] !tw-text-black dark:!tw-text-white !tw-bg-transparent 
+                          !tw-border-[1px] tw-border-black dark:tw-border-white">
           Choose plan
         </a>
       </div>

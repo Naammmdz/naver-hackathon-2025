@@ -69,9 +69,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Done":
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-primary" />;
       case "In Progress":
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
       default:
         return <Circle className="h-4 w-4 text-muted-foreground" />;
     }
@@ -80,11 +80,11 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
-        return "text-red-600 dark:text-red-400";
+        return "text-destructive";
       case "Medium":
-        return "text-orange-600 dark:text-orange-400";
+        return "text-foreground";
       case "Low":
-        return "text-blue-600 dark:text-blue-400";
+        return "text-muted-foreground";
       default:
         return "text-muted-foreground";
     }
@@ -93,11 +93,11 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   const getRelationColor = (type: TaskDocRelationType) => {
     switch (type) {
       case "reference":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-secondary text-secondary-foreground";
       case "reflection":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-muted text-foreground";
       case "resource":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+        return "bg-primary text-primary-foreground";
     }
   };
 

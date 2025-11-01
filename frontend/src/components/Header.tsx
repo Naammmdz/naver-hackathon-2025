@@ -49,7 +49,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
                     <i className="bi bi-grid-1x2-fill" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -59,7 +59,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
                     <i className="bi bi-globe" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -69,7 +69,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
                     <i className="bi bi-image-fill" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -79,7 +79,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
                     <i className="bi bi-calendar-range" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
@@ -89,7 +89,7 @@ export function Header() {
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-[#16a34a]">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
                     <i className="bi bi-translate" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">

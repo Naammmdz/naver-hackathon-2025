@@ -34,7 +34,7 @@ export const Step2_SeatSelection = () => {
     return (
         <div className="p-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-                <Plane className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <Plane className="w-6 h-6 text-primary" />
                 <h2 className="text-2xl font-bold">{t('focusFly.seatSelection.title')}</h2>
             </div>
             <p className="text-muted-foreground mb-8">
@@ -64,10 +64,10 @@ export const Step2_SeatSelection = () => {
                                                 key={seatId}
                                                 className={`w-6 h-6 rounded-t-lg cursor-pointer transition-all ${
                                                     isSelected 
-                                                        ? 'bg-red-500 shadow-lg scale-110' 
+                                                        ? 'bg-primary text-primary-foreground shadow-lg scale-110' 
                                                         : isOccupied 
-                                                        ? 'bg-purple-500' 
-                                                        : 'bg-gray-300 dark:bg-gray-600 hover:bg-blue-400'
+                                                        ? 'bg-accent text-accent-foreground' 
+                                                        : 'bg-muted dark:bg-muted hover:bg-primary/40'
                                                 }`}
                                                 onClick={() => !isOccupied && selectSeat(seatId)}
                                                 title={`${t('focusFly.seatSelection.seat')} ${seatId} ${isOccupied ? `(${t('focusFly.seatSelection.occupied')})` : `(${t('focusFly.seatSelection.available')})`}`}
@@ -75,10 +75,10 @@ export const Step2_SeatSelection = () => {
                                                 {/* Seat back */}
                                                 <div className={`w-full h-1 ${
                                                     isSelected 
-                                                        ? 'bg-red-600' 
+                                                        ? 'bg-primary-dark' 
                                                         : isOccupied 
-                                                        ? 'bg-purple-600' 
-                                                        : 'bg-gray-400 dark:bg-gray-500'
+                                                        ? 'bg-accent' 
+                                                        : 'bg-muted'
                                                 } rounded-t-lg`}></div>
                                             </div>
                                         );
@@ -102,10 +102,10 @@ export const Step2_SeatSelection = () => {
                                                 key={seatId}
                                                 className={`w-6 h-6 rounded-t-lg cursor-pointer transition-all ${
                                                     isSelected 
-                                                        ? 'bg-red-500 shadow-lg scale-110' 
+                                                        ? 'bg-primary text-primary-foreground shadow-lg scale-110' 
                                                         : isOccupied 
-                                                        ? 'bg-purple-500' 
-                                                        : 'bg-gray-300 dark:bg-gray-600 hover:bg-blue-400'
+                                                        ? 'bg-accent text-accent-foreground' 
+                                                        : 'bg-muted dark:bg-muted hover:bg-primary/40'
                                                 }`}
                                                 onClick={() => !isOccupied && selectSeat(seatId)}
                                                 title={`${t('focusFly.seatSelection.seat')} ${seatId} ${isOccupied ? `(${t('focusFly.seatSelection.occupied')})` : `(${t('focusFly.seatSelection.available')})`}`}
@@ -113,10 +113,10 @@ export const Step2_SeatSelection = () => {
                                                 {/* Seat back */}
                                                 <div className={`w-full h-1 ${
                                                     isSelected 
-                                                        ? 'bg-red-600' 
+                                                        ? 'bg-primary-dark' 
                                                         : isOccupied 
-                                                        ? 'bg-purple-600' 
-                                                        : 'bg-gray-400 dark:bg-gray-500'
+                                                        ? 'bg-accent' 
+                                                        : 'bg-muted'
                                                 } rounded-t-lg`}></div>
                                             </div>
                                         );
@@ -137,15 +137,15 @@ export const Step2_SeatSelection = () => {
             {/* Legend */}
             <div className="mt-6 flex justify-center gap-4 text-xs">
                 <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-t-lg"></div>
+                    <div className="w-4 h-4 bg-muted rounded-t-lg"></div>
                     <span>Available</span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-purple-500 rounded-t-lg"></div>
+                    <div className="w-4 h-4 bg-accent rounded-t-lg"></div>
                     <span>Occupied</span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-red-500 rounded-t-lg"></div>
+                    <div className="w-4 h-4 bg-primary rounded-t-lg"></div>
                     <span>Selected</span>
                 </div>
             </div>
