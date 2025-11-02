@@ -15,8 +15,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
+import { useWorkspaceStore } from '@/store/workspaceStore';
 import {
   ChevronDown,
   ChevronRight,
@@ -27,7 +29,7 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export default function DocumentSidebar() {
   const {
@@ -41,6 +43,15 @@ export default function DocumentSidebar() {
     updateDocument,
     getTrashedDocuments,
   } = useDocumentStore();
+  const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
+  const { toast } = useToast();
+  const notifyReadOnly = useCallback(() => {
+    toast({
+      title: 'Chỉ xem',
+      description: 'Bạn chỉ có quyền xem trong workspace này.',
+      variant: 'destructive',
+    });
+  }, [toast]);
 
   // Filter documents by active workspace
   const workspaceFilteredDocs = useWorkspaceFilter(documents);
@@ -168,6 +179,10 @@ export default function DocumentSidebar() {
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!canEditWorkspace) {
+                        notifyReadOnly();
+                        return;
+                      }
                       restoreDocument(doc.id);
                     }}
                   >
@@ -190,6 +205,10 @@ export default function DocumentSidebar() {
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!canEditWorkspace) {
+                        notifyReadOnly();
+                        return;
+                      }
                       addDocument('Untitled', doc.id);
                     }}
                   >
@@ -237,16 +256,26 @@ export default function DocumentSidebar() {
   };
 
   const handleCreateDocument = () => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      return;
+    }
     addDocument('Untitled');
   };
 
   const handleDeleteClick = (id: string) => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      return;
+    }
     setDocumentToDelete(id);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = () => {
-    if (documentToDelete) {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+    } else if (documentToDelete) {
       deleteDocument(documentToDelete);
       setDocumentToDelete(null);
     }
@@ -254,12 +283,18 @@ export default function DocumentSidebar() {
   };
 
   const handlePermanentDeleteClick = (id: string) => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      return;
+    }
     setDocumentToPermanentDelete(id);
     setPermanentDeleteDialogOpen(true);
   };
 
   const handlePermanentDeleteConfirm = () => {
-    if (documentToPermanentDelete) {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+    } else if (documentToPermanentDelete) {
       permanentlyDeleteDocument(documentToPermanentDelete);
       setDocumentToPermanentDelete(null);
     }
@@ -267,13 +302,21 @@ export default function DocumentSidebar() {
   };
 
   const handleRename = (id: string, currentTitle: string) => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      return;
+    }
     setEditingId(id);
     setEditingTitle(currentTitle);
   };
 
   const handleRenameSubmit = (id: string) => {
     if (editingTitle.trim()) {
-      updateDocument(id, { title: editingTitle.trim() });
+      if (!canEditWorkspace) {
+        notifyReadOnly();
+      } else {
+        updateDocument(id, { title: editingTitle.trim() });
+      }
     }
     setEditingId(null);
     setEditingTitle('');

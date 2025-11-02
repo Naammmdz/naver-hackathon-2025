@@ -2,6 +2,8 @@ import { BoardView } from "@/components/board/BoardView";
 import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
+import { CollaborationProvider } from "@/contexts/CollaborationContext";
+import { useToast } from "@/hooks/use-toast";
 import { useBoardStore } from "@/store/boardStore";
 import { useDocumentStore } from "@/store/documentStore";
 import { useTaskDocStore } from "@/store/taskDocStore";
@@ -12,9 +14,10 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Docs from "./Docs";
 import Index from "./Index";
+import WorkspaceSettings from "./WorkspaceSettings";
 
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board">("tasks");
+  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "settings">("tasks");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { t } = useTranslation();
@@ -43,6 +46,20 @@ export default function AppWrapper() {
   const initializeWorkspace = useWorkspaceStore((state) => state.initialize);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
+  const getCurrentMemberRole = useWorkspaceStore((state) => state.getCurrentMemberRole);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const handleReadOnly = () => {
+      toast({
+        title: "Chỉ xem",
+        description: "Bạn chỉ có quyền xem trong workspace này.",
+        variant: "destructive",
+      });
+    };
+    window.addEventListener("workspace-readonly", handleReadOnly);
+    return () => window.removeEventListener("workspace-readonly", handleReadOnly);
+  }, [toast]);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -140,6 +157,17 @@ export default function AppWrapper() {
         setActiveDocument(null);
         setActiveBoard(null);
         
+        // Check if user is on settings page but not owner in new workspace
+        const currentRole = getCurrentMemberRole();
+        if (currentView === "settings" && currentRole !== "owner") {
+          setCurrentView("tasks");
+          toast({
+            title: "Chuyển hướng",
+            description: "Chỉ có chủ workspace mới có thể truy cập cài đặt.",
+            variant: "default",
+          });
+        }
+        
         try {
           // Ensure token is fresh before reloading data
           const tokenOptions = tokenTemplate
@@ -179,7 +207,7 @@ export default function AppWrapper() {
   };
 
   return (
-    <>
+    <CollaborationProvider>
       {/* Workspace Onboarding Modal */}
       {showOnboarding && (
         <WorkspaceOnboarding
@@ -195,6 +223,7 @@ export default function AppWrapper() {
           <ClickupHeader
             currentView={currentView}
             onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+            onNavigateToSettings={() => setCurrentView('settings')}
           />
 
           {/* Main Layout - ClickUp 3-Column Layout */}
@@ -214,11 +243,12 @@ export default function AppWrapper() {
                 window.dispatchEvent(event);
               }} /> :
                currentView === 'docs' ? <Docs /> :
+               currentView === 'settings' ? <WorkspaceSettings /> :
                <BoardView />}
             </main>
           </div>
         </div>
       )}
-    </>
+    </CollaborationProvider>
   );
 }

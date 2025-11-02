@@ -13,8 +13,8 @@ import { useState } from 'react';
 interface ClickupAppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewChange?: (view: 'tasks' | 'docs' | 'board') => void;
-  currentView?: 'tasks' | 'docs' | 'board';
+  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'settings') => void;
+  currentView?: 'tasks' | 'docs' | 'board' | 'settings';
 }
 
 export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'tasks' }: ClickupAppSidebarProps) {

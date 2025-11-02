@@ -24,7 +24,17 @@ const findFallbackActiveBoard = (boards: Board[]): string | null => {
   return boards.length > 0 ? boards[0].id : null;
 };
 
-export const useBoardStore = create<BoardState>((set, get) => ({
+export const useBoardStore = create<BoardState>((set, get) => {
+  const canEditWorkspace = () => {
+    const workspaceState = useWorkspaceStore.getState();
+    if (!workspaceState.activeWorkspaceId) {
+      return true;
+    }
+    // Silently return false without setting error state
+    return workspaceState.canEditActiveWorkspace();
+  };
+
+  return {
   boards: [],
   activeBoardId: null,
   isInitialized: false,
@@ -45,14 +55,16 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   refreshBoards: async () => {
     const userId = get().currentUserId;
-    if (!userId) {
+    const workspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+    
+    if (!userId || !workspaceId) {
       set({ boards: [], activeBoardId: null, isLoading: false, error: null });
       return;
     }
 
     set({ isLoading: true, error: null });
     try {
-      const boards = (await boardApi.list()).filter((board) => board.userId === userId);
+      const boards = await boardApi.listByWorkspace(workspaceId);
       set((state) => {
         const nextActive =
           state.activeBoardId && boards.some((board) => board.id === state.activeBoardId)
@@ -81,6 +93,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       return;
     }
 
+    if (!canEditWorkspace()) {
+      return;
+    }
+
     set({ isLoading: true, error: null });
     try {
       const workspaceId = useWorkspaceStore.getState().activeWorkspaceId ?? undefined;
@@ -92,11 +108,20 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       }));
     } catch (error) {
       console.error("Failed to create board", error);
-      set({ isLoading: false, error: error instanceof Error ? error.message : "Failed to create board" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to create board";
+      if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+        // Silently fail for permission errors
+        set({ isLoading: false });
+      } else {
+        set({ isLoading: false, error: errorMessage });
+      }
     }
   },
 
   deleteBoard: async (id: string) => {
+    if (!canEditWorkspace()) {
+      return;
+    }
     const previousBoards = get().boards;
     const previousActive = get().activeBoardId;
     set((state) => {
@@ -111,11 +136,20 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       await boardApi.delete(id);
     } catch (error) {
       console.error("Failed to delete board", error);
-      set({
-        boards: previousBoards,
-        activeBoardId: previousActive,
-        error: error instanceof Error ? error.message : "Failed to delete board",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete board";
+      if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+        // Silently restore previous state without showing error
+        set({
+          boards: previousBoards,
+          activeBoardId: previousActive,
+        });
+      } else {
+        set({
+          boards: previousBoards,
+          activeBoardId: previousActive,
+          error: errorMessage,
+        });
+      }
     }
   },
 
@@ -124,6 +158,9 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   updateBoard: async (id: string, updates: Partial<Pick<Board, "title">>) => {
+    if (!canEditWorkspace()) {
+      return;
+    }
     try {
       const existing = get().boards.find((board) => board.id === id);
       const updated = await boardApi.update(id, {
@@ -136,11 +173,19 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       }));
     } catch (error) {
       console.error("Failed to update board", error);
-      set({ error: error instanceof Error ? error.message : "Failed to update board" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to update board";
+      if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+        // Silently ignore permission errors
+      } else {
+        set({ error: errorMessage });
+      }
     }
   },
 
   updateBoardContent: async (id: string, snapshot: BoardSnapshot | null) => {
+    if (!canEditWorkspace()) {
+      return;
+    }
     const currentBoard = get().boards.find((board) => board.id === id);
     const previousSnapshot = currentBoard?.snapshot ?? null;
     const previousUpdatedAt = currentBoard?.updatedAt ?? new Date();
@@ -164,18 +209,34 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       }));
     } catch (error) {
       console.error("Failed to update board snapshot", error);
-      set((state) => ({
-        error: error instanceof Error ? error.message : "Failed to update board snapshot",
-        boards: state.boards.map((board) =>
-          board.id === id
-            ? {
-                ...board,
-                snapshot: previousSnapshot,
-                updatedAt: previousUpdatedAt,
-              }
-            : board,
-        ),
-      }));
+      const errorMessage = error instanceof Error ? error.message : "Failed to update board snapshot";
+      if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+        // Silently restore previous snapshot without showing error
+        set((state) => ({
+          boards: state.boards.map((board) =>
+            board.id === id
+              ? {
+                  ...board,
+                  snapshot: previousSnapshot,
+                  updatedAt: previousUpdatedAt,
+                }
+              : board,
+          ),
+        }));
+      } else {
+        set((state) => ({
+          error: errorMessage,
+          boards: state.boards.map((board) =>
+            board.id === id
+              ? {
+                  ...board,
+                  snapshot: previousSnapshot,
+                  updatedAt: previousUpdatedAt,
+                }
+              : board,
+          ),
+        }));
+      }
     }
   },
 
@@ -195,4 +256,5 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       isLoading: false,
     }));
   },
-}));
+  };
+});

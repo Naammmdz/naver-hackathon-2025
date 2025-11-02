@@ -7,9 +7,10 @@ type ColumnHeaderProps = {
   column: { id: TaskStatus; title: string; description: string };
   taskCount: number;
   onAddTask: () => void;
+  disabled?: boolean;
 };
 
-export function ColumnHeader({ column, taskCount, onAddTask }: ColumnHeaderProps) {
+export function ColumnHeader({ column, taskCount, onAddTask, disabled = false }: ColumnHeaderProps) {
   const getHeaderStyles = (status: TaskStatus) => {
     const baseStyles = "border-l-4";
     const statusStyles: Record<TaskStatus, string> = {
@@ -37,8 +38,12 @@ export function ColumnHeader({ column, taskCount, onAddTask }: ColumnHeaderProps
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 hover:bg-primary/10"
+            className={cn(
+              "h-6 w-6 p-0 hover:bg-primary/10",
+              disabled && "cursor-not-allowed opacity-40 hover:bg-transparent"
+            )}
             onClick={onAddTask}
+            aria-disabled={disabled}
           >
             <Plus className="h-3 w-3" />
           </Button>

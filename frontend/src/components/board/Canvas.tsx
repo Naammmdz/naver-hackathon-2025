@@ -1,13 +1,14 @@
 import { useBoardStore } from '@/store/boardStore';
+import { useWorkspaceStore } from '@/store/workspaceStore';
 import type { BoardSnapshot } from '@/types/board';
 import { CaptureUpdateAction, Excalidraw } from '@excalidraw/excalidraw';
+import '@excalidraw/excalidraw/index.css';
 import type {
   AppState,
   BinaryFiles,
   ExcalidrawImperativeAPI,
   ExcalidrawInitialDataState,
 } from '@excalidraw/excalidraw/types';
-import '@excalidraw/excalidraw/index.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type StoredScene = BoardSnapshot | null;
@@ -49,7 +50,10 @@ const serializeSceneForStorage = (
   };
 };
 
-const prepareSceneForEditor = (snapshot: StoredScene): ExcalidrawInitialDataState | null => {
+const prepareSceneForEditor = (
+  snapshot: StoredScene,
+  isViewMode: boolean = false
+): ExcalidrawInitialDataState | null => {
   if (!snapshot) {
     return null;
   }
@@ -62,6 +66,7 @@ const prepareSceneForEditor = (snapshot: StoredScene): ExcalidrawInitialDataStat
     appState: {
       ...restAppState,
       zenModeEnabled: false,
+      viewModeEnabled: isViewMode,
     },
     files,
   };
@@ -69,6 +74,7 @@ const prepareSceneForEditor = (snapshot: StoredScene): ExcalidrawInitialDataStat
 
 export function Canvas() {
   const { activeBoardId, boards, updateBoardContent } = useBoardStore();
+  const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
   const [isDark, setIsDark] = useState(false);
   const activeBoardIdRef = useRef<string | null>(activeBoardId ?? null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -85,8 +91,8 @@ export function Canvas() {
   );
 
   const initialScene = useMemo(
-    () => prepareSceneForEditor(activeBoard?.snapshot ?? null),
-    [activeBoard?.snapshot],
+    () => prepareSceneForEditor(activeBoard?.snapshot ?? null, !canEditWorkspace),
+    [activeBoard?.snapshot, canEditWorkspace],
   );
 
   useEffect(() => {
@@ -125,13 +131,13 @@ export function Canvas() {
     return () => observer.disconnect();
   }, []);
 
-  const applySceneToCanvas = useCallback((snapshot: StoredScene) => {
+  const applySceneToCanvas = useCallback((snapshot: StoredScene, isViewMode: boolean = false) => {
     const api = excalidrawAPIRef.current;
     if (!api) {
       return;
     }
 
-    const scene = prepareSceneForEditor(snapshot);
+    const scene = prepareSceneForEditor(snapshot, isViewMode);
 
     api.resetScene();
 
@@ -166,15 +172,20 @@ export function Canvas() {
       return;
     }
 
-    applySceneToCanvas(activeBoard?.snapshot ?? null);
+    applySceneToCanvas(activeBoard?.snapshot ?? null, !canEditWorkspace);
     lastAppliedRef.current = {
       id: boardId,
       hasSnapshot,
     };
-  }, [applySceneToCanvas, activeBoard?.id, activeBoard?.snapshot, isApiReady]);
+  }, [applySceneToCanvas, activeBoard?.id, activeBoard?.snapshot, isApiReady, canEditWorkspace]);
 
   const handleSceneChange = useCallback(
     (elements: readonly any[], appState: AppState, files: BinaryFiles) => {
+      // Silently block changes if user doesn't have edit permission
+      if (!canEditWorkspace) {
+        return;
+      }
+
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
@@ -193,7 +204,7 @@ export function Canvas() {
         }
       }, 1000);
     },
-    [updateBoardContent],
+    [updateBoardContent, canEditWorkspace],
   );
 
   const handleApiReady = useCallback((api: ExcalidrawImperativeAPI) => {
@@ -201,15 +212,52 @@ export function Canvas() {
     setIsApiReady(true);
   }, []);
 
+  const uiOptions = useMemo(() => {
+    if (!canEditWorkspace) {
+      return {
+        canvasActions: {
+          loadScene: false,
+          export: { saveFileToDisk: false },
+          saveAsImage: false,
+        },
+      };
+    }
+    return undefined;
+  }, [canEditWorkspace]);
+
   return (
-    <div className="w-full h-full relative" onClick={(event) => event.stopPropagation()}>
+    <div 
+      className="w-full h-full relative" 
+      onClick={(event) => event.stopPropagation()}
+      style={{
+        ...((!canEditWorkspace) && {
+          '--excalidraw-toolbar-display': 'none',
+        } as React.CSSProperties),
+      }}
+    >
       <Excalidraw
         key={activeBoard?.id ?? 'default'}
         initialData={initialScene ?? undefined}
         onChange={handleSceneChange}
         theme={isDark ? 'dark' : 'light'}
         excalidrawAPI={handleApiReady}
+        viewModeEnabled={!canEditWorkspace}
+        UIOptions={uiOptions}
       />
+      {!canEditWorkspace && (
+        <style>{`
+          .excalidraw .App-toolbar,
+          .excalidraw .App-toolbar-content,
+          .excalidraw .App-bottom-bar,
+          .excalidraw .App-menu,
+          .excalidraw .App-menu_top,
+          .excalidraw .App-menu__left,
+          .excalidraw .ToolIcon_type_floating,
+          .excalidraw button[aria-label*="Menu"] {
+            display: none !important;
+          }
+        `}</style>
+      )}
     </div>
   );
 }

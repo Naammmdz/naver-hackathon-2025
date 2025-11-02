@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,24 +28,32 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping
-    public ResponseEntity<List<Board>> getAllBoards() {
+    public ResponseEntity<List<Board>> getAllBoards(
+            @RequestHeader("X-User-Id") String userId) {
         return ResponseEntity.ok(boardService.getAllBoards());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Board> getBoardById(@PathVariable String id) {
+    public ResponseEntity<Board> getBoardById(
+            @PathVariable String id,
+            @RequestHeader("X-User-Id") String userId) {
         return boardService.getBoardById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Board> createBoard(@RequestBody Board board) {
+    public ResponseEntity<Board> createBoard(
+            @RequestBody Board board,
+            @RequestHeader("X-User-Id") String userId) {
         return ResponseEntity.ok(boardService.createBoard(board));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Board> updateBoard(@PathVariable String id, @RequestBody Board board) {
+    public ResponseEntity<Board> updateBoard(
+            @PathVariable String id,
+            @RequestBody Board board,
+            @RequestHeader("X-User-Id") String userId) {
         try {
             return ResponseEntity.ok(boardService.updateBoard(id, board));
         } catch (RuntimeException e) {
@@ -53,7 +62,10 @@ public class BoardController {
     }
 
     @PatchMapping("/{id}/snapshot")
-    public ResponseEntity<Board> updateSnapshot(@PathVariable String id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<Board> updateSnapshot(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader("X-User-Id") String userId) {
         try {
             return ResponseEntity.ok(boardService.updateSnapshot(id, body.getOrDefault("snapshot", null)));
         } catch (RuntimeException e) {
@@ -62,8 +74,18 @@ public class BoardController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable String id) {
+    public ResponseEntity<Void> deleteBoard(
+            @PathVariable String id,
+            @RequestHeader("X-User-Id") String userId) {
         boardService.deleteBoard(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Workspace-based endpoints
+    @GetMapping("/workspace/{workspaceId}")
+    public ResponseEntity<List<Board>> getBoardsByWorkspace(
+            @PathVariable String workspaceId,
+            @RequestHeader("X-User-Id") String userId) {
+        return ResponseEntity.ok(boardService.getBoardsByWorkspace(workspaceId));
     }
 }

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InviteNotifications } from "@/components/workspace/InviteNotifications";
 import { useTaskStore } from "@/store/taskStore";
 import { Languages, Moon, Search, Settings, Sun, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,6 +14,8 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
   const { filters, setFilters, toggleSidebar } = useTaskStore();
   const [isDark, setIsDark] = useState(false);
   const { t, i18n } = useTranslation();
+
+  console.log('[AppHeader] RENDER');
 
   const handleSearchChange = (value: string) => {
     setFilters({ search: value });
@@ -101,6 +104,9 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
 
         {/* Right section */}
         <div className="flex items-center gap-2">
+          {/* Invite Notifications */}
+          <InviteNotifications />
+          
           {/* Smart Create Button */}
           {onSmartCreate && (
             <Button 

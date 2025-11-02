@@ -131,6 +131,13 @@ export const documentApi = {
     return data.map(mapDocumentFromApi);
   },
 
+  async listByWorkspace(workspaceId: string): Promise<Document[]> {
+    const data = await request<DocumentApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/workspace/${workspaceId}`),
+    );
+    return data.map(mapDocumentFromApi);
+  },
+
   async listTrashed(): Promise<Document[]> {
     const data = await request<DocumentApiResponse[]>(
       apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/trashed`),
@@ -205,6 +212,22 @@ export const documentApi = {
   async listByParent(parentId: string): Promise<Document[]> {
     const data = await request<DocumentApiResponse[]>(
       apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/parent/${parentId}`),
+    );
+    return data.map(mapDocumentFromApi);
+  },
+
+  async listByWorkspaceAndParent(workspaceId: string, parentId: string): Promise<Document[]> {
+    const data = await request<DocumentApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/workspace/${workspaceId}/parent/${parentId}`),
+    );
+    return data.map(mapDocumentFromApi);
+  },
+
+  async searchByWorkspace(workspaceId: string, query: string): Promise<Document[]> {
+    const data = await request<DocumentApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(
+        `${API_BASE_URL}/api/documents/workspace/${workspaceId}/search?q=${encodeURIComponent(query)}`,
+      ),
     );
     return data.map(mapDocumentFromApi);
   },

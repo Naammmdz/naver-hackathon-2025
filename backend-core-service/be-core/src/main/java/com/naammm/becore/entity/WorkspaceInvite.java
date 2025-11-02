@@ -31,12 +31,17 @@ public class WorkspaceInvite {
     @Column(name = "workspace_id", nullable = false)
     private String workspaceId;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "email", nullable = false, length = 255)
     private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private WorkspaceRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private InviteStatus status = InviteStatus.PENDING;
 
     @Column(name = "invited_by", nullable = false, length = 160)
     private String invitedBy;

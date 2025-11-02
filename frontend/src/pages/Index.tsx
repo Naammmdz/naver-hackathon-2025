@@ -12,6 +12,7 @@ import { TaskFormDialog } from "@/components/tasks/TaskFormDialog";
 import { TaskListView } from "@/components/tasks/TaskListView";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ReadOnlyBanner } from "@/components/workspace/ReadOnlyBanner";
 import { FocusFlyModal } from "@/features/focusFly/components/FocusFlyModal";
 import { useToast } from "@/hooks/use-toast";
 import { ParsedTask } from "@/lib/parseNatural";
@@ -29,16 +30,28 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
   const { t } = useTranslation();
   const { toast } = useToast();
   const { setActiveDocument } = useDocumentStore();
+  const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
+  const notifyReadOnly = useCallback(() => {
+    toast({
+      title: "Chỉ xem",
+      description: "Bạn chỉ có quyền xem trong workspace này.",
+      variant: "destructive",
+    });
+  }, [toast]);
 
   // Listen for smart parser events from the top navigation
   useEffect(() => {
     const handleOpenSmartParser = () => {
+      if (!canEditWorkspace) {
+        notifyReadOnly();
+        return;
+      }
       setShowSmartParser(true);
     };
 
     window.addEventListener('openSmartParser', handleOpenSmartParser);
     return () => window.removeEventListener('openSmartParser', handleOpenSmartParser);
-  }, []);
+  }, [canEditWorkspace, notifyReadOnly]);
 
   const COLUMNS: { id: TaskStatus; title: string; description: string }[] = [
     {
@@ -124,11 +137,17 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
 // ============================================================================
 
 const handleDragStart = (event: DragStartEvent) => {
+  if (!canEditWorkspace) {
+    return;
+  }
   const task = filteredTasks.find(t => t.id === event.active.id);
   setActiveTask(task || null);
 };
 
 const handleDragOver = (event: DragOverEvent) => {
+  if (!canEditWorkspace) {
+    return;
+  }
   const { over } = event;
   setOverTaskId(over ? over.id as string : null);
 };
@@ -138,6 +157,10 @@ const handleDragEnd = (event: DragEndEvent) => {
   setActiveTask(null);
   setOverTaskId(null);
   if (!over) return;
+  if (!canEditWorkspace) {
+    notifyReadOnly();
+    return;
+  }
 
   const activeId = active.id as string;
   const overId = over.id as string;
@@ -215,18 +238,27 @@ const handleDragEnd = (event: DragEndEvent) => {
 
   const handleNewTask = useCallback(
     (date?: Date, status?: TaskStatus) => {
+      if (!canEditWorkspace) {
+        notifyReadOnly();
+        return;
+      }
       setSelectedTask(null);
       setDefaultStatus(status || "Todo");
       setDefaultDate(date);
       setShowTaskForm(true);
     },
-    [],
+    [canEditWorkspace, notifyReadOnly],
   );
 
-  const handleTaskEdit = (task: Task) => {
+  const handleTaskEdit = useCallback((task: Task) => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      handleTaskView(task);
+      return;
+    }
     setSelectedTask(task);
     setShowTaskForm(true);
-  };
+  }, [canEditWorkspace, notifyReadOnly]);
 
   const handleTaskView = (task: Task) => {
     setSelectedTask(task);
@@ -244,11 +276,20 @@ const handleDragEnd = (event: DragEndEvent) => {
     setSelectedTask(null);
   };
 
-  const handleFocusComplete = (taskId: string) => {
+  const handleFocusComplete = useCallback((taskId: string) => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      return;
+    }
     updateTaskStatus(taskId, "Done");
-  };
+  }, [canEditWorkspace, notifyReadOnly, updateTaskStatus]);
 
   const handleSmartParserCreate = (parsedTask: ParsedTask) => {
+    if (!canEditWorkspace) {
+      notifyReadOnly();
+      setShowSmartParser(false);
+      return;
+    }
     addTask({
       title: parsedTask.title,
       description: "",
@@ -265,10 +306,16 @@ const handleDragEnd = (event: DragEndEvent) => {
     if (typeof window === "undefined") {
       return;
     }
-    const handleOpenTaskForm = () => handleNewTask();
+    const handleOpenTaskForm = () => {
+      if (!canEditWorkspace) {
+        notifyReadOnly();
+        return;
+      }
+      handleNewTask();
+    };
     window.addEventListener("openTaskForm", handleOpenTaskForm);
     return () => window.removeEventListener("openTaskForm", handleOpenTaskForm);
-  }, [handleNewTask]);
+  }, [canEditWorkspace, handleNewTask, notifyReadOnly]);
 
   // ============================================================================
   // Utilities
@@ -380,7 +427,13 @@ const handleDragEnd = (event: DragEndEvent) => {
               size="lg"
               variant="outline"
               className="gap-2"
-              onClick={() => setShowSmartParser(true)}
+              onClick={() => {
+                if (!canEditWorkspace) {
+                  notifyReadOnly();
+                  return;
+                }
+                setShowSmartParser(true);
+              }}
             >
               <Zap className="h-4 w-4" />
               Mở Smart Parser
@@ -433,6 +486,9 @@ const handleDragEnd = (event: DragEndEvent) => {
         <div className="relative h-full overflow-auto">
           {hasTasks ? (
             <div className="relative mx-auto h-full max-w-7xl px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+              {/* Read Only Banner */}
+              <ReadOnlyBanner />
+              
               {/* Header with View Switcher */}
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <ViewSwitcher
@@ -493,6 +549,7 @@ const handleDragEnd = (event: DragEndEvent) => {
                               column={column}
                               taskCount={columnTasks.length}
                               onAddTask={() => handleNewTask(undefined, column.id)}
+                              disabled={!canEditWorkspace}
                             />
 
                             {/* Column Content */}

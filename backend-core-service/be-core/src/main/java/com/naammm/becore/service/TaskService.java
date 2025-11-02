@@ -8,19 +8,30 @@ import com.naammm.becore.entity.Subtask;
 import com.naammm.becore.entity.Task;
 import com.naammm.becore.entity.TaskPriority;
 import com.naammm.becore.entity.TaskStatus;
+import com.naammm.becore.entity.WorkspaceMember;
+import com.naammm.becore.entity.WorkspaceRole;
 import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.TaskRepository;
+import com.naammm.becore.repository.WorkspaceMemberRepository;
+import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     public List<Task> getAllTasks() {
         String userId = UserContext.requireUserId();
@@ -29,7 +40,8 @@ public class TaskService {
 
     public Optional<Task> getTaskById(String id) {
         String userId = UserContext.requireUserId();
-        return taskRepository.findByIdAndUserId(id, userId);
+        return taskRepository.findById(id)
+                .filter(task -> canAccessTask(task, userId));
     }
 
     public List<Task> getTasksByStatus(TaskStatus status) {
@@ -41,8 +53,17 @@ public class TaskService {
         String userId = UserContext.requireUserId();
         task.setUserId(userId);
 
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
+
         if (task.getOrderIndex() == null) {
-            Integer maxOrder = taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, task.getStatus());
+            Integer maxOrder;
+            if (StringUtils.hasText(task.getWorkspaceId())) {
+                maxOrder = taskRepository.findMaxOrderIndexByWorkspaceIdAndStatus(task.getWorkspaceId(), task.getStatus());
+            } else {
+                maxOrder = taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, task.getStatus());
+            }
             task.setOrderIndex(maxOrder != null ? maxOrder + 1 : 0);
         }
 
@@ -55,52 +76,73 @@ public class TaskService {
 
     public Task updateTask(String id, Task updatedTask) {
         String userId = UserContext.requireUserId();
-        return taskRepository.findByIdAndUserId(id, userId)
-                .map(task -> {
-                    task.setTitle(updatedTask.getTitle());
-                    task.setDescription(updatedTask.getDescription());
-                    task.setStatus(updatedTask.getStatus());
-                    task.setPriority(updatedTask.getPriority());
-                    task.setDueDate(updatedTask.getDueDate());
-                    task.setTags(updatedTask.getTags());
-                    if (updatedTask.getOrderIndex() != null) {
-                        task.setOrderIndex(updatedTask.getOrderIndex());
-                    }
+        Task task = getTaskForCurrentUser(id, userId);
 
-                    if (updatedTask.getSubtasks() != null) {
-                        task.getSubtasks().clear();
-                        updatedTask.getSubtasks().forEach(subtask -> {
-                            subtask.setTask(task);
-                            task.getSubtasks().add(subtask);
-                        });
-                    }
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
 
-                    return taskRepository.save(task);
-                })
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        task.setTitle(updatedTask.getTitle());
+        task.setDescription(updatedTask.getDescription());
+        task.setStatus(updatedTask.getStatus());
+        task.setPriority(updatedTask.getPriority());
+        task.setDueDate(updatedTask.getDueDate());
+        task.setTags(updatedTask.getTags());
+        if (updatedTask.getOrderIndex() != null) {
+            task.setOrderIndex(updatedTask.getOrderIndex());
+        }
+
+        if (updatedTask.getSubtasks() != null) {
+            task.getSubtasks().clear();
+            updatedTask.getSubtasks().forEach(subtask -> {
+                subtask.setTask(task);
+                task.getSubtasks().add(subtask);
+            });
+        }
+
+        return taskRepository.save(task);
     }
 
     public void deleteTask(String id) {
         String userId = UserContext.requireUserId();
-        Task task = taskRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        Task task = getTaskForCurrentUser(id, userId);
+
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
         taskRepository.delete(task);
     }
 
     public void moveTask(String id, TaskStatus newStatus) {
         String userId = UserContext.requireUserId();
-        Task task = taskRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        Task task = getTaskForCurrentUser(id, userId);
+
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
 
         task.setStatus(newStatus);
-        Integer maxOrder = taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, newStatus);
+        Integer maxOrder;
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            maxOrder = taskRepository.findMaxOrderIndexByWorkspaceIdAndStatus(task.getWorkspaceId(), newStatus);
+        } else {
+            maxOrder = taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, newStatus);
+        }
         task.setOrderIndex(maxOrder != null ? maxOrder + 1 : 0);
         taskRepository.save(task);
     }
 
     public void reorderTasks(TaskStatus status, int sourceIndex, int destinationIndex) {
         String userId = UserContext.requireUserId();
+
+        // Attempt to reorder tasks across workspaces the user owns or collaborates on.
         List<Task> tasks = taskRepository.findByUserIdAndStatusOrderByOrderIndexAsc(userId, status);
+
+        boolean containsRestrictedTasks = tasks.stream()
+            .anyMatch(task -> StringUtils.hasText(task.getWorkspaceId()) && isViewer(task.getWorkspaceId(), userId));
+        if (containsRestrictedTasks) {
+            throw new SecurityException("Insufficient permissions to reorder tasks in this workspace");
+        }
 
         if (sourceIndex < 0 || sourceIndex >= tasks.size() ||
             destinationIndex < 0 || destinationIndex >= tasks.size()) {
@@ -118,8 +160,12 @@ public class TaskService {
     }
 
     public void addSubtask(String taskId, String title) {
-        Task task = taskRepository.findByIdAndUserId(taskId, UserContext.requireUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String userId = UserContext.requireUserId();
+        Task task = getTaskForCurrentUser(taskId, userId);
+
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
 
         Subtask subtask = Subtask.builder()
                 .title(title)
@@ -132,8 +178,12 @@ public class TaskService {
     }
 
     public void updateSubtask(String taskId, String subtaskId, String title, Boolean done) {
-        Task task = taskRepository.findByIdAndUserId(taskId, UserContext.requireUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String userId = UserContext.requireUserId();
+        Task task = getTaskForCurrentUser(taskId, userId);
+
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
 
         task.getSubtasks().stream()
                 .filter(subtask -> subtask.getId().equals(subtaskId))
@@ -152,8 +202,12 @@ public class TaskService {
     }
 
     public void deleteSubtask(String taskId, String subtaskId) {
-        Task task = taskRepository.findByIdAndUserId(taskId, UserContext.requireUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String userId = UserContext.requireUserId();
+        Task task = getTaskForCurrentUser(taskId, userId);
+
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
+        }
 
         boolean removed = task.getSubtasks().removeIf(subtask -> subtask.getId().equals(subtaskId));
         if (!removed) {
@@ -173,5 +227,148 @@ public class TaskService {
                 dueDateFrom,
                 dueDateTo
         );
+    }
+
+    // Workspace-based methods with smart auto-detect
+    public List<Task> getTasksByWorkspace(String workspaceId) {
+        String userId = UserContext.requireUserId();
+        
+        // Validate workspace exists
+        workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found: " + workspaceId));
+        
+        // Check if user has access to this workspace
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
+            throw new SecurityException("Access denied to workspace: " + workspaceId);
+        }
+        
+        // Smart detection: Single member (personal workspace) vs multi-member (shared workspace)
+        long memberCount = workspaceMemberRepository.countByWorkspaceId(workspaceId);
+        log.info("[TaskService] Workspace {} has {} members, userId={}", workspaceId, memberCount, userId);
+        
+        if (memberCount <= 1) {
+            // Personal workspace mode - show only user's tasks
+            log.info("[TaskService] Using PERSONAL mode for workspace {}", workspaceId);
+            return taskRepository.findByUserIdOrderByUpdatedAtDesc(userId);
+        } else {
+            // Shared workspace mode - show all workspace tasks
+            log.info("[TaskService] Using SHARED mode for workspace {}", workspaceId);
+            return taskRepository.findByWorkspaceIdOrderByUpdatedAtDesc(workspaceId);
+        }
+    }
+
+    public List<Task> getTasksByWorkspaceAndStatus(String workspaceId, TaskStatus status) {
+        String userId = UserContext.requireUserId();
+        
+        // Validate workspace exists
+        workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found: " + workspaceId));
+        
+        // Check if user has access to this workspace
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
+            throw new SecurityException("Access denied to workspace: " + workspaceId);
+        }
+        
+        // Smart detection: Single member vs multi-member
+        long memberCount = workspaceMemberRepository.countByWorkspaceId(workspaceId);
+        log.info("[TaskService] Workspace {} has {} members, status={}, userId={}", 
+                 workspaceId, memberCount, status, userId);
+        
+        if (memberCount <= 1) {
+            // Personal workspace mode
+            log.info("[TaskService] Using PERSONAL mode for workspace {} status {}", workspaceId, status);
+            return taskRepository.findByUserIdAndStatusOrderByOrderIndexAsc(userId, status);
+        } else {
+            // Shared workspace mode
+            log.info("[TaskService] Using SHARED mode for workspace {} status {}", workspaceId, status);
+            return taskRepository.findByWorkspaceIdAndStatusOrderByOrderIndexAsc(workspaceId, status);
+        }
+    }
+
+    public List<Task> filterTasksByWorkspace(String workspaceId, TaskStatus status, TaskPriority priority, 
+                                            String search, LocalDateTime dueDateFrom, LocalDateTime dueDateTo) {
+        String userId = UserContext.requireUserId();
+        
+        // Validate workspace exists
+        workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found: " + workspaceId));
+        
+        // Check if user has access to this workspace
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
+            throw new SecurityException("Access denied to workspace: " + workspaceId);
+        }
+        
+        // Smart detection: Single member vs multi-member
+        long memberCount = workspaceMemberRepository.countByWorkspaceId(workspaceId);
+        log.info("[TaskService] Filtering workspace {} with {} members, userId={}", 
+                 workspaceId, memberCount, userId);
+        
+        if (memberCount <= 1) {
+            // Personal workspace mode - filter user's tasks
+            log.info("[TaskService] Using PERSONAL mode for workspace {} filter", workspaceId);
+            return taskRepository.findFilteredTasks(
+                    userId,
+                    status,
+                    priority,
+                    search,
+                    dueDateFrom,
+                    dueDateTo
+            );
+        } else {
+            // Shared workspace mode - filter workspace tasks
+            log.info("[TaskService] Using SHARED mode for workspace {} filter", workspaceId);
+            return taskRepository.findFilteredTasksByWorkspace(
+                    workspaceId,
+                    status,
+                    priority,
+                    search,
+                    dueDateFrom,
+                    dueDateTo
+            );
+        }
+    }
+
+    private Task getTaskForCurrentUser(String id, String userId) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        if (canAccessTask(task, userId)) {
+            return task;
+        }
+
+        throw new SecurityException("Access denied to task");
+    }
+
+    private boolean canAccessTask(Task task, String userId) {
+        if (userId.equals(task.getUserId())) {
+            return true;
+        }
+
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            return workspaceMemberRepository.existsByWorkspaceIdAndUserId(task.getWorkspaceId(), userId);
+        }
+
+        return false;
+    }
+
+    private WorkspaceRole requireWorkspaceRole(String workspaceId, String userId) {
+        workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found: " + workspaceId));
+
+        WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+                .orElseThrow(() -> new SecurityException("Access denied to workspace: " + workspaceId));
+        return member.getRole();
+    }
+
+    private void ensureCanModifyWorkspace(String workspaceId, String userId) {
+        WorkspaceRole role = requireWorkspaceRole(workspaceId, userId);
+        if (role == WorkspaceRole.VIEWER) {
+            throw new SecurityException("Viewer role cannot modify workspace content");
+        }
+    }
+
+    private boolean isViewer(String workspaceId, String userId) {
+        WorkspaceRole role = requireWorkspaceRole(workspaceId, userId);
+        return role == WorkspaceRole.VIEWER;
     }
 }

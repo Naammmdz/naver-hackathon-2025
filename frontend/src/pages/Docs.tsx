@@ -2,6 +2,8 @@ import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import { CustomSlashMenu } from '@/components/documents/LinkTaskSlashItem';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
 import { Button } from '@/components/ui/button';
+import { ReadOnlyBanner } from '@/components/workspace/ReadOnlyBanner';
+import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
@@ -12,7 +14,7 @@ import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function Docs() {
   const {
@@ -28,6 +30,15 @@ export default function Docs() {
 
   const { tasks } = useTaskStore();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
+  const { toast } = useToast();
+  const notifyReadOnly = useCallback(() => {
+    toast({
+      title: 'Chỉ xem',
+      description: 'Bạn chỉ có quyền xem trong workspace này.',
+      variant: 'destructive',
+    });
+  }, [toast]);
 
   // Filter documents by active workspace
   const filteredDocuments = useWorkspaceFilter(documents);
@@ -119,7 +130,7 @@ export default function Docs() {
 
   // Save content to store whenever it changes
   const handleChange = async () => {
-    if (!activeDocumentId) return;
+    if (!activeDocumentId || !canEditWorkspace) return;
     
     try {
       const content = editor.document;
@@ -269,7 +280,13 @@ export default function Docs() {
               </div>
 
               <Button
-                onClick={() => void addDocument('Tài liệu mới')}
+                    onClick={() => {
+                      if (!canEditWorkspace) {
+                        notifyReadOnly();
+                        return;
+                      }
+                      void addDocument('Tài liệu mới');
+                    }}
                 size="lg"
                 className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
                 disabled={isLoading}
@@ -312,7 +329,13 @@ export default function Docs() {
                     Restore Document
                   </Button>
                   <Button
-                    onClick={() => addDocument('Untitled')}
+                    onClick={() => {
+                      if (!canEditWorkspace) {
+                        notifyReadOnly();
+                        return;
+                      }
+                      addDocument('Untitled');
+                    }}
                     size="lg"
                     className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >
@@ -326,18 +349,23 @@ export default function Docs() {
             <>
               {/* Document Header */}
               <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
-                    <div className="text-xs text-muted-foreground">
-                      {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                <div className="space-y-3">
+                  {/* Read Only Banner */}
+                  <ReadOnlyBanner />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
+                      <div className="text-xs text-muted-foreground">
+                        {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <FileText className="h-4 w-4" />
-                      Share
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Share
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -352,13 +380,16 @@ export default function Docs() {
                     theme={isDark ? "dark" : "light"}
                     className="rounded-lg border border-border/50 shadow-sm"
                     slashMenu={false}
+                    editable={canEditWorkspace}
                   >
-                    <CustomSlashMenu 
-                      editor={editor} 
-                      docId={activeDocument.id} 
-                      docTitle={activeDocument.title}
-                      onTaskClick={setSelectedTask}
-                    />
+                    {canEditWorkspace && (
+                      <CustomSlashMenu 
+                        editor={editor} 
+                        docId={activeDocument.id} 
+                        docTitle={activeDocument.title}
+                        onTaskClick={setSelectedTask}
+                      />
+                    )}
                   </BlockNoteView>
                 </div>
               </div>

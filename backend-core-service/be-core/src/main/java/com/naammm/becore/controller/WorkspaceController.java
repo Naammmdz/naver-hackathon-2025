@@ -34,32 +34,24 @@ public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
 
-    // TODO: Get userId from authentication context
-    private String getCurrentUserId() {
-        return "demo-user-id";
-    }
-
     @GetMapping
     @Operation(summary = "Get all workspaces for current user")
     public ResponseEntity<List<Workspace>> getAllWorkspaces() {
-        String userId = getCurrentUserId();
-        List<Workspace> workspaces = workspaceService.getAllWorkspaces(userId);
+        List<Workspace> workspaces = workspaceService.getAllWorkspaces();
         return ResponseEntity.ok(workspaces);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get workspace by ID")
     public ResponseEntity<Workspace> getWorkspace(@PathVariable String id) {
-        String userId = getCurrentUserId();
-        Workspace workspace = workspaceService.getWorkspace(id, userId);
+        Workspace workspace = workspaceService.getWorkspace(id);
         return ResponseEntity.ok(workspace);
     }
 
     @PostMapping
     @Operation(summary = "Create new workspace")
     public ResponseEntity<Workspace> createWorkspace(@RequestBody CreateWorkspaceRequest request) {
-        String userId = getCurrentUserId();
-        Workspace workspace = workspaceService.createWorkspace(request, userId);
+        Workspace workspace = workspaceService.createWorkspace(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(workspace);
     }
 
@@ -68,16 +60,14 @@ public class WorkspaceController {
     public ResponseEntity<Workspace> updateWorkspace(
             @PathVariable String id,
             @RequestBody UpdateWorkspaceRequest request) {
-        String userId = getCurrentUserId();
-        Workspace workspace = workspaceService.updateWorkspace(id, request, userId);
+        Workspace workspace = workspaceService.updateWorkspace(id, request);
         return ResponseEntity.ok(workspace);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete workspace")
     public ResponseEntity<Void> deleteWorkspace(@PathVariable String id) {
-        String userId = getCurrentUserId();
-        workspaceService.deleteWorkspace(id, userId);
+        workspaceService.deleteWorkspace(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -86,8 +76,7 @@ public class WorkspaceController {
     @GetMapping("/{id}/members")
     @Operation(summary = "Get workspace members")
     public ResponseEntity<List<WorkspaceMember>> getMembers(@PathVariable String id) {
-        String userId = getCurrentUserId();
-        List<WorkspaceMember> members = workspaceService.getMembers(id, userId);
+        List<WorkspaceMember> members = workspaceService.getMembers(id);
         return ResponseEntity.ok(members);
     }
 
@@ -96,8 +85,7 @@ public class WorkspaceController {
     public ResponseEntity<WorkspaceInvite> inviteMember(
             @PathVariable String id,
             @RequestBody InviteMemberRequest request) {
-        String userId = getCurrentUserId();
-        WorkspaceInvite invite = workspaceService.inviteMember(id, request, userId);
+        WorkspaceInvite invite = workspaceService.inviteMember(id, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(invite);
     }
 
@@ -106,8 +94,7 @@ public class WorkspaceController {
     public ResponseEntity<Void> removeMember(
             @PathVariable String workspaceId,
             @PathVariable String memberId) {
-        String userId = getCurrentUserId();
-        workspaceService.removeMember(workspaceId, memberId, userId);
+        workspaceService.removeMember(workspaceId, memberId);
         return ResponseEntity.noContent().build();
     }
 
@@ -117,16 +104,37 @@ public class WorkspaceController {
             @PathVariable String workspaceId,
             @PathVariable String memberId,
             @RequestBody UpdateMemberRoleRequest request) {
-        String userId = getCurrentUserId();
-        WorkspaceMember member = workspaceService.updateMemberRole(workspaceId, memberId, request, userId);
+        WorkspaceMember member = workspaceService.updateMemberRole(workspaceId, memberId, request);
         return ResponseEntity.ok(member);
     }
 
     @PostMapping("/{id}/leave")
     @Operation(summary = "Leave workspace")
     public ResponseEntity<Void> leaveWorkspace(@PathVariable String id) {
-        String userId = getCurrentUserId();
-        workspaceService.leaveWorkspace(id, userId);
+        workspaceService.leaveWorkspace(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Invite management
+
+    @GetMapping("/invites")
+    @Operation(summary = "Get my pending invites")
+    public ResponseEntity<List<WorkspaceInvite>> getMyInvites() {
+        List<WorkspaceInvite> invites = workspaceService.getMyInvites();
+        return ResponseEntity.ok(invites);
+    }
+
+    @PostMapping("/invites/{inviteId}/accept")
+    @Operation(summary = "Accept workspace invite")
+    public ResponseEntity<WorkspaceMember> acceptInvite(@PathVariable String inviteId) {
+        WorkspaceMember member = workspaceService.acceptInvite(inviteId);
+        return ResponseEntity.ok(member);
+    }
+
+    @PostMapping("/invites/{inviteId}/reject")
+    @Operation(summary = "Reject workspace invite")
+    public ResponseEntity<Void> rejectInvite(@PathVariable String inviteId) {
+        workspaceService.rejectInvite(inviteId);
         return ResponseEntity.noContent().build();
     }
 }

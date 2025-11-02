@@ -17,11 +17,25 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
     // Find all members of a workspace
     List<WorkspaceMember> findByWorkspaceId(String workspaceId);
 
+    // Find all workspaces where user is a member (with workspace eagerly loaded)
+    @Query("SELECT m FROM WorkspaceMember m JOIN FETCH m.workspace WHERE m.userId = :userId")
+    List<WorkspaceMember> findByUserIdWithWorkspace(@Param("userId") String userId);
+
+    // Find workspace IDs for a user (returns only IDs, no lazy loading)
+    @Query("SELECT m.workspace.id FROM WorkspaceMember m WHERE m.userId = :userId")
+    List<String> findWorkspaceIdsByUserId(@Param("userId") String userId);
+
+    // Find all workspaces where user is a member
+    List<WorkspaceMember> findByUserId(String userId);
+
     // Find specific member in workspace
     Optional<WorkspaceMember> findByWorkspaceIdAndUserId(String workspaceId, String userId);
 
     // Check if user is member of workspace
     boolean existsByWorkspaceIdAndUserId(String workspaceId, String userId);
+
+    // Count members in workspace
+    long countByWorkspaceId(String workspaceId);
 
     // Delete member from workspace
     void deleteByWorkspaceIdAndUserId(String workspaceId, String userId);

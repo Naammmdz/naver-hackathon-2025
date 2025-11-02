@@ -15,8 +15,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useBoardStore } from '@/store/boardStore';
+import { useWorkspaceStore } from '@/store/workspaceStore';
 import type { Board } from '@/types/board';
 import {
     Edit2,
@@ -26,7 +28,7 @@ import {
     Search,
     Trash2,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 export default function BoardSidebar() {
   const {
@@ -48,6 +50,17 @@ export default function BoardSidebar() {
     isLoading: state.isLoading,
     error: state.error,
   }));
+
+  const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
+  const { toast } = useToast();
+
+  const notifyReadOnly = useCallback(() => {
+    toast({
+      title: 'Chỉ xem',
+      description: 'Bạn chỉ có quyền xem trong workspace này.',
+      variant: 'destructive',
+    });
+  }, [toast]);
 
   // Filter boards by active workspace
   const workspaceFilteredBoards = useWorkspaceFilter(boards);
@@ -189,7 +202,13 @@ export default function BoardSidebar() {
             <Button
               size="sm"
               variant="ghost"
-              onClick={() => setShowNewBoardInput(true)}
+              onClick={() => {
+                if (!canEditWorkspace) {
+                  notifyReadOnly();
+                  return;
+                }
+                setShowNewBoardInput(true);
+              }}
               className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
               disabled={isLoading}
             >

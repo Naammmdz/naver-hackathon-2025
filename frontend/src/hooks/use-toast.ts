@@ -2,8 +2,8 @@ import * as React from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_LIMIT = 3;
+const TOAST_REMOVE_DELAY = 4000;
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -126,7 +126,10 @@ const listeners: Array<(state: State) => void> = [];
 let memoryState: State = { toasts: [] };
 
 function dispatch(action: Action) {
+  console.log("[use-toast] Dispatching action:", action);
   memoryState = reducer(memoryState, action);
+  console.log("[use-toast] New memory state:", memoryState);
+  console.log("[use-toast] Number of listeners:", listeners.length);
   listeners.forEach((listener) => {
     listener(memoryState);
   });
@@ -174,7 +177,7 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []);
 
   return {
     ...state,
@@ -183,4 +186,5 @@ function useToast() {
   };
 }
 
-export { useToast, toast };
+export { toast, useToast };
+

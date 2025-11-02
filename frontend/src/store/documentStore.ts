@@ -44,9 +44,33 @@ const findFirstActiveDocumentId = (documents: Document[]): string | null => {
 };
 
 export const useDocumentStore = create<DocumentState>((set, get) => {
+  const viewerError = "Bạn chỉ có quyền xem trong workspace này.";
+  const notifyViewer = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("workspace-readonly"));
+    }
+  };
+
+  const canEditWorkspace = () => {
+    const workspaceState = useWorkspaceStore.getState();
+    if (!workspaceState.activeWorkspaceId) {
+      return true;
+    }
+    if (!workspaceState.canEditActiveWorkspace()) {
+      set({ error: viewerError });
+      notifyViewer();
+      return false;
+    }
+    return true;
+  };
+
   const persistDocument = async (id: string) => {
     const document = get().documents.find((doc) => doc.id === id);
     if (!document) {
+      return;
+    }
+
+    if (!canEditWorkspace()) {
       return;
     }
 
@@ -100,7 +124,9 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
 
     loadDocuments: async () => {
       const userId = get().currentUserId;
-      if (!userId) {
+      const workspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+      
+      if (!userId || !workspaceId) {
         set({ documents: [], activeDocumentId: null, isLoading: false });
         return;
       }
@@ -108,12 +134,10 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       set({ isLoading: true, error: null });
       try {
         const [activeDocs, trashedDocs] = await Promise.all([
-          documentApi.list(),
+          documentApi.listByWorkspace(workspaceId),
           documentApi.listTrashed(),
         ]);
-        const documents = mergeDocuments(activeDocs, trashedDocs).filter(
-          (doc) => doc.userId === userId,
-        );
+        const documents = mergeDocuments(activeDocs, trashedDocs);
         set((state) => ({
           documents,
           activeDocumentId:
@@ -134,6 +158,10 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       const userId = get().currentUserId;
       if (!userId) {
         set({ error: "Bạn cần đăng nhập để tạo tài liệu mới." });
+        return undefined;
+      }
+
+      if (!canEditWorkspace()) {
         return undefined;
       }
 
@@ -158,13 +186,20 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
 
         return created.id;
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-        });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     updateDocument: async (id, updates) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       const existing = get().documents.find((doc) => doc.id === id);
       if (!existing) {
         return;
@@ -187,6 +222,9 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
     },
 
     deleteDocument: async (id) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await documentApi.delete(id);
         set((state) => {
@@ -212,13 +250,20 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
           };
         });
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-        });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     restoreDocument: async (id) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await documentApi.restore(id);
         const refreshed = await documentApi.get(id);
@@ -227,13 +272,20 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
           error: null,
         }));
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-        });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     permanentlyDeleteDocument: async (id) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await documentApi.deletePermanent(id);
         set((state) => {
@@ -249,9 +301,13 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
           };
         });
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : String(error),
-        });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 

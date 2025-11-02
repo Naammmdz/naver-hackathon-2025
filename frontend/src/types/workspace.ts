@@ -45,9 +45,10 @@ export interface UpdateWorkspaceInput {
 export interface WorkspaceInvite {
   id: string;
   workspaceId: string;
-  email: string;
+  email: string; // Email address of the invited user
   role: "admin" | "member" | "viewer";
   invitedBy: string;
+  status: "pending" | "accepted" | "rejected" | "expired";
   expiresAt: string;
   createdAt: string;
 }

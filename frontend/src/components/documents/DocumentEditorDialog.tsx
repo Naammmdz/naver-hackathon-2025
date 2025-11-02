@@ -8,6 +8,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useDocumentStore } from "@/store/documentStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import "@blocknote/core/fonts/inter.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
@@ -29,6 +30,7 @@ export function DocumentEditorDialog({
     getDocument,
     updateDocument,
   } = useDocumentStore();
+  const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
 
   const document = documentId ? getDocument(documentId) : null;
 
@@ -78,7 +80,7 @@ export function DocumentEditorDialog({
 
   // Save content to store whenever it changes
   const handleChange = async () => {
-    if (!documentId) return;
+    if (!documentId || !canEditWorkspace) return;
 
     try {
       const content = editor.document;
@@ -102,6 +104,10 @@ export function DocumentEditorDialog({
   };
 
   const handleSave = () => {
+    if (!canEditWorkspace) {
+      onOpenChange(false);
+      return;
+    }
     handleChange();
     onOpenChange(false);
   };
@@ -116,7 +122,9 @@ export function DocumentEditorDialog({
             <span>📄 {document.title}</span>
           </DialogTitle>
           <DialogDescription>
-            Edit document content. Changes will be saved automatically.
+            {canEditWorkspace
+              ? "Edit document content. Changes will be saved automatically."
+              : "Bạn đang ở chế độ chỉ xem. Nội dung sẽ không thể chỉnh sửa."}
           </DialogDescription>
         </DialogHeader>
 
@@ -127,6 +135,7 @@ export function DocumentEditorDialog({
               onChange={handleChange}
               theme="light"
               className="h-full"
+              editable={canEditWorkspace}
             />
           </div>
         </div>
@@ -135,7 +144,7 @@ export function DocumentEditorDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={!canEditWorkspace}>
             Save & Close
           </Button>
         </DialogFooter>

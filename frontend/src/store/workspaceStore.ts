@@ -1,3 +1,4 @@
+import { apiAuthContext } from "@/lib/api/authContext";
 import { workspaceApi } from "@/lib/api/workspaceApi";
 import type {
     CreateWorkspaceInput,
@@ -19,15 +20,18 @@ interface WorkspaceState {
   // Actions
   initialize: () => Promise<void>;
   loadWorkspaces: () => Promise<void>;
+  refreshWorkspaces: () => Promise<void>; // Alias for loadWorkspaces
   createWorkspace: (input: CreateWorkspaceInput) => Promise<Workspace | undefined>;
   updateWorkspace: (id: string, input: UpdateWorkspaceInput) => Promise<void>;
   deleteWorkspace: (id: string) => Promise<void>;
   setActiveWorkspace: (id: string | null) => void;
   getActiveWorkspace: () => Workspace | undefined;
+  getCurrentMemberRole: () => WorkspaceMember["role"] | null;
+  canEditActiveWorkspace: () => boolean;
 
   // Members
   loadMembers: (workspaceId: string) => Promise<void>;
-  inviteMember: (workspaceId: string, email: string, role: "admin" | "member" | "viewer") => Promise<void>;
+  inviteMember: (workspaceId: string, username: string, role: "admin" | "member" | "viewer") => Promise<void>;
   removeMember: (workspaceId: string, memberId: string) => Promise<void>;
   updateMemberRole: (workspaceId: string, memberId: string, role: "admin" | "member" | "viewer") => Promise<void>;
   leaveWorkspace: (workspaceId: string) => Promise<void>;
@@ -69,12 +73,40 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         set({ isLoading: true, error: null });
         try {
           const workspaces = await workspaceApi.getWorkspaces();
-          set({ workspaces, isLoading: false });
+          const currentActiveId = get().activeWorkspaceId;
+          const hasActiveWorkspace =
+            currentActiveId !== null &&
+            workspaces.some((workspace) => workspace.id === currentActiveId);
+
+          const nextActiveWorkspaceId = hasActiveWorkspace
+            ? currentActiveId
+            : workspaces.length > 0
+              ? workspaces[0].id
+              : null;
+
+          console.log("[loadWorkspaces] currentActiveId:", currentActiveId, "nextActiveWorkspaceId:", nextActiveWorkspaceId);
+
+          set({
+            workspaces,
+            activeWorkspaceId: nextActiveWorkspaceId,
+            isLoading: false,
+          });
+
+          // Always load members for active workspace
+          if (nextActiveWorkspaceId) {
+            console.log("[loadWorkspaces] Calling loadMembers for:", nextActiveWorkspaceId);
+            void get().loadMembers(nextActiveWorkspaceId);
+          }
         } catch (error) {
           console.error("Failed to load workspaces:", error);
           // Set empty array on error so app doesn't break
           set({ workspaces: [], error: "Failed to load workspaces", isLoading: false });
         }
+      },
+
+      refreshWorkspaces: async () => {
+        // Alias for loadWorkspaces
+        await get().loadWorkspaces();
       },
 
       createWorkspace: async (input: CreateWorkspaceInput) => {
@@ -129,8 +161,10 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       },
 
       setActiveWorkspace: (id: string | null) => {
+        console.log("[setActiveWorkspace] Setting active workspace:", id);
         set({ activeWorkspaceId: id });
         if (id) {
+          console.log("[setActiveWorkspace] Calling loadMembers for:", id);
           get().loadMembers(id);
         }
       },
@@ -140,18 +174,45 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         return workspaces.find((w) => w.id === activeWorkspaceId);
       },
 
+      getCurrentMemberRole: () => {
+        const userId = apiAuthContext.getCurrentUserId();
+        console.log("[getCurrentMemberRole] userId:", userId);
+        if (!userId) {
+          return null;
+        }
+        const members = get().members;
+        const currentMember = members.find((member) => member.userId === userId);
+        console.log("[getCurrentMemberRole] members:", members);
+        console.log("[getCurrentMemberRole] currentMember:", currentMember);
+        return currentMember?.role ?? null;
+      },
+
+      canEditActiveWorkspace: () => {
+        const activeWorkspaceId = get().activeWorkspaceId;
+        if (!activeWorkspaceId) {
+          return true;
+        }
+        const role = get().getCurrentMemberRole();
+        if (!role) {
+          return true;
+        }
+        return role !== "viewer";
+      },
+
       loadMembers: async (workspaceId: string) => {
+        console.log("[loadMembers] Loading members for workspace:", workspaceId);
         try {
           const members = await workspaceApi.getMembers(workspaceId);
+          console.log("[loadMembers] Loaded members:", members);
           set({ members });
         } catch (error) {
           console.error("Failed to load members:", error);
         }
       },
 
-      inviteMember: async (workspaceId: string, email: string, role: "admin" | "member" | "viewer") => {
+      inviteMember: async (workspaceId: string, username: string, role: "admin" | "member" | "viewer") => {
         try {
-          await workspaceApi.inviteMember(workspaceId, email, role);
+          await workspaceApi.inviteMember(workspaceId, username, role);
           // Reload members after invite
           await get().loadMembers(workspaceId);
         } catch (error) {

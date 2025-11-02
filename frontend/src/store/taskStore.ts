@@ -76,11 +76,27 @@ const defaultSort: TaskSort = {
 };
 
 export const useTaskStore = create<TaskState>((set, get) => {
+  const viewerError = "Bạn chỉ có quyền xem trong workspace này.";
+  const notifyViewer = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("workspace-readonly"));
+    }
+  };
+
+  const canEditWorkspace = () => {
+    const workspaceState = useWorkspaceStore.getState();
+    if (!workspaceState.activeWorkspaceId) {
+      return true;
+    }
+    if (!workspaceState.canEditActiveWorkspace()) {
+      set({ error: viewerError });
+      notifyViewer();
+      return false;
+    }
+    return true;
+  };
   const setTasks = (tasks: Task[]) => {
-    const userId = get().currentUserId;
-    set({
-      tasks: userId ? tasks.filter((task) => task.userId === userId) : [],
-    });
+    set({ tasks });
   };
 
   const updateTaskInState = (updated: Task) => {
@@ -126,14 +142,16 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
     loadTasks: async () => {
       const userId = get().currentUserId;
-      if (!userId) {
+      const workspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+      
+      if (!userId || !workspaceId) {
         set({ tasks: [], isLoading: false });
         return;
       }
 
       set({ isLoading: true, error: null });
       try {
-        const tasks = await taskApi.list();
+        const tasks = await taskApi.listByWorkspace(workspaceId);
         set({ tasks, isLoading: false });
       } catch (error) {
         set({
@@ -149,6 +167,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
         set({ error: "Bạn cần đăng nhập để tạo công việc mới." });
         return undefined;
       }
+      if (!canEditWorkspace()) {
+        return undefined;
+      }
 
       try {
         const order = getNextOrderIndex(input.status);
@@ -158,11 +179,21 @@ export const useTaskStore = create<TaskState>((set, get) => {
         return created;
       } catch (error) {
         console.error('Error creating task:', error);
-        set({ error: error instanceof Error ? error.message : String(error) });
+        // Check if error is permission-related (403 or 500)
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     updateTask: async (input) => {
+      if (!canEditWorkspace()) {
+        return undefined;
+      }
       try {
         const existing = get().tasks.find((task) => task.id === input.id);
         if (!existing) {
@@ -180,20 +211,38 @@ export const useTaskStore = create<TaskState>((set, get) => {
         updateTaskInState(updated);
         return updated;
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : String(error) });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     deleteTask: async (id) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskApi.delete(id);
         removeTaskFromState(id);
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : String(error) });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     deleteTasks: async (ids) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await Promise.all(ids.map((id) => taskApi.delete(id)));
         set((state) => ({
@@ -201,29 +250,56 @@ export const useTaskStore = create<TaskState>((set, get) => {
           selectedTaskIds: state.selectedTaskIds.filter((taskId) => !ids.includes(taskId)),
         }));
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : String(error) });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     moveTask: async (id, status) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskApi.move(id, status);
         await refreshTaskFromApi(id);
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : String(error) });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     moveTasks: async (ids, status) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await Promise.all(ids.map((id) => taskApi.move(id, status)));
         await get().loadTasks();
       } catch (error) {
-        set({ error: error instanceof Error ? error.message : String(error) });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+          set({ error: viewerError });
+          notifyViewer();
+        } else {
+          set({ error: errorMessage });
+        }
       }
     },
 
     reorderTasks: async (sourceIndex, destinationIndex, status) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       const filtered = get().getFilteredTasksByStatus(status);
       const sourceTask = filtered[sourceIndex];
       const targetTask = filtered[destinationIndex];
@@ -272,6 +348,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
     },
 
     addSubtask: async (taskId, title) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskApi.addSubtask(taskId, title);
         await refreshTaskFromApi(taskId);
@@ -281,6 +360,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
     },
 
     updateSubtask: async (taskId, subtaskId, updates) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskApi.updateSubtask(taskId, subtaskId, updates);
         await refreshTaskFromApi(taskId);
@@ -290,6 +372,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
     },
 
     deleteSubtask: async (taskId, subtaskId) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskApi.deleteSubtask(taskId, subtaskId);
         await refreshTaskFromApi(taskId);
@@ -315,6 +400,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
     },
 
     executeBulkAction: async (payload) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       const { action, taskIds, tag } = payload;
 
       switch (action) {

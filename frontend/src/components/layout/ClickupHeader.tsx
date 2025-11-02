@@ -1,19 +1,24 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InviteNotifications } from '@/components/workspace/InviteNotifications';
+import { ReadOnlyBadge } from '@/components/workspace/ReadOnlyBadge';
 import { useTaskStore } from '@/store/taskStore';
-import { Bell, Languages, Menu, Moon, Search, Sun } from 'lucide-react';
+import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CollaborationPresence } from './CollaborationPresence';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
-  currentView: 'tasks' | 'docs' | 'board';
+  currentView: 'tasks' | 'docs' | 'board' | 'settings';
+  onNavigateToSettings?: () => void;
 }
 
 export function ClickupHeader({
   onMenuClick,
   currentView,
+  onNavigateToSettings,
 }: ClickupHeaderProps) {
   const { filters, setFilters } = useTaskStore();
   const [isDark, setIsDark] = useState(false);
@@ -78,14 +83,19 @@ export function ClickupHeader({
         <div className="flex items-center gap-3 flex-1">
           {/* Workspace Selector */}
           <div className="hidden sm:block min-w-[200px]">
-            <WorkspaceSwitcher />
+            <WorkspaceSwitcher onNavigateToSettings={onNavigateToSettings} />
           </div>
 
           <div className="hidden sm:block h-6 w-px bg-border" />
 
           {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-            <span>/ {currentView === 'tasks' ? 'Tasks' : 'Documents'}</span>
+            <span>
+              / {currentView === 'tasks' && 'Tasks'}
+              {currentView === 'docs' && 'Documents'}
+              {currentView === 'board' && 'Board'}
+              {currentView === 'settings' && 'Settings'}
+            </span>
           </div>
         </div>
 
@@ -103,55 +113,58 @@ export function ClickupHeader({
         </div>
 
         {/* Right Section - Actions */}
-        <div className="flex items-center gap-1">
-          {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative hidden sm:flex hover-surface"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1 right-0.5 h-2 w-2 bg-primary rounded-full" />
-          </Button>
+        <div className="flex items-center gap-3">
+          {/* Read Only Badge */}
+          <ReadOnlyBadge />
+          
+          {/* Collaboration Presence */}
+          <CollaborationPresence />
+          
+          <div className="h-6 w-px bg-border hidden sm:block" />
+          
+          <div className="flex items-center gap-1">
+            {/* Notifications - Real-time Invites */}
+            <InviteNotifications />
 
-          {/* Language Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLanguage}
-            className="hidden sm:flex gap-1 hover-surface"
-            title={
-              i18n.language === 'en'
-                ? 'Switch to Vietnamese'
-                : 'Chuyển sang tiếng Anh'
-            }
-          >
-            <Languages className="h-4 w-4" />
-          </Button>
+            {/* Language Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleLanguage}
+              className="hidden sm:flex gap-1 hover-surface"
+              title={
+                i18n.language === 'en'
+                  ? 'Switch to Vietnamese'
+                  : 'Chuyển sang tiếng Anh'
+              }
+            >
+              <Languages className="h-4 w-4" />
+            </Button>
 
-          {/* Dark Mode Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleDarkMode}
-            className="hidden sm:flex hover-surface"
-          >
-            {isDark ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </Button>
+            {/* Dark Mode Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleDarkMode}
+              className="hidden sm:flex hover-surface"
+            >
+              {isDark ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
 
-          {/* Mobile Menu */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMenuClick}
-            className="sm:hidden hover-surface"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
+            {/* Mobile Menu */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMenuClick}
+              className="sm:hidden hover-surface"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </header>

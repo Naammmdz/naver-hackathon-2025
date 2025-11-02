@@ -18,21 +18,35 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import { Check, ChevronDown, Plus, Settings, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Pencil, Plus, Settings, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
+import { RenameWorkspaceDialog } from "./RenameWorkspaceDialog";
 
-export function WorkspaceSwitcher() {
-  const { workspaces, activeWorkspaceId, setActiveWorkspace, deleteWorkspace } = useWorkspaceStore();
+interface WorkspaceSwitcherProps {
+  onNavigateToSettings?: () => void;
+}
+
+export function WorkspaceSwitcher({ onNavigateToSettings }: WorkspaceSwitcherProps) {
+  const { workspaces, activeWorkspaceId, setActiveWorkspace, deleteWorkspace, getCurrentMemberRole } = useWorkspaceStore();
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
+  const currentMemberRole = getCurrentMemberRole();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<string | null>(null);
+  const [workspaceToRename, setWorkspaceToRename] = useState<{ id: string; name: string } | null>(null);
 
   const handleDeleteClick = (workspaceId: string, workspaceName: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setWorkspaceToDelete(workspaceId);
     setDeleteDialogOpen(true);
+  };
+
+  const handleRenameClick = (workspaceId: string, workspaceName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setWorkspaceToRename({ id: workspaceId, name: workspaceName });
+    setRenameDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
@@ -69,7 +83,7 @@ export function WorkspaceSwitcher() {
             <div key={workspace.id} className="relative group">
               <DropdownMenuItem
                 onClick={() => setActiveWorkspace(workspace.id)}
-                className="flex items-center gap-2 cursor-pointer pr-10"
+                className="flex items-center gap-2 cursor-pointer pr-16"
               >
                 <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/10 text-xs font-semibold group-hover:bg-primary/20 transition-colors">
                   {workspace.name.charAt(0).toUpperCase()}
@@ -79,7 +93,18 @@ export function WorkspaceSwitcher() {
                   <Check className="h-4 w-4 text-foreground group-hover:text-background transition-colors" />
                 )}
               </DropdownMenuItem>
-              <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10 pointer-events-none group-hover:pointer-events-auto">
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 z-10 flex items-center gap-1 pointer-events-none group-hover:pointer-events-auto">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-foreground group-hover:text-background hover:bg-accent/50 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRenameClick(workspace.id, workspace.name, e);
+                  }}
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -105,16 +130,28 @@ export function WorkspaceSwitcher() {
             <Plus className="mr-2 h-4 w-4" />
             Create Workspace
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            Workspace Settings
-          </DropdownMenuItem>
+          {currentMemberRole === "owner" && (
+            <DropdownMenuItem 
+              className="cursor-pointer"
+              onClick={() => onNavigateToSettings?.()}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Workspace Settings
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
       <CreateWorkspaceDialog 
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen}
+      />
+
+      <RenameWorkspaceDialog
+        open={renameDialogOpen}
+        onOpenChange={setRenameDialogOpen}
+        workspaceId={workspaceToRename?.id ?? null}
+        currentName={workspaceToRename?.name ?? ""}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

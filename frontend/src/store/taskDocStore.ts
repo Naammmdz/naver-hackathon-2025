@@ -1,8 +1,9 @@
 import { taskDocApi } from "@/lib/api/taskDocApi";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import {
-  CreateTaskDocInput,
-  TaskDoc,
-  TaskDocRelationType,
+    CreateTaskDocInput,
+    TaskDoc,
+    TaskDocRelationType,
 } from "@/types/taskDoc";
 import { create } from "zustand";
 
@@ -44,6 +45,36 @@ const sortByCreatedAt = (taskDocs: TaskDoc[]) =>
   [...taskDocs].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
 export const useTaskDocStore = create<TaskDocState>((set, get) => {
+  const viewerError = "Bạn chỉ có quyền xem trong workspace này.";
+  const notifyViewer = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("workspace-readonly"));
+    }
+  };
+
+  const canEditWorkspace = () => {
+    const workspaceState = useWorkspaceStore.getState();
+    if (!workspaceState.activeWorkspaceId) {
+      return true;
+    }
+    if (!workspaceState.canEditActiveWorkspace()) {
+      set({ error: viewerError });
+      notifyViewer();
+      return false;
+    }
+    return true;
+  };
+
+  const handleError = (error: unknown) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
+      set({ error: viewerError });
+      notifyViewer();
+    } else {
+      set({ error: errorMessage });
+    }
+  };
+
   const upsertTaskDoc = (taskDoc: TaskDoc) => {
     set((state) => ({
       taskDocs: sortByCreatedAt(
@@ -92,6 +123,10 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
         return undefined;
       }
 
+      if (!canEditWorkspace()) {
+        return undefined;
+      }
+
       try {
         if (get().hasRelation(input.taskId, input.docId)) {
           return get().getRelation(input.taskId, input.docId);
@@ -112,6 +147,9 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     removeTaskDoc: async (id) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskDocApi.delete(id);
         removeTaskDocs((taskDoc) => taskDoc.id !== id);
@@ -123,6 +161,9 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     removeTaskDocsByTask: async (taskId) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskDocApi.deleteByTask(taskId);
         removeTaskDocs((taskDoc) => taskDoc.taskId !== taskId);
@@ -134,6 +175,9 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     removeTaskDocsByDoc: async (docId) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       try {
         await taskDocApi.deleteByDoc(docId);
         removeTaskDocs((taskDoc) => taskDoc.docId !== docId);
@@ -145,6 +189,9 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     updateTaskDocNote: async (id, note) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       const existing = get().taskDocs.find((taskDoc) => taskDoc.id === id);
       if (!existing) {
         return;
@@ -166,6 +213,9 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
     },
 
     updateTaskDocRelationType: async (id, relationType) => {
+      if (!canEditWorkspace()) {
+        return;
+      }
       const existing = get().taskDocs.find((taskDoc) => taskDoc.id === id);
       if (!existing) {
         return;
@@ -190,6 +240,10 @@ export const useTaskDocStore = create<TaskDocState>((set, get) => {
       const userId = get().currentUserId;
       if (!userId) {
         set({ error: "Bạn cần đăng nhập để liên kết tài liệu." });
+        return;
+      }
+
+      if (!canEditWorkspace()) {
         return;
       }
 
