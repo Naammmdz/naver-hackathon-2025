@@ -1,10 +1,9 @@
-import { Search, Moon, Sun, Download, Settings, Languages, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTaskStore } from "@/store/taskStore";
-import { useState, useEffect } from "react";
+import { Languages, Moon, Search, Settings, Sun, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 
 interface AppHeaderProps {
   onSmartCreate?: () => void;
@@ -106,7 +105,7 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
           {onSmartCreate && (
             <Button 
               onClick={onSmartCreate}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/60 hover:from-primary/90 hover:to-primary/70"
+              className="flex items-center gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
               size="sm"
             >
               <Zap className="h-4 w-4" />

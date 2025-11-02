@@ -3,16 +3,16 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useTaskStore } from '@/store/taskStore';
 import {
-    CheckSquare,
-    ChevronDown,
-    CircleCheck,
-    Clock,
-    FileText,
-    Home,
-    Plus,
-    Search,
-    Settings,
-    X
+  CheckSquare,
+  ChevronDown,
+  CircleCheck,
+  Clock,
+  FileText,
+  Home,
+  Plus,
+  Search,
+  Settings,
+  X
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -102,7 +102,7 @@ export function ClickupSidebar({
         </div>
 
         {/* Create New Button */}
-        <Button className="w-full justify-start gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button className="w-full justify-start gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all">
           <Plus className="h-4 w-4" />
           <span className="text-sm font-medium">New Project</span>
         </Button>
@@ -140,13 +140,21 @@ export function ClickupSidebar({
                 <Button
                   key={item.id}
                   variant={currentView === 'tasks' ? 'secondary' : 'ghost'}
-                  className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted"
+                  className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted group relative overflow-hidden"
                   onClick={() => onViewChange('tasks')}
                 >
-                  <item.icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="flex-1 text-left">{item.label}</span>
+                  {currentView === 'tasks' && item.id === 'my-tasks' && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#38bdf8]/10 via-[#a855f7]/10 to-[#f97316]/10 opacity-50" />
+                  )}
+                  <item.icon className="h-4 w-4 flex-shrink-0 relative z-10" />
+                  <span className="flex-1 text-left relative z-10">{item.label}</span>
                   {item.count !== undefined && (
-                    <span className="text-xs bg-muted px-2 py-0.5 rounded">
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded relative z-10",
+                      item.id === 'my-tasks' && item.count > 0
+                        ? "bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white"
+                        : "bg-muted"
+                    )}>
                       {item.count}
                     </span>
                   )}
@@ -180,13 +188,20 @@ export function ClickupSidebar({
                 <Button
                   key={item.id}
                   variant="ghost"
-                  className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted"
+                  className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted group"
                   onClick={() => onViewChange('tasks')}
                 >
                   <item.icon className="h-4 w-4 flex-shrink-0" />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.count !== undefined && (
-                    <span className="text-xs bg-muted px-2 py-0.5 rounded">
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded transition-all",
+                      item.id === 'in-progress' && item.count > 0
+                        ? "bg-gradient-to-r from-[#a855f7] to-[#f97316] text-white shadow-sm"
+                        : item.id === 'completed' && item.count > 0
+                        ? "bg-[#38bdf8] text-white"
+                        : "bg-muted"
+                    )}>
                       {item.count}
                     </span>
                   )}
@@ -218,18 +233,24 @@ export function ClickupSidebar({
             <div className="pl-2 space-y-1">
               <Button
                 variant={currentView === 'tasks' ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted"
+                className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted relative overflow-hidden group"
                 onClick={() => onViewChange('tasks')}
               >
+                {currentView === 'tasks' && (
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#38bdf8] via-[#a855f7] to-[#f97316]" />
+                )}
                 <CheckSquare className="h-4 w-4 flex-shrink-0" />
                 <span className="flex-1 text-left">Task Board</span>
               </Button>
 
               <Button
                 variant={currentView === 'docs' ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted"
+                className="w-full justify-start gap-3 text-sm h-9 text-foreground hover:bg-muted relative overflow-hidden group"
                 onClick={() => onViewChange('docs')}
               >
+                {currentView === 'docs' && (
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#38bdf8] via-[#a855f7] to-[#f97316]" />
+                )}
                 <FileText className="h-4 w-4 flex-shrink-0" />
                 <span className="flex-1 text-left">Documents</span>
               </Button>

@@ -1,24 +1,23 @@
-import { useMemo } from "react";
-import { format } from "date-fns";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  CheckCircle, 
-  Clock, 
-  AlertTriangle,
-  Target,
-  Calendar,
-  Tag,
-  Activity,
-  Award
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAnalytics } from "@/hooks/use-analytics";
-import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+import {
+    Activity,
+    AlertTriangle,
+    Award,
+    BarChart3,
+    Calendar,
+    CheckCircle,
+    Clock,
+    Tag,
+    Target,
+    TrendingUp
+} from "lucide-react";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 // Simple chart components using CSS and HTML
 interface SimpleBarChartProps {
@@ -448,7 +447,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCreatedTasks} 
-              color="bg-primary"
+              color="bg-gradient-to-t from-[#60a5fa] to-[#3b82f6]"
             />
           </CardContent>
         </Card>
@@ -460,7 +459,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCompletedTasks} 
-              color="bg-accent"
+              color="bg-gradient-to-t from-[#34d399] to-[#10b981]"
             />
           </CardContent>
         </Card>

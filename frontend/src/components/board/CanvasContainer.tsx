@@ -148,7 +148,7 @@ export function CanvasContainer() {
             <Button
               onClick={() => void addBoard('Board đầu tiên')}
               size="lg"
-              className="gap-2"
+              className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
               disabled={isLoading}
             >
               <Sparkles className="h-4 w-4" />

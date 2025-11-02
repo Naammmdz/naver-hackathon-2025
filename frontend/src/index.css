@@ -60,6 +60,11 @@ All colors MUST be HSL.
     --priority-medium: 30 82% 54%;
     --priority-low: 204 82% 56%;
 
+    /* Chart colors for analytics */
+    --chart-1: 204 82% 56%; /* Blue - for Todo */
+    --chart-2: 30 82% 54%; /* Orange - for In Progress */
+    --chart-3: 142 76% 36%; /* Green - for Done */
+
     /* Border system */
     --border: 0 0% 88%;
     --border-strong: 0 0% 80%;
@@ -142,6 +147,11 @@ All colors MUST be HSL.
     --priority-high: 1 74% 62%;
     --priority-medium: 28 84% 58%;
     --priority-low: 202 88% 68%;
+
+    /* Dark chart colors for analytics */
+    --chart-1: 202 88% 68%; /* Blue - for Todo */
+    --chart-2: 28 84% 58%; /* Orange - for In Progress */
+    --chart-3: 142 70% 45%; /* Green - for Done */
 
     /* Dark borders */
     --border: 0 0% 16%;

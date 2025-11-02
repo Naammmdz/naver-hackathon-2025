@@ -28,11 +28,11 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const },
-    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const },
-    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const },
-    { id: 'team', icon: Users, label: 'Teams' },
+    { id: 'home', icon: Home, label: 'Home', gradient: 'from-[#60a5fa] to-[#38bdf8]' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-[#c084fc] to-[#a78bfa]' },
+    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-[#fb923c] to-[#fdba74]' },
+    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-[#f472b6] to-[#fb7185]' },
+    { id: 'team', icon: Users, label: 'Teams', gradient: 'from-[#34d399] to-[#4ade80]' },
   ];
 
   const spaces = [
@@ -53,12 +53,13 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'doc', name: 'IT Doc' },
   ];
   const gradientClass = 'bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316]';
+  const monochromeGradientClass = 'bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50';
 
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
       <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar-primary text-sidebar-primary-foreground border border-sidebar-border/60 shadow-sm">
-        <div className="w-10 h-10 rounded-lg bg-sidebar-foreground/20 hover:bg-sidebar-foreground/30 flex items-center justify-center hover:shadow-lg transition-all cursor-pointer" onClick={() => window.location.href = '/'}>
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer" onClick={() => window.location.href = '/'}>
           <img
             src="/devflow-demo.png"
             alt="DevFlow Logo"
@@ -71,20 +72,45 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
         {navItems.map(item => (
           <div key={item.id} className="flex flex-col items-center gap-0.5 relative group">
             <div className="relative">
+              {/* Background gradient - always visible with item color */}
               <div
                 className={cn(
-                  'pointer-events-none absolute inset-0 rounded-xl opacity-0 blur-sm transition-all duration-300 z-0',
-                  gradientClass,
-                  activeNav === item.id ? 'opacity-75' : 'group-hover:opacity-60'
+                  'pointer-events-none absolute inset-0 rounded-xl transition-all duration-300 z-0 bg-gradient-to-br',
+                  item.gradient,
+                  activeNav === item.id 
+                    ? 'opacity-100 dark:opacity-50' 
+                    : 'opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30'
                 )}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all text-sidebar-primary-foreground bg-sidebar-foreground/0 hover:bg-sidebar-foreground/10',
-                  activeNav === item.id && 'bg-sidebar-foreground/10 text-sidebar-primary-foreground shadow-lg shadow-[#a855f7]/25'
+                  'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
+                  activeNav === item.id 
+                    ? 'text-foreground dark:text-white shadow-lg' 
+                    : 'text-sidebar-primary-foreground/70'
                 )}
+                style={
+                  activeNav !== item.id
+                    ? {
+                        // @ts-ignore
+                        '--hover-color-light': '#ffffff',
+                        '--hover-color-dark': '#171717',
+                      }
+                    : undefined
+                }
+                onMouseEnter={(e) => {
+                  if (activeNav !== item.id) {
+                    const isDark = document.documentElement.classList.contains('dark');
+                    e.currentTarget.style.color = isDark ? '#171717' : '#ffffff';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeNav !== item.id) {
+                    e.currentTarget.style.color = '';
+                  }
+                }}
                 onClick={() => {
                   setActiveNav(item.id);
                   if (item.view && onViewChange) {
@@ -93,12 +119,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
                 }}
                 title={item.label}
               >
-                <item.icon
-                  className={cn(
-                    'h-4 w-4 transition-colors text-sidebar-primary-foreground/80 group-hover:text-sidebar-primary-foreground',
-                    activeNav === item.id && 'text-sidebar-primary-foreground'
-                  )}
-                />
+                <item.icon className="h-4 w-4 transition-colors" />
               </Button>
             </div>
             
@@ -107,9 +128,20 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
               className={cn(
                 'text-[10px] font-medium text-center leading-tight transition-colors',
                 activeNav === item.id
-                  ? 'text-sidebar-primary-foreground'
-                  : 'text-sidebar-primary-foreground/80 group-hover:text-sidebar-primary-foreground'
+                  ? 'text-foreground dark:text-white'
+                  : 'text-sidebar-primary-foreground/70'
               )}
+              onMouseEnter={(e) => {
+                if (activeNav !== item.id) {
+                  const isDark = document.documentElement.classList.contains('dark');
+                  e.currentTarget.style.color = isDark ? '#171717' : '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeNav !== item.id) {
+                  e.currentTarget.style.color = '';
+                }
+              }}
             >
               {item.label}
             </span>

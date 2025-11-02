@@ -1,5 +1,5 @@
+import { Send, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MessageSquareText, Send, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -205,9 +205,11 @@ export const GlobalChatPanel = () => {
                 )}
               >
                 {message.role === "assistant" && (
-                  <span className="mt-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <MessageSquareText className="h-4 w-4" />
-                  </span>
+                  <img 
+                    src="/assets/images/ai-avatar.png" 
+                    alt="AI Assistant" 
+                    className="mt-1 h-10 w-10 flex-shrink-0 rounded-full object-cover"
+                  />
                 )}
                 <p
                   className={cn(
