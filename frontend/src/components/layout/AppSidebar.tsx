@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useWorkspaceFilter } from "@/hooks/use-workspace-filter";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
 import type { TaskStatus } from "@/types/task";
@@ -33,6 +34,9 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
     error: state.error,
   }));
 
+  // Filter tasks by active workspace
+  const workspaceFilteredTasks = useWorkspaceFilter(tasks);
+
   const [tagSearch, setTagSearch] = useState("");
 
   const counts = useMemo(() => {
@@ -42,7 +46,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
     weekFromNow.setDate(weekFromNow.getDate() + 7);
 
     const summary = {
-      total: tasks.length,
+      total: workspaceFilteredTasks.length,
       todo: 0,
       progress: 0,
       done: 0,
@@ -54,7 +58,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
       thisWeek: 0,
     };
 
-    tasks.forEach((task) => {
+    workspaceFilteredTasks.forEach((task) => {
       summary.todo += task.status === "Todo" ? 1 : 0;
       summary.progress += task.status === "In Progress" ? 1 : 0;
       summary.done += task.status === "Done" ? 1 : 0;
@@ -72,15 +76,15 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
     });
 
     return summary;
-  }, [tasks]);
+  }, [workspaceFilteredTasks]);
 
   const tagCounts = useMemo(() => {
     const countsRecord = new Map<string, number>();
-    tasks.forEach((task) => {
+    workspaceFilteredTasks.forEach((task) => {
       task.tags.forEach((tag) => countsRecord.set(tag, (countsRecord.get(tag) ?? 0) + 1));
     });
     return Array.from(countsRecord.entries()).sort((a, b) => b[1] - a[1]);
-  }, [tasks]);
+  }, [workspaceFilteredTasks]);
 
   const filteredTags = useMemo(() => {
     if (!tagSearch.trim()) {

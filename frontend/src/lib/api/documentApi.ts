@@ -1,7 +1,7 @@
 import type {
-  CreateDocumentInput,
-  Document,
-  UpdateDocumentInput,
+    CreateDocumentInput,
+    Document,
+    UpdateDocumentInput,
 } from "@/types/document";
 import { apiAuthContext } from "./authContext";
 
@@ -19,6 +19,7 @@ interface DocumentApiResponse {
   trashed?: boolean | null;
   trashedAt?: string | null;
   userId?: string | null;
+  workspaceId?: string | null;
 }
 
 interface DocumentApiRequest {
@@ -28,6 +29,7 @@ interface DocumentApiRequest {
   parentId?: string | null;
   trashed?: boolean | null;
   userId?: string | null;
+  workspaceId?: string | null;
 }
 
 const toDate = (value?: string | null): Date => {
@@ -69,6 +71,7 @@ const mapDocumentFromApi = (document: DocumentApiResponse): Document => ({
   trashed: Boolean(document.trashed),
   trashedAt: document.trashedAt ? toDate(document.trashedAt) : null,
   userId: document.userId ?? apiAuthContext.getCurrentUserId() ?? "",
+  workspaceId: document.workspaceId ?? undefined,
 });
 
 const serializeDocumentPayload = (
@@ -91,6 +94,7 @@ const serializeDocumentPayload = (
         : null,
   trashed: defaults?.trashed ?? false,
   userId: payload.userId ?? defaults?.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
+  workspaceId: payload.workspaceId ?? defaults?.workspaceId ?? undefined,
 });
 
 const request = async <T>(

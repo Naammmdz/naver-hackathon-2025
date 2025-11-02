@@ -1,4 +1,5 @@
 import { taskApi } from "@/lib/api/taskApi";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import {
   BulkActionPayload,
   CreateTaskInput,
@@ -151,10 +152,12 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
       try {
         const order = getNextOrderIndex(input.status);
-        const created = await taskApi.create({ ...input, order, userId });
+        const workspaceId = useWorkspaceStore.getState().activeWorkspaceId ?? undefined;
+        const created = await taskApi.create({ ...input, order, userId, workspaceId });
         updateTaskInState(created);
         return created;
       } catch (error) {
+        console.error('Error creating task:', error);
         set({ error: error instanceof Error ? error.message : String(error) });
       }
     },
@@ -407,7 +410,14 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
     getFilteredTasks: () => {
       const { tasks, filters, sort } = get();
+      const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+      
       let filtered = [...tasks];
+
+      // Filter by workspace first
+      if (activeWorkspaceId) {
+        filtered = filtered.filter((task) => task.workspaceId === activeWorkspaceId);
+      }
 
       if (filters.status && filters.status.length > 0) {
         filtered = filtered.filter((task) => filters.status!.includes(task.status));

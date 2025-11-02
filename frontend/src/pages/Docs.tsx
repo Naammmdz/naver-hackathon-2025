@@ -2,8 +2,10 @@ import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import { CustomSlashMenu } from '@/components/documents/LinkTaskSlashItem';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
 import { Button } from '@/components/ui/button';
+import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
+import { useWorkspaceStore } from '@/store/workspaceStore';
 import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
@@ -25,9 +27,22 @@ export default function Docs() {
   } = useDocumentStore();
 
   const { tasks } = useTaskStore();
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+
+  // Filter documents by active workspace
+  const filteredDocuments = useWorkspaceFilter(documents);
 
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
-  const isTrashedDocument = activeDocument?.trashed;
+  
+  // Check if active document belongs to current workspace
+  const isDocumentInCurrentWorkspace = activeDocument 
+    ? activeDocument.workspaceId === activeWorkspaceId 
+    : false;
+  
+  // Only show active document if it belongs to current workspace
+  const displayDocument = activeDocument && isDocumentInCurrentWorkspace ? activeDocument : null;
+  
+  const isTrashedDocument = displayDocument?.trashed;
 
   // Task detail drawer state
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -91,16 +106,16 @@ export default function Docs() {
 
   // Create editor instance with active document content
   const editor = useCreateBlockNote({
-    initialContent: activeDocument ? ensureTitleBlock(activeDocument.content) : undefined,
+    initialContent: displayDocument ? ensureTitleBlock(displayDocument.content) : undefined,
   });
 
   // Update editor content when active document changes
   useEffect(() => {
-    if (activeDocument && editor) {
-      const content = ensureTitleBlock(activeDocument.content);
+    if (displayDocument && editor) {
+      const content = ensureTitleBlock(displayDocument.content);
       editor.replaceBlocks(editor.document, content);
     }
-  }, [activeDocumentId]);
+  }, [activeDocumentId, displayDocument]);
 
   // Save content to store whenever it changes
   const handleChange = async () => {
@@ -268,7 +283,7 @@ export default function Docs() {
               </p>
             </div>
           </div>
-        ) : activeDocument ? (
+        ) : displayDocument ? (
           isTrashedDocument ? (
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-secondary/60 to-muted/20 dark:from-secondary/40 dark:to-muted/20 p-4">
               <div className="text-center max-w-lg px-6">
@@ -350,67 +365,21 @@ export default function Docs() {
             </>
           )
         ) : (
-          <div
-            className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden px-6 py-12 transition-colors"
-            style={{
-              background: isDark
-                ? 'linear-gradient(145deg, #0f1117 0%, #111827 55%, #1e293b 100%)'
-                : 'linear-gradient(140deg, #f5f3ff 0%, #e0f2fe 45%, #fef3c7 100%)',
-            }}
-          >
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_55%)]" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(34,197,94,0.14),_transparent_55%)] dark:bg-[radial-gradient(circle_at_bottom,_rgba(22,163,74,0.18),_transparent_55%)]" />
-              <div
-                className="absolute left-1/2 top-10 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl mix-blend-screen opacity-35 dark:opacity-55"
-                style={{
-                  background: isDark
-                    ? 'radial-gradient(circle, rgba(236,72,153,0.45) 0%, transparent 70%)'
-                    : 'radial-gradient(circle, rgba(244,114,182,0.3) 0%, transparent 70%)',
-                }}
-              />
-            </div>
-
-            <div className="relative z-10 flex max-w-3xl flex-col items-center gap-6 text-center">
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg shadow-pink-500/30">
-                <FileText className="h-8 w-8" />
-              </span>
-
-              <div className="space-y-3">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">Ghi lại kiến thức và chia sẻ với đội ngũ</h2>
-                <p className="text-sm leading-relaxed text-muted-foreground/80">
-                  Xây dựng kho tri thức chung: ghi chú cuộc họp, tài liệu hướng dẫn hay bản thảo ý tưởng.
-                  Bắt đầu bằng việc tạo tài liệu đầu tiên của bạn.
+          <div className="w-full h-full flex flex-col items-center justify-center gap-4 px-6 py-12">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center">
+                <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg">
+                  <FileText className="h-8 w-8" />
+                </span>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                  Chọn tài liệu từ sidebar
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới
                 </p>
               </div>
-
-              <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
-                <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                  <span>Chèn task, checklist và mention để kết nối mọi thông tin quan trọng.</span>
-                </div>
-                <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
-                  <span>Tự động lưu và theo dõi phiên bản cho từng thay đổi.</span>
-                </div>
-                <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-                  <span>Slash menu giúp chèn block, bảng và template chỉ trong vài phím.</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center gap-3 sm:flex-row">
-                <Button onClick={() => addDocument('Tài liệu mới')} size="lg" className="gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Tạo tài liệu mới
-                </Button>
-                <Button variant="outline" size="lg" className="gap-2" disabled>
-                  <FileText className="h-4 w-4" />
-                  Thư viện template
-                </Button>
-              </div>
-
-              <p className="text-xs text-muted-foreground/70">Mẹo: nhấn <span className="rounded-md bg-muted px-1.5 py-0.5 text-foreground">Ctrl /</span> để mở slash menu và chèn block nhanh chóng.</p>
             </div>
           </div>
         )}

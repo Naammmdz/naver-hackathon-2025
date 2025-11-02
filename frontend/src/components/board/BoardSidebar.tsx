@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useBoardStore } from '@/store/boardStore';
 import type { Board } from '@/types/board';
 import {
@@ -48,6 +49,9 @@ export default function BoardSidebar() {
     error: state.error,
   }));
 
+  // Filter boards by active workspace
+  const workspaceFilteredBoards = useWorkspaceFilter(boards);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
@@ -56,10 +60,11 @@ export default function BoardSidebar() {
   const [showNewBoardInput, setShowNewBoardInput] = useState(false);
   const [newBoardTitle, setNewBoardTitle] = useState('');
 
+  // Apply workspace filter first, then search filter
   const filteredBoards = useMemo(
     () =>
-      boards.filter((board) => board.title.toLowerCase().includes(searchQuery.toLowerCase())),
-    [boards, searchQuery],
+      workspaceFilteredBoards.filter((board) => board.title.toLowerCase().includes(searchQuery.toLowerCase())),
+    [workspaceFilteredBoards, searchQuery],
   );
 
   const renderBoardItem = (board: Board) => {

@@ -7,16 +7,18 @@ export interface BoardSnapshot {
 export interface Board {
   id: string;
   title: string;
+  snapshot: BoardSnapshot | null;
   createdAt: Date;
   updatedAt: Date;
-  snapshot: BoardSnapshot | null;
   userId: string;
+  workspaceId?: string; // Add workspace support
 }
 
 export interface CreateBoardInput {
   title: string;
   snapshot?: BoardSnapshot | null;
   userId: string;
+  workspaceId?: string; // Add workspace support
 }
 
 export interface UpdateBoardInput {
@@ -24,4 +26,5 @@ export interface UpdateBoardInput {
   title?: string;
   snapshot?: BoardSnapshot | null;
   userId?: string;
+  workspaceId?: string; // Add workspace support
 }

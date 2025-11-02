@@ -1,30 +1,31 @@
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import {
-    ChevronDown,
-    ChevronRight,
-    Edit2,
-    FileText,
-    MoreHorizontal,
-    Plus,
-    Search,
-    Trash2,
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  FileText,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -41,6 +42,9 @@ export default function DocumentSidebar() {
     getTrashedDocuments,
   } = useDocumentStore();
 
+  // Filter documents by active workspace
+  const workspaceFilteredDocs = useWorkspaceFilter(documents);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
@@ -52,7 +56,8 @@ export default function DocumentSidebar() {
   const [showNoSubdocs, setShowNoSubdocs] = useState<Set<string>>(new Set());
   const [showTrash, setShowTrash] = useState(false);
 
-  const filteredDocuments = (showTrash ? getTrashedDocuments() : documents.filter(doc => !doc.trashed))
+  // Apply workspace filter first, then trash and search filter
+  const filteredDocuments = (showTrash ? getTrashedDocuments() : workspaceFilteredDocs.filter(doc => !doc.trashed))
     .filter((doc) =>
       doc.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -62,12 +67,12 @@ export default function DocumentSidebar() {
 
   // Get child documents for a parent
   const getChildDocuments = (parentId: string) => {
-    return documents.filter(doc => doc.parentId === parentId);
+    return workspaceFilteredDocs.filter(doc => doc.parentId === parentId);
   };
 
   // Check if document has children
   const hasChildren = (docId: string) => {
-    return documents.some(doc => doc.parentId === docId);
+    return workspaceFilteredDocs.some(doc => doc.parentId === docId);
   };
 
   // Toggle expanded state

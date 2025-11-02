@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
+import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useBoardStore } from '@/store/boardStore';
+import { useWorkspaceStore } from '@/store/workspaceStore';
 import { Layers, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Canvas } from './Canvas';
@@ -24,7 +26,20 @@ export function CanvasContainer() {
     addBoard: state.addBoard,
     setActiveBoard: state.setActiveBoard,
   }));
+  
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const workspaceFilteredBoards = useWorkspaceFilter(boards);
+  
   const [isDark, setIsDark] = useState(false);
+  
+  // Find active board
+  const activeBoard = boards.find(b => b.id === activeBoardId);
+  const isBoardInCurrentWorkspace = activeBoard 
+    ? activeBoard.workspaceId === activeWorkspaceId 
+    : false;
+  
+  // Only display board if it belongs to current workspace
+  const displayBoard = activeBoard && isBoardInCurrentWorkspace ? activeBoard : null;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -57,10 +72,11 @@ export function CanvasContainer() {
       return;
     }
 
-    if (boards.length > 0 && !activeBoardId) {
-      setActiveBoard(boards[0].id);
+    // Only set active board if we have filtered boards and no active board
+    if (workspaceFilteredBoards.length > 0 && !activeBoardId) {
+      setActiveBoard(workspaceFilteredBoards[0].id);
     }
-  }, [activeBoardId, boards, isInitialized, setActiveBoard]);
+  }, [activeBoardId, workspaceFilteredBoards, isInitialized, setActiveBoard]);
 
   if (!isInitialized || (isLoading && boards.length === 0)) {
     return <div className="w-full h-full flex items-center justify-center">Loading...</div>;
@@ -77,7 +93,7 @@ export function CanvasContainer() {
     );
   }
 
-  if (boards.length === 0) {
+  if (workspaceFilteredBoards.length === 0) {
     return (
       <div
         className="relative flex h-full min-h-[520px] w-full items-center justify-center overflow-hidden px-6 py-12 transition-colors"
@@ -168,6 +184,29 @@ export function CanvasContainer() {
           <p className="text-xs text-muted-foreground/70">
             Mẹo: giữ phím <span className="rounded-md bg-muted px-1.5 py-0.5 text-foreground">Space</span> để pan nhanh khi di chuyển trên canvas.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If active board doesn't belong to current workspace, show empty state
+  if (!displayBoard) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center gap-4 px-6 py-12">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center">
+            <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white shadow-lg">
+              <Layers className="h-8 w-8" />
+            </span>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              Chọn board từ sidebar
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Chọn một board từ danh sách bên trái hoặc tạo board mới
+            </p>
+          </div>
         </div>
       </div>
     );

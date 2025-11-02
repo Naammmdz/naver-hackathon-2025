@@ -47,6 +47,9 @@ public class Board {
     @Column(name = "user_id", nullable = false, length = 160)
     private String userId;
 
+    @Column(name = "workspace_id", length = 160)
+    private String workspaceId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

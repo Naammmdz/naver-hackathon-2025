@@ -1,4 +1,5 @@
 import { boardApi } from "@/lib/api/boardApi";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import type { Board, BoardSnapshot } from "@/types/board";
 import { create } from "zustand";
 
@@ -82,7 +83,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const created = await boardApi.create({ title, userId });
+      const workspaceId = useWorkspaceStore.getState().activeWorkspaceId ?? undefined;
+      const created = await boardApi.create({ title, userId, workspaceId });
       set((state) => ({
         boards: [...state.boards, created],
         activeBoardId: created.id,

@@ -9,6 +9,7 @@ export interface Document {
   trashed: boolean;
   trashedAt?: Date | null;
   userId: string;
+  workspaceId?: string; // Add workspace support
 }
 
 export interface DocumentStore {
@@ -24,6 +25,7 @@ export interface CreateDocumentInput {
   icon?: string | null;
   parentId?: string | null;
   userId: string;
+  workspaceId?: string; // Add workspace support
 }
 
 export interface UpdateDocumentInput {
@@ -32,4 +34,5 @@ export interface UpdateDocumentInput {
   icon?: string | null;
   parentId?: string | null;
   userId?: string;
+  workspaceId?: string; // Add workspace support
 }

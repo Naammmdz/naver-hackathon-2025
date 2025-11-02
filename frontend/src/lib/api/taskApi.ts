@@ -26,6 +26,7 @@ interface TaskApiResponse {
   createdAt: string;
   updatedAt: string;
   userId?: string | null;
+  workspaceId?: string | null;
 }
 
 interface TaskApiRequest {
@@ -40,6 +41,7 @@ interface TaskApiRequest {
   createdAt?: string | null;
   updatedAt?: string | null;
   userId?: string | null;
+  workspaceId?: string | null;
 }
 
 const toDate = (value?: string | null): Date | undefined => {
@@ -75,6 +77,7 @@ const mapTaskFromApi = (task: TaskApiResponse): Task => ({
   createdAt: toDate(task.createdAt) ?? new Date(),
   updatedAt: toDate(task.updatedAt) ?? new Date(),
   userId: task.userId ?? apiAuthContext.getCurrentUserId() ?? "",
+  workspaceId: task.workspaceId ?? undefined,
 });
 
 const serializeSubtasks = (subtasks: Subtask[]): Array<{ id?: string; title: string; done: boolean }> =>
@@ -98,6 +101,7 @@ const serializeTaskPayload = (
   createdAt: payload.createdAt ? payload.createdAt.toISOString() : undefined,
   updatedAt: payload.updatedAt ? payload.updatedAt.toISOString() : undefined,
   userId: payload.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
+  workspaceId: payload.workspaceId ?? undefined,
 });
 
 const request = async <T>(input: RequestInfo, init?: RequestInit, parseJson = true): Promise<T> => {

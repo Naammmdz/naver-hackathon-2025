@@ -11,12 +11,14 @@ interface BoardApiResponse {
   createdAt: string;
   updatedAt: string;
   userId?: string | null;
+  workspaceId?: string | null;
 }
 
 interface BoardApiRequest {
   title: string;
   snapshot?: string | null;
   userId?: string | null;
+  workspaceId?: string | null;
 }
 
 const parseDate = (value?: string): Date => {
@@ -64,6 +66,7 @@ const mapBoardFromApi = (board: BoardApiResponse): Board => ({
   createdAt: parseDate(board.createdAt),
   updatedAt: parseDate(board.updatedAt),
   userId: board.userId ?? apiAuthContext.getCurrentUserId() ?? "",
+  workspaceId: board.workspaceId ?? undefined,
 });
 
 const serializeBoardPayload = (
@@ -73,6 +76,7 @@ const serializeBoardPayload = (
   const body: BoardApiRequest = {
     title: payload.title ?? "Untitled Board",
     userId: payload.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
+    workspaceId: payload.workspaceId ?? undefined,
   };
 
   if (includeSnapshot || payload.snapshot !== undefined) {

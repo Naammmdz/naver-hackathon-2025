@@ -2,18 +2,25 @@ package com.naammm.becore.controller;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import lombok.RequiredArgsConstructor;
 import com.naammm.becore.entity.TaskDoc;
 import com.naammm.becore.entity.TaskDocRelationType;
 import com.naammm.becore.service.TaskDocService;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/task-docs")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class TaskDocController {
 
     private final TaskDocService taskDocService;

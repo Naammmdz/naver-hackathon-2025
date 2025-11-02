@@ -29,6 +29,7 @@ export const taskSchema = z.object({
   createdAt: z.date(),
   updatedAt: z.date(),
   userId: z.string(),
+  workspaceId: z.string().optional(), // Add workspace support
 });
 
 export type Task = z.infer<typeof taskSchema>;

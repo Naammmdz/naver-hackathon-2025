@@ -1,9 +1,9 @@
 import { documentApi } from "@/lib/api/documentApi";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import type {
-  CreateDocumentInput,
-  Document,
-  DocumentStore,
-  UpdateDocumentInput,
+    Document,
+    DocumentStore,
+    UpdateDocumentInput
 } from "@/types/document";
 import { create } from "zustand";
 
@@ -138,12 +138,14 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       }
 
       try {
+        const workspaceId = useWorkspaceStore.getState().activeWorkspaceId ?? undefined;
         const created = await documentApi.create({
           title,
           content: defaultContent(title),
           icon: "📄",
           parentId,
           userId,
+          workspaceId,
         });
 
         set((state) => ({

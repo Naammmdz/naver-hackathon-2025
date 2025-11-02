@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTaskStore } from '@/store/taskStore';
-import { Bell, ChevronDown, Languages, Menu, Moon, Search, Sun } from 'lucide-react';
+import { Bell, Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
@@ -76,14 +77,9 @@ export function ClickupHeader({
         {/* Left Section - Workspace & Search */}
         <div className="flex items-center gap-3 flex-1">
           {/* Workspace Selector */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-2 hidden sm:flex hover-surface"
-          >
-            <span className="text-sm font-semibold">Giang Nam's Workspace</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </Button>
+          <div className="hidden sm:block min-w-[200px]">
+            <WorkspaceSwitcher />
+          </div>
 
           <div className="hidden sm:block h-6 w-px bg-border" />
 

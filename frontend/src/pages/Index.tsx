@@ -17,11 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 import { ParsedTask } from "@/lib/parseNatural";
 import { useDocumentStore } from "@/store/documentStore";
 import { useTaskStore } from "@/store/taskStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Task, TaskStatus } from "@/types/task";
 import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, MouseSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CheckSquare, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles, Zap } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (view: 'tasks' | 'docs' | 'board') => void; onSmartCreate?: () => void }) {
@@ -62,6 +63,7 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
     sidebarCollapsed,
     moveTask,
     reorderTasks,
+    getFilteredTasks,
     getFilteredTasksByStatus,
     selectedTaskIds,
     clearSelection,
@@ -73,6 +75,12 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
     loadTasks,
     toggleSidebar,
   } = useTaskStore();
+
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const filters = useTaskStore((state) => state.filters);
+
+  // Get workspace-filtered tasks from store - call directly to ensure reactivity
+  const filteredTasks = getFilteredTasks();
   
   const [currentView, setCurrentView] = useState<ViewType>("board");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -87,7 +95,7 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
 
   // Get fresh task from store instead of using stale selectedTask state
-  const freshSelectedTask = selectedTask ? tasks.find(t => t.id === selectedTask.id) : null;
+  const freshSelectedTask = selectedTask ? filteredTasks.find(t => t.id === selectedTask.id) : null;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -116,7 +124,7 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
 // ============================================================================
 
 const handleDragStart = (event: DragStartEvent) => {
-  const task = tasks.find(t => t.id === event.active.id);
+  const task = filteredTasks.find(t => t.id === event.active.id);
   setActiveTask(task || null);
 };
 
@@ -134,7 +142,7 @@ const handleDragEnd = (event: DragEndEvent) => {
   const activeId = active.id as string;
   const overId = over.id as string;
 
-  const draggedTask = tasks.find(t => t.id === activeId);
+  const draggedTask = filteredTasks.find(t => t.id === activeId);
   if (!draggedTask) return;
 
   // Nếu drop vào column trống (over.id là column)
@@ -159,7 +167,7 @@ const handleDragEnd = (event: DragEndEvent) => {
   }
 
   // Nếu drop lên task khác
-  const overTask = tasks.find(t => t.id === overId);
+  const overTask = filteredTasks.find(t => t.id === overId);
   if (!overTask) return;
 
   // Nếu cùng cột => reorder
@@ -267,10 +275,11 @@ const handleDragEnd = (event: DragEndEvent) => {
   // ============================================================================
 
   const getColumnTasks = (status: TaskStatus) => {
-    return getFilteredTasksByStatus(status);
+    const columnTasks = getFilteredTasksByStatus(status);
+    return columnTasks;
   };
 
-  const hasTasks = useMemo(() => tasks.length > 0, [tasks.length]);
+  const hasTasks = filteredTasks.length > 0;
 
   const renderEmptyTasksState = () => {
     if (isLoading) {
