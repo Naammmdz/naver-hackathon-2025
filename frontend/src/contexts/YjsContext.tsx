@@ -102,8 +102,26 @@ export const YjsProvider: React.FC<YjsProviderProps> = ({ workspaceId, children 
           }
         });
         
-        provider.on('connection-close', () => {
-          console.warn('[Yjs] Connection closed, attempting reconnect...');
+        provider.on('connection-close', (event: any) => {
+          const closeCode = event?.code;
+          const closeReason = event?.reason;
+          
+          console.warn('[Yjs] Connection closed:', { closeCode, closeReason });
+          
+          // Check if kicked from workspace (custom close code 4003)
+          if (closeCode === 4003) {
+            console.error('[Yjs] ❌ Access denied: You are not a member of this workspace');
+            
+            // Stop reconnection attempts
+            if (providerRef.current) {
+              providerRef.current.shouldConnect = false;
+              providerRef.current.disconnect();
+            }
+            
+            // TODO: Show user notification and redirect to workspace selection
+            // For now, just log the error
+            alert('You have been removed from this workspace. Please select another workspace.');
+          }
         });
         
         provider.on('connection-error', (error: any) => {
