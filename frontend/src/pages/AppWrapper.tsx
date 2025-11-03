@@ -3,18 +3,145 @@ import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
 import { CollaborationProvider } from "@/contexts/CollaborationContext";
+import { YjsProvider } from "@/contexts/YjsContext";
 import { useToast } from "@/hooks/use-toast";
+import { useYjsAdapter } from "@/hooks/use-yjs-adapter";
+import { mergeBoardSnapshots } from "@/lib/board-sync";
 import { useBoardStore } from "@/store/boardStore";
 import { useDocumentStore } from "@/store/documentStore";
 import { useTaskDocStore } from "@/store/taskDocStore";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import type { Board } from "@/types/board";
+import type { Document } from "@/types/document";
+import type { Task } from "@/types/task";
 import { useAuth } from "@clerk/clerk-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Docs from "./Docs";
 import Index from "./Index";
 import WorkspaceSettings from "./WorkspaceSettings";
+
+// Component to handle Yjs sync inside YjsProvider
+function YjsSyncHandler() {
+  const parseDate = (value: unknown): Date | undefined => {
+    if (!value) return undefined;
+    if (value instanceof Date) return value;
+    const parsed = new Date(String(value));
+    // Don't fallback to new Date() - preserve original undefined to avoid corrupting timestamps
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+  };
+
+  useYjsAdapter("tasks", useTaskStore, {
+    debugLabel: "tasks",
+    decode: (value) => {
+      const task = value as Task;
+      if (!task) return value as Task;
+      const normalized: Task = {
+        ...task,
+        // Only fallback to new Date() if createdAt/updatedAt are required fields
+        // For dueDate (optional), keep undefined if parsing fails
+        createdAt: parseDate(task.createdAt) ?? new Date(),
+        updatedAt: parseDate(task.updatedAt) ?? new Date(),
+        dueDate: parseDate(task.dueDate), // No fallback - preserve undefined
+      };
+      return normalized;
+    },
+    merge: (prev, next) => {
+      const prevTask = prev as Task | undefined;
+      const nextTask = next as Task;
+      
+      if (!prevTask) return nextTask;
+      
+      // Merge subtasks by ID - deduplicate and preserve both additions
+      const mergedSubtasks = nextTask.subtasks ? [...nextTask.subtasks] : [];
+      if (prevTask.subtasks) {
+        prevTask.subtasks.forEach(prevSubtask => {
+          const existsInNext = mergedSubtasks.some(s => s.id === prevSubtask.id);
+          if (!existsInNext) {
+            mergedSubtasks.push(prevSubtask);
+          }
+        });
+      }
+
+      // Use latest updatedAt to determine which task is newer
+      const prevTime = prevTask.updatedAt ? prevTask.updatedAt.getTime() : 0;
+      const nextTime = nextTask.updatedAt ? nextTask.updatedAt.getTime() : 0;
+      
+      // Resolve order conflicts: if both have order, use the one from the more recent update
+      // If orders are the same but timestamps differ, add 0.001 to distinguish
+      let resolvedOrder = nextTask.order;
+      if (prevTask.order !== undefined && nextTask.order !== undefined) {
+        if (prevTask.order === nextTask.order && prevTime !== nextTime) {
+          // Same order but different timestamps - use fractional ordering
+          resolvedOrder = nextTime > prevTime ? nextTask.order : prevTask.order + 0.001;
+        } else {
+          // Different orders - trust the more recent update
+          resolvedOrder = nextTime >= prevTime ? nextTask.order : prevTask.order;
+        }
+      }
+      
+      return {
+        ...(nextTime >= prevTime ? nextTask : prevTask),
+        subtasks: mergedSubtasks,
+        order: resolvedOrder,
+        updatedAt: new Date(Math.max(prevTime, nextTime)),
+      };
+    },
+  });
+
+  useYjsAdapter("documents", useDocumentStore, {
+    debugLabel: "documents",
+    decode: (value) => {
+      const document = value as Document;
+      if (!document) return value as Document;
+      const normalized: Document = {
+        ...document,
+        createdAt: parseDate(document.createdAt) ?? new Date(),
+        updatedAt: parseDate(document.updatedAt) ?? new Date(),
+        trashedAt: parseDate(document.trashedAt),
+      };
+      return normalized;
+    },
+  });
+
+  useYjsAdapter("boards", useBoardStore, {
+    debugLabel: "boards",
+    collection: "map",
+    decode: (value) => {
+      const board = value as Board;
+      if (!board) return value as Board;
+      const normalized: Board = {
+        ...board,
+        createdAt: parseDate(board.createdAt) ?? new Date(),
+        updatedAt: parseDate(board.updatedAt) ?? new Date(),
+      };
+      return normalized;
+    },
+    merge: (prev, next) => {
+      const mergedSnapshot =
+        next.snapshot && prev?.snapshot
+          ? mergeBoardSnapshots(prev.snapshot, next.snapshot)
+          : next.snapshot ?? prev?.snapshot ?? null;
+
+      const mergedUpdatedAt = (() => {
+        if (next.updatedAt && prev?.updatedAt) {
+          return new Date(Math.max(next.updatedAt.getTime(), prev.updatedAt.getTime()));
+        }
+        return next.updatedAt ?? prev?.updatedAt ?? new Date();
+      })();
+
+      return {
+        ...(prev ?? {}),
+        ...next,
+        updatedAt: mergedUpdatedAt,
+        snapshot: mergedSnapshot,
+      } as Board;
+    },
+  });
+
+  return null;
+}
 
 export default function AppWrapper() {
   const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "settings">("tasks");
@@ -208,13 +335,17 @@ export default function AppWrapper() {
 
   return (
     <CollaborationProvider>
-      {/* Workspace Onboarding Modal */}
-      {showOnboarding && (
-        <WorkspaceOnboarding
-          open={showOnboarding}
-          onWorkspaceCreated={handleWorkspaceCreated}
-        />
-      )}
+      <YjsProvider workspaceId={activeWorkspaceId}>
+        {/* Yjs Sync Handler - Auto-syncs Yjs ↔ Zustand */}
+        <YjsSyncHandler />
+        
+        {/* Workspace Onboarding Modal */}
+        {showOnboarding && (
+          <WorkspaceOnboarding
+            open={showOnboarding}
+            onWorkspaceCreated={handleWorkspaceCreated}
+          />
+        )}
       
       {/* Main App - Hidden while onboarding */}
       {!showOnboarding && (
@@ -249,6 +380,7 @@ export default function AppWrapper() {
           </div>
         </div>
       )}
+      </YjsProvider>
     </CollaborationProvider>
   );
 }

@@ -27,11 +27,15 @@ export interface CollaborationState {
 }
 
 export interface CollaborationEvent {
-  type: 'user-joined' | 'user-left' | 'cursor-move' | 'selection-change' | 'content-change' | 'member-update';
+  type: 'user-joined' | 'user-left' | 'cursor-move' | 'selection-change' | 'content-change' | 'member-update' | 'data-change';
   userId: string;
   workspaceId: string;
   timestamp: number;
   data?: any;
+  // For data-change events
+  entityType?: 'task' | 'document' | 'board';
+  action?: 'created' | 'updated' | 'deleted';
+  entityId?: string;
 }
 
 interface CollaborationContextType extends CollaborationState {
@@ -316,7 +320,8 @@ export function CollaborationProvider({ children }: { children: React.ReactNode 
     return () => {
       disconnect();
     };
-  }, [activeWorkspaceId, userId, connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspaceId, userId]);
 
   const value: CollaborationContextType = {
     activeUsers,

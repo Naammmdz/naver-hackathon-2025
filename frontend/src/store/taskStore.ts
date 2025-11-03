@@ -1,4 +1,5 @@
 import { taskApi } from "@/lib/api/taskApi";
+import { yjsHelper } from "@/lib/yjs-helper";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import {
   BulkActionPayload,
@@ -117,6 +118,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
   const refreshTaskFromApi = async (id: string): Promise<Task> => {
     const refreshed = await taskApi.get(id);
     updateTaskInState(refreshed);
+    
+    // Sync to Yjs for realtime collaboration
+    yjsHelper.syncTaskToYjs(refreshed);
+    
     return refreshed;
   };
 
@@ -176,6 +181,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
         const workspaceId = useWorkspaceStore.getState().activeWorkspaceId ?? undefined;
         const created = await taskApi.create({ ...input, order, userId, workspaceId });
         updateTaskInState(created);
+        
+        // Sync to Yjs for realtime collaboration
+        yjsHelper.syncTaskToYjs(created);
+        
         return created;
       } catch (error) {
         console.error('Error creating task:', error);
@@ -209,6 +218,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
         };
         const updated = await taskApi.update(payload);
         updateTaskInState(updated);
+        
+        // Sync to Yjs for realtime collaboration
+        yjsHelper.syncTaskToYjs(updated);
+        
         return updated;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -228,6 +241,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
       try {
         await taskApi.delete(id);
         removeTaskFromState(id);
+        
+        // Remove from Yjs for realtime collaboration
+        yjsHelper.removeTaskFromYjs(id);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {
@@ -249,6 +265,9 @@ export const useTaskStore = create<TaskState>((set, get) => {
           tasks: state.tasks.filter((task) => !ids.includes(task.id)),
           selectedTaskIds: state.selectedTaskIds.filter((taskId) => !ids.includes(taskId)),
         }));
+        
+        // Remove all tasks from Yjs for realtime collaboration
+        ids.forEach(id => yjsHelper.removeTaskFromYjs(id));
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {

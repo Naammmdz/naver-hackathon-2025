@@ -1,6 +1,6 @@
+import i18n from '@/i18n';
 import { format as dateFnsFormat } from 'date-fns';
 import { enUS, vi } from 'date-fns/locale';
-import i18n from '@/i18n';
 
 // Map of locale strings to date-fns locales
 const localeMap = {
@@ -15,7 +15,18 @@ export const formatDate = (date: Date | string, formatString: string): string =>
   const currentLanguage = i18n.language || 'en';
   const locale = localeMap[currentLanguage as keyof typeof localeMap] || enUS;
   
-  return dateFnsFormat(new Date(date), formatString, { locale });
+  try {
+    const dateObj = new Date(date);
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      console.warn('[date-utils] Invalid date value:', date);
+      return 'Invalid date';
+    }
+    return dateFnsFormat(dateObj, formatString, { locale });
+  } catch (error) {
+    console.error('[date-utils] Error formatting date:', error);
+    return 'Invalid date';
+  }
 };
 
 /**

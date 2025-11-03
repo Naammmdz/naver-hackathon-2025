@@ -33,9 +33,10 @@ public class Board {
 
     /**
      * JSON payload representing the Excalidraw snapshot (elements, app state, files).
+     * Use TEXT for PostgreSQL, CLOB for H2
      */
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String snapshot;
 
     @Column(nullable = false)

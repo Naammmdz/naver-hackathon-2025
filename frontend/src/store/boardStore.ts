@@ -1,4 +1,5 @@
 import { boardApi } from "@/lib/api/boardApi";
+import { yjsHelper } from "@/lib/yjs-helper";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import type { Board, BoardSnapshot } from "@/types/board";
 import { create } from "zustand";
@@ -106,6 +107,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
         activeBoardId: created.id,
         isLoading: false,
       }));
+      
+      // Sync to Yjs for realtime collaboration
+      yjsHelper.syncBoardToYjs(created);
     } catch (error) {
       console.error("Failed to create board", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to create board";
@@ -134,6 +138,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
 
     try {
       await boardApi.delete(id);
+      
+      // Remove from Yjs for realtime collaboration
+      yjsHelper.removeBoardFromYjs(id);
     } catch (error) {
       console.error("Failed to delete board", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to delete board";
@@ -207,6 +214,9 @@ export const useBoardStore = create<BoardState>((set, get) => {
       set((state) => ({
         boards: state.boards.map((board) => (board.id === id ? updated : board)),
       }));
+      
+      // Sync to Yjs for realtime collaboration
+      yjsHelper.syncBoardToYjs(updated);
     } catch (error) {
       console.error("Failed to update board snapshot", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to update board snapshot";

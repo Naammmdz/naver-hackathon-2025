@@ -32,6 +32,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final RealtimeEventService realtimeEventService;
 
     public List<Task> getAllTasks() {
         String userId = UserContext.requireUserId();
@@ -71,7 +72,24 @@ public class TaskService {
             task.getSubtasks().forEach(subtask -> subtask.setTask(task));
         }
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        
+        // Broadcast realtime event if task belongs to workspace
+        if (StringUtils.hasText(savedTask.getWorkspaceId())) {
+            log.info("[Realtime] Broadcasting task created: taskId={}, workspaceId={}", 
+                savedTask.getId(), savedTask.getWorkspaceId());
+            realtimeEventService.broadcastTaskChange(
+                savedTask.getWorkspaceId(), 
+                "created", 
+                savedTask.getId(), 
+                userId
+            );
+        } else {
+            log.debug("[Realtime] Task created without workspace, skipping broadcast: taskId={}", 
+                savedTask.getId());
+        }
+        
+        return savedTask;
     }
 
     public Task updateTask(String id, Task updatedTask) {
@@ -100,7 +118,21 @@ public class TaskService {
             });
         }
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        
+        // Broadcast realtime event
+        if (StringUtils.hasText(savedTask.getWorkspaceId())) {
+            log.info("[Realtime] Broadcasting task updated: taskId={}, workspaceId={}", 
+                savedTask.getId(), savedTask.getWorkspaceId());
+            realtimeEventService.broadcastTaskChange(
+                savedTask.getWorkspaceId(), 
+                "updated", 
+                savedTask.getId(), 
+                userId
+            );
+        }
+        
+        return savedTask;
     }
 
     public void deleteTask(String id) {
@@ -110,7 +142,20 @@ public class TaskService {
         if (StringUtils.hasText(task.getWorkspaceId())) {
             ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
         }
-        taskRepository.delete(task);
+        
+        taskRepository.deleteById(id);
+        
+        // Broadcast realtime event
+        if (StringUtils.hasText(task.getWorkspaceId())) {
+            log.info("[Realtime] Broadcasting task deleted: taskId={}, workspaceId={}", 
+                task.getId(), task.getWorkspaceId());
+            realtimeEventService.broadcastTaskChange(
+                task.getWorkspaceId(), 
+                "deleted", 
+                task.getId(), 
+                userId
+            );
+        }
     }
 
     public void moveTask(String id, TaskStatus newStatus) {

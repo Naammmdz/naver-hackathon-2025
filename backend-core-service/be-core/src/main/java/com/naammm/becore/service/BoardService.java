@@ -28,6 +28,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final RealtimeEventService realtimeEventService;
 
     public List<Board> getAllBoards() {
         return boardRepository.findByUserIdOrderByUpdatedAtDesc(UserContext.requireUserId());
@@ -48,7 +49,20 @@ public class BoardService {
         if (StringUtils.hasText(board.getWorkspaceId())) {
             ensureCanModifyWorkspace(board.getWorkspaceId(), userId);
         }
-        return boardRepository.save(board);
+        
+        Board savedBoard = boardRepository.save(board);
+        
+        // Broadcast realtime event if board belongs to workspace
+        if (StringUtils.hasText(savedBoard.getWorkspaceId())) {
+            realtimeEventService.broadcastBoardChange(
+                savedBoard.getWorkspaceId(),
+                "created",
+                savedBoard.getId(),
+                userId
+            );
+        }
+        
+        return savedBoard;
     }
 
     public Board updateBoard(String id, Board payload) {
@@ -65,7 +79,20 @@ public class BoardService {
         if (payload.getSnapshot() != null) {
             board.setSnapshot(payload.getSnapshot());
         }
-        return boardRepository.save(board);
+        
+        Board savedBoard = boardRepository.save(board);
+        
+        // Broadcast realtime event
+        if (StringUtils.hasText(savedBoard.getWorkspaceId())) {
+            realtimeEventService.broadcastBoardChange(
+                savedBoard.getWorkspaceId(),
+                "updated",
+                savedBoard.getId(),
+                userId
+            );
+        }
+        
+        return savedBoard;
     }
 
     public Board updateSnapshot(String id, String snapshot) {
@@ -75,7 +102,20 @@ public class BoardService {
             ensureCanModifyWorkspace(board.getWorkspaceId(), userId);
         }
         board.setSnapshot(snapshot);
-        return boardRepository.save(board);
+        
+        Board savedBoard = boardRepository.save(board);
+        
+        // Broadcast realtime event for snapshot update
+        if (StringUtils.hasText(savedBoard.getWorkspaceId())) {
+            realtimeEventService.broadcastBoardChange(
+                savedBoard.getWorkspaceId(),
+                "updated",
+                savedBoard.getId(),
+                userId
+            );
+        }
+        
+        return savedBoard;
     }
 
     public void deleteBoard(String id) {
@@ -84,7 +124,19 @@ public class BoardService {
         if (StringUtils.hasText(board.getWorkspaceId())) {
             ensureCanModifyWorkspace(board.getWorkspaceId(), userId);
         }
+        
+        String workspaceId = board.getWorkspaceId();
         boardRepository.delete(board);
+        
+        // Broadcast realtime event
+        if (StringUtils.hasText(workspaceId)) {
+            realtimeEventService.broadcastBoardChange(
+                workspaceId,
+                "deleted",
+                id,
+                userId
+            );
+        }
     }
 
     // Workspace-based methods with smart auto-detect

@@ -1,18 +1,15 @@
+import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
-import { CustomSlashMenu } from '@/components/documents/LinkTaskSlashItem';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
 import { Button } from '@/components/ui/button';
 import { ReadOnlyBanner } from '@/components/workspace/ReadOnlyBanner';
+import { useYjs } from '@/contexts/YjsContext';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { Task } from '@/types/task';
-import '@blocknote/core/fonts/inter.css';
-import { BlockNoteView } from '@blocknote/mantine';
-import '@blocknote/mantine/style.css';
-import { useCreateBlockNote } from '@blocknote/react';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -32,6 +29,10 @@ export default function Docs() {
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
   const { toast } = useToast();
+  
+  // Yjs context for realtime collaboration  
+  const { isConnected } = useYjs();
+  
   const notifyReadOnly = useCallback(() => {
     toast({
       title: 'Chỉ xem',
@@ -54,6 +55,14 @@ export default function Docs() {
   const displayDocument = activeDocument && isDocumentInCurrentWorkspace ? activeDocument : null;
   
   const isTrashedDocument = displayDocument?.trashed;
+
+  // Clear active document when workspace changes if it doesn't belong to new workspace
+  useEffect(() => {
+    if (activeDocumentId && activeDocument && !isDocumentInCurrentWorkspace) {
+      console.log('[Docs] Clearing active document - does not belong to current workspace');
+      setActiveDocument(null);
+    }
+  }, [activeWorkspaceId, activeDocumentId, activeDocument, isDocumentInCurrentWorkspace, setActiveDocument]);
 
   // Task detail drawer state
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -82,61 +91,18 @@ export default function Docs() {
     return () => observer.disconnect();
   }, []);
 
-  // Ensure document always starts with a heading 1
-  const ensureTitleBlock = (content: any[]) => {
-    if (!content || content.length === 0) {
-      return [
-        {
-          type: 'heading',
-          content: 'Untitled',
-          props: { level: 1 },
-        },
-      ];
-    }
-    
-    // Ensure first block is always a heading 1
-    const firstBlock = content[0];
-    if (firstBlock.type !== 'heading' || firstBlock.props?.level !== 1) {
-      return [
-        {
-          type: 'heading',
-          content: firstBlock.content || 'Untitled',
-          props: { level: 1 },
-        },
-        ...content.slice(1),
-      ];
-    }
-    
-    // Ensure heading 1 always has content
-    if (!firstBlock.content || firstBlock.content.length === 0) {
-      firstBlock.content = 'Untitled';
-    }
-    
-    return content;
-  };
-
-  // Create editor instance with active document content
-  const editor = useCreateBlockNote({
-    initialContent: displayDocument ? ensureTitleBlock(displayDocument.content) : undefined,
-  });
-
-  // Update editor content when active document changes
-  useEffect(() => {
-    if (displayDocument && editor) {
-      const content = ensureTitleBlock(displayDocument.content);
-      editor.replaceBlocks(editor.document, content);
-    }
-  }, [activeDocumentId, displayDocument]);
-
-  // Save content to store whenever it changes
-  const handleChange = async () => {
+  // Save content to store whenever it changes (called by DocumentEditor)
+  const handleChange = async (content: any[]) => {
     if (!activeDocumentId || !canEditWorkspace) return;
     
     try {
-      const content = editor.document;
+      // Save content to store in ALL modes
+      // - Non-collaborative: immediate save for local changes
+      // - Collaborative: Yjs handles real-time sync, but we also persist to DB
+      //   (and let scheduleSave() debounce it)
       updateDocument(activeDocumentId, { content });
       
-      // Auto-update title from first heading
+      // Auto-update title from first heading (always update metadata)
       if (content.length > 0) {
         const firstBlock = content[0] as any;
         if (firstBlock.type === 'heading' && firstBlock.content) {
@@ -356,8 +322,19 @@ export default function Docs() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
-                      <div className="text-xs text-muted-foreground">
-                        {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-muted-foreground">
+                          {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                        </div>
+                        {/* Collaboration Status Indicator - show when connected via Yjs */}
+                        {isConnected && (
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                              Live
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -370,27 +347,17 @@ export default function Docs() {
                 </div>
               </div>
 
-              {/* Editor Container */}
+              {/* Editor Container with DocumentEditor component */}
               <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="max-w-4xl mx-auto space-y-6">
-                  {/* Editor with Custom Slash Menu */}
-                  <BlockNoteView
-                    editor={editor}
+                  <DocumentEditor
+                    key={`${activeWorkspaceId}-${activeDocumentId}`}
+                    document={displayDocument}
+                    isDark={isDark}
+                    canEditWorkspace={canEditWorkspace}
+                    onTaskClick={setSelectedTask}
                     onChange={handleChange}
-                    theme={isDark ? "dark" : "light"}
-                    className="rounded-lg border border-border/50 shadow-sm"
-                    slashMenu={false}
-                    editable={canEditWorkspace}
-                  >
-                    {canEditWorkspace && (
-                      <CustomSlashMenu 
-                        editor={editor} 
-                        docId={activeDocument.id} 
-                        docTitle={activeDocument.title}
-                        onTaskClick={setSelectedTask}
-                      />
-                    )}
-                  </BlockNoteView>
+                  />
                 </div>
               </div>
             </>

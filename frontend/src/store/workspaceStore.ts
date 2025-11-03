@@ -176,14 +176,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
       getCurrentMemberRole: () => {
         const userId = apiAuthContext.getCurrentUserId();
-        console.log("[getCurrentMemberRole] userId:", userId);
         if (!userId) {
           return null;
         }
         const members = get().members;
         const currentMember = members.find((member) => member.userId === userId);
-        console.log("[getCurrentMemberRole] members:", members);
-        console.log("[getCurrentMemberRole] currentMember:", currentMember);
         return currentMember?.role ?? null;
       },
 
@@ -200,10 +197,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       },
 
       loadMembers: async (workspaceId: string) => {
-        console.log("[loadMembers] Loading members for workspace:", workspaceId);
         try {
           const members = await workspaceApi.getMembers(workspaceId);
-          console.log("[loadMembers] Loaded members:", members);
           set({ members });
         } catch (error) {
           console.error("Failed to load members:", error);

@@ -1,4 +1,5 @@
 import { documentApi } from "@/lib/api/documentApi";
+import { yjsHelper } from "@/lib/yjs-helper";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import type {
     Document,
@@ -89,6 +90,9 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
         documents: state.documents.map((doc) => (doc.id === saved.id ? saved : doc)),
         error: null,
       }));
+      
+      // Sync to Yjs for realtime collaboration
+      yjsHelper.syncDocumentToYjs(saved);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : String(error),
@@ -184,6 +188,9 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
           error: null,
         }));
 
+        // Sync to Yjs for realtime collaboration
+        yjsHelper.syncDocumentToYjs(created);
+
         return created.id;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -227,6 +234,8 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       }
       try {
         await documentApi.delete(id);
+        const trashedDoc = get().documents.find(doc => doc.id === id);
+        
         set((state) => {
           const updatedDocuments = state.documents.map((doc) =>
             doc.id === id
@@ -249,6 +258,15 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
             error: null,
           };
         });
+        
+        // Sync to Yjs - mark as trashed
+        if (trashedDoc) {
+          yjsHelper.syncDocumentToYjs({
+            ...trashedDoc,
+            trashed: true,
+            trashedAt: new Date(),
+          });
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (errorMessage.includes('403') || errorMessage.includes('500') || errorMessage.includes('permission') || errorMessage.includes('quyền')) {

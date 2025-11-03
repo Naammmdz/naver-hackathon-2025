@@ -29,6 +29,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final RealtimeEventService realtimeEventService;
 
     public List<Document> getAllDocuments() {
         String userId = UserContext.requireUserId();
@@ -57,7 +58,20 @@ public class DocumentService {
         if (StringUtils.hasText(document.getWorkspaceId())) {
             ensureCanModifyWorkspace(document.getWorkspaceId(), userId);
         }
-        return documentRepository.save(document);
+        
+        Document savedDocument = documentRepository.save(document);
+        
+        // Broadcast realtime event if document belongs to workspace
+        if (StringUtils.hasText(savedDocument.getWorkspaceId())) {
+            realtimeEventService.broadcastDocumentChange(
+                savedDocument.getWorkspaceId(),
+                "created",
+                savedDocument.getId(),
+                userId
+            );
+        }
+        
+        return savedDocument;
     }
 
     public Document updateDocument(String id, Document updatedDocument) {
@@ -78,7 +92,20 @@ public class DocumentService {
             document.setIcon(updatedDocument.getIcon());
         }
         document.setParentId(updatedDocument.getParentId());
-        return documentRepository.save(document);
+        
+        Document savedDocument = documentRepository.save(document);
+        
+        // Broadcast realtime event
+        if (StringUtils.hasText(savedDocument.getWorkspaceId())) {
+            realtimeEventService.broadcastDocumentChange(
+                savedDocument.getWorkspaceId(),
+                "updated",
+                savedDocument.getId(),
+                userId
+            );
+        }
+        
+        return savedDocument;
     }
 
     public void deleteDocument(String id) {
@@ -86,6 +113,19 @@ public class DocumentService {
         Document document = getDocumentForCurrentUser(id, userId);
         if (StringUtils.hasText(document.getWorkspaceId())) {
             ensureCanModifyWorkspace(document.getWorkspaceId(), userId);
+        }
+        
+        String workspaceId = document.getWorkspaceId();
+        documentRepository.delete(document);
+        
+        // Broadcast realtime event
+        if (StringUtils.hasText(workspaceId)) {
+            realtimeEventService.broadcastDocumentChange(
+                workspaceId,
+                "deleted",
+                id,
+                userId
+            );
         }
         document.setTrashed(true);
         document.setTrashedAt(LocalDateTime.now());
