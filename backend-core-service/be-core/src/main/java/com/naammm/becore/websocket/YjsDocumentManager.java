@@ -36,20 +36,26 @@ public class YjsDocumentManager {
         return workspaceStates.computeIfAbsent(workspaceId, id -> {
             log.info("[YjsDocManager] Loading/creating state for workspace: {}", id);
             
-            // Try to load from database
-            List<byte[]> persistedUpdates = yjsUpdateService.loadUpdates(id);
-            
             YjsDocumentState state = new YjsDocumentState(id);
             
-            // Populate state with persisted updates
-            if (!persistedUpdates.isEmpty()) {
-                for (byte[] update : persistedUpdates) {
-                    state.addUpdate(update);
+            // Try to load from database - but don't fail if DB has issues
+            try {
+                List<byte[]> persistedUpdates = yjsUpdateService.loadUpdates(id);
+                
+                // Populate state with persisted updates
+                if (!persistedUpdates.isEmpty()) {
+                    for (byte[] update : persistedUpdates) {
+                        state.addUpdate(update);
+                    }
+                    log.info("[YjsDocManager] Loaded {} persisted updates for workspace: {}", 
+                            persistedUpdates.size(), id);
+                } else {
+                    log.info("[YjsDocManager] No persisted updates found, starting fresh for workspace: {}", id);
                 }
-                log.info("[YjsDocManager] Loaded {} persisted updates for workspace: {}", 
-                        persistedUpdates.size(), id);
-            } else {
-                log.info("[YjsDocManager] No persisted updates found, starting fresh for workspace: {}", id);
+            } catch (Exception e) {
+                log.error("[YjsDocManager] Failed to load persisted updates, starting with empty state: workspace={}, error={}", 
+                         id, e.getMessage(), e);
+                // Continue with empty state - real-time sync will still work
             }
             
             return state;

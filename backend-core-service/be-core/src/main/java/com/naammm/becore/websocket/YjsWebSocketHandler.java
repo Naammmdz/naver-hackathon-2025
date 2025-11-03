@@ -1,5 +1,7 @@
 package com.naammm.becore.websocket;
 
+import com.naammm.becore.repository.WorkspaceMemberRepository;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -20,6 +22,7 @@ public class YjsWebSocketHandler extends BinaryWebSocketHandler {
 
     private final YjsConnectionManager connectionManager;
     private final YjsDocumentManager documentManager;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -32,12 +35,28 @@ public class YjsWebSocketHandler extends BinaryWebSocketHandler {
             return;
         }
 
+        // CHECK: User must be member of workspace
+        boolean isMember = workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId);
+        if (!isMember) {
+            log.warn("[Yjs] Connection rejected - userId: {} is not a member of workspaceId: {}", 
+                    userId, workspaceId);
+            session.close(new CloseStatus(4003, "Not a workspace member"));
+            return;
+        }
+
         connectionManager.addConnection(workspaceId, userId, session);
         log.info("[Yjs] Client connected: workspaceId={}, userId={}, sessionId={}", 
             workspaceId, userId, session.getId());
         
         // Send all stored updates to new client for sync
-        sendStoredUpdates(session, workspaceId);
+        // Wrap in try-catch to prevent connection crash on DB errors
+        try {
+            sendStoredUpdates(session, workspaceId);
+        } catch (Exception e) {
+            log.error("[Yjs] Failed to send stored updates, but keeping connection open: workspaceId={}, error={}", 
+                     workspaceId, e.getMessage(), e);
+            // Don't close connection - allow real-time sync to work even if DB load fails
+        }
     }
 
     /**

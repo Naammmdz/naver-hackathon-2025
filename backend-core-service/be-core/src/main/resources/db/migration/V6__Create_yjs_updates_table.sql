@@ -7,20 +7,18 @@ CREATE TABLE IF NOT EXISTS yjs_updates (
     update_data BYTEA NOT NULL,
     update_size INTEGER NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    user_id VARCHAR(160),
+    user_id VARCHAR(160)
     
-    CONSTRAINT fk_yjs_updates_workspace 
-        FOREIGN KEY (workspace_id) 
-        REFERENCES workspaces(id) 
-        ON DELETE CASCADE
+    -- No foreign key constraint to avoid issues with workspace deletion
+    -- Orphaned records will be cleaned up by periodic maintenance
 );
 
 -- Index for fast retrieval of updates by workspace
-CREATE INDEX idx_yjs_updates_workspace_id 
+CREATE INDEX IF NOT EXISTS idx_yjs_updates_workspace_id 
     ON yjs_updates(workspace_id);
 
 -- Index for chronological queries (used for loading state and pruning)
-CREATE INDEX idx_yjs_updates_workspace_created 
+CREATE INDEX IF NOT EXISTS idx_yjs_updates_workspace_created 
     ON yjs_updates(workspace_id, created_at);
 
 -- Comments
