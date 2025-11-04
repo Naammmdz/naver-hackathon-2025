@@ -2,6 +2,7 @@ package com.naammm.becore.websocket;
 
 import com.naammm.becore.repository.WorkspaceMemberRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -23,6 +24,9 @@ public class YjsWebSocketHandler extends BinaryWebSocketHandler {
     private final YjsConnectionManager connectionManager;
     private final YjsDocumentManager documentManager;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+
+    @Value("${yjs.persistence.enabled:true}")
+    private boolean yjsPersistenceEnabled;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -48,24 +52,97 @@ public class YjsWebSocketHandler extends BinaryWebSocketHandler {
         log.info("[Yjs] Client connected: workspaceId={}, userId={}, sessionId={}", 
             workspaceId, userId, session.getId());
         
-        // Send all stored updates to new client for sync
+        // Send all stored updates to new client for sync (only if persistence enabled)
         // Wrap in try-catch to prevent connection crash on DB errors
-        try {
-            sendStoredUpdates(session, workspaceId);
-        } catch (Exception e) {
-            log.error("[Yjs] Failed to send stored updates, but keeping connection open: workspaceId={}, error={}", 
-                     workspaceId, e.getMessage(), e);
-            // Don't close connection - allow real-time sync to work even if DB load fails
+        if (yjsPersistenceEnabled) {
+            try {
+                sendStoredUpdates(session, workspaceId);
+            } catch (Exception e) {
+                log.error("[Yjs] Failed to send stored updates, but keeping connection open: workspaceId={}, error={}", 
+                         workspaceId, e.getMessage(), e);
+                // Don't close connection - allow real-time sync to work even if DB load fails
+            }
+        } else {
+            log.info("[Yjs] Yjs persistence disabled - skipping stored updates sync for workspace: {}", workspaceId);
         }
     }
 
     /**
-     * Send all stored Yjs updates to a newly connected client
-     * Uses synchronized block to prevent concurrent sends causing BINARY_PARTIAL_WRITING errors
+     * Send stored Yjs state to a newly connected client for sync.
+     * Uses snapshot-based approach for efficient sync instead of replaying all updates.
+     * 
+     * Priority order:
+     * 1. Send snapshot (if available) - most efficient
+     * 2. Send all updates (fallback) - maintains compatibility
      */
     private void sendStoredUpdates(WebSocketSession session, String workspaceId) {
         try {
-            byte[][] updates = documentManager.getAllUpdates(workspaceId);
+            YjsDocumentState state = documentManager.getState(workspaceId);
+            
+            if (state == null) {
+                log.debug("[Yjs] No state available for workspace: {}", workspaceId);
+                return;
+            }
+
+            // Try snapshot-based sync first (more efficient)
+            if (state.hasSnapshot()) {
+                sendSnapshot(session, workspaceId, state);
+                return;
+            }
+
+            // Fallback: send all updates (legacy behavior)
+            sendAllUpdates(session, workspaceId, state);
+            
+        } catch (Exception e) {
+            log.error("[Yjs] Failed to send stored state: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Send snapshot to client for efficient sync.
+     */
+    private void sendSnapshot(WebSocketSession session, String workspaceId, YjsDocumentState state) {
+        try {
+            byte[] snapshot = state.getSnapshotData();
+            
+            if (snapshot == null || snapshot.length == 0) {
+                log.warn("[Yjs] Snapshot exists but is empty for workspace: {}", workspaceId);
+                sendAllUpdates(session, workspaceId, state);
+                return;
+            }
+
+            log.info("[Yjs] Sending snapshot to new client: workspaceId={}, size={} bytes, sessionId={}", 
+                    workspaceId, snapshot.length, session.getId());
+            
+            // Synchronize on session to prevent concurrent sends
+            synchronized (session) {
+                if (!session.isOpen()) {
+                    log.warn("[Yjs] Session closed before sending snapshot: workspaceId={}", workspaceId);
+                    return;
+                }
+                
+                session.sendMessage(new BinaryMessage(snapshot));
+            }
+            
+            log.info("[Yjs] Successfully sent snapshot to sessionId={}", session.getId());
+            
+        } catch (java.io.IOException e) {
+            // Client disconnected - this is expected
+            log.debug("[Yjs] Client disconnected during snapshot send: sessionId={}", session.getId());
+        } catch (Exception e) {
+            log.error("[Yjs] Failed to send snapshot: {}", e.getMessage(), e);
+            // Fallback to sending updates
+            sendAllUpdates(session, workspaceId, state);
+        }
+    }
+
+    /**
+     * Send all updates to client (fallback method).
+     * Uses synchronized block to prevent concurrent sends causing BINARY_PARTIAL_WRITING errors.
+     */
+    private void sendAllUpdates(WebSocketSession session, String workspaceId, YjsDocumentState state) {
+        try {
+            byte[][] updates = state.getAllUpdates();
             
             if (updates.length == 0) {
                 log.debug("[Yjs] No stored updates for workspace: {}", workspaceId);
@@ -129,8 +206,13 @@ public class YjsWebSocketHandler extends BinaryWebSocketHandler {
 
         byte[] update = message.getPayload().array();
         
-        // Store update for persistence (memory + database)
-        documentManager.storeUpdate(workspaceId, update, senderId);
+        // Store update for persistence (memory + database) - only if enabled
+        if (yjsPersistenceEnabled) {
+            documentManager.storeUpdate(workspaceId, update, senderId);
+        } else {
+            log.debug("[Yjs] Persistence disabled - skipping update storage: workspaceId={}, senderId={}", 
+                workspaceId, senderId);
+        }
         
         log.debug("[Yjs] Relaying update: workspaceId={}, senderId={}, size={} bytes", 
             workspaceId, senderId, update.length);

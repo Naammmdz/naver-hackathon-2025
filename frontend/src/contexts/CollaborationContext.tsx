@@ -74,6 +74,7 @@ export function CollaborationProvider({ children }: { children: React.ReactNode 
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const heartbeatIntervalRef = useRef<NodeJS.Timeout>();
   const isIntentionalDisconnectRef = useRef(false);
+  const lastEventTimeRef = useRef<number>(0);
 
   // Get user color based on userId
   const getUserColor = useCallback((id: string) => {
@@ -120,6 +121,9 @@ export function CollaborationProvider({ children }: { children: React.ReactNode 
             const data: CollaborationEvent = JSON.parse(message.body);
             
             console.log('[Collaboration] Received event:', data.type);
+            
+            // Update last event time
+            lastEventTimeRef.current = Date.now();
             
             // Update active users
             if (data.type === 'user-joined' && data.data?.user) {
@@ -213,13 +217,20 @@ export function CollaborationProvider({ children }: { children: React.ReactNode 
         }
         
         // Only attempt reconnection if it wasn't an intentional disconnect
-        if (!isIntentionalDisconnectRef.current && activeWorkspaceId && userId) {
+        // and not too soon after receiving an event (to prevent loops)
+        const timeSinceLastEvent = Date.now() - lastEventTimeRef.current;
+        const isTooSoonAfterEvent = timeSinceLastEvent < 2000; // 2 seconds
+        
+        if (!isIntentionalDisconnectRef.current && activeWorkspaceId && userId && !isTooSoonAfterEvent) {
           setIsReconnecting(true);
           reconnectTimeoutRef.current = setTimeout(() => {
             console.log('[Collaboration] Attempting to reconnect...');
             connect();
           }, 3000);
         } else {
+          if (isTooSoonAfterEvent) {
+            console.log('[Collaboration] Skipping reconnection - too soon after event');
+          }
           // Reset flag for next connection
           isIntentionalDisconnectRef.current = false;
         }

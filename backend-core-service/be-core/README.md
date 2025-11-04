@@ -66,27 +66,30 @@ The application uses PostgreSQL with the following main tables:
 - `task_tags` - Task tags (many-to-many)
 - `documents` - Document entities
 - `task_docs` - Task-document relations
-- `yjs_updates` - **NEW**: Yjs CRDT persistence for realtime collaboration
+- `yjs_snapshots` - Yjs CRDT snapshots for realtime collaboration
 - `workspaces` - Workspace entities
 - `workspace_members` - Workspace member relations
 
-### Yjs Persistence (NEW)
+### Yjs Persistence
 
-The backend now persists Yjs CRDT updates to database for data durability:
+The backend uses snapshot-based persistence for Yjs CRDT:
 
 ```sql
--- Table stores binary Yjs updates
-CREATE TABLE yjs_updates (
+-- Table stores Yjs snapshots (state snapshots for fast recovery)
+CREATE TABLE yjs_snapshots (
     id VARCHAR(36) PRIMARY KEY,
     workspace_id VARCHAR(160) NOT NULL,
-    update_data BYTEA NOT NULL,
-    update_size INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL,
+    snapshot BYTEA NOT NULL,
+    vector BYTEA NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
     user_id VARCHAR(160)
 );
 ```
 
-**Why?** Without persistence, Yjs updates only exist in memory. When server restarts or all users disconnect, collaboration data is lost. This table ensures updates survive restarts and can be recovered.
+**Architecture**: 
+- **Memory**: Active workspace states cached in RAM for fast sync
+- **Database**: Snapshots saved periodically (every 2 minutes or 100 updates)
+- **Recovery**: On restart, load latest snapshot to restore state quickly
 
 See `docs/YJS_PERSISTENCE_IMPLEMENTATION.md` for full details.
 
@@ -115,18 +118,14 @@ spring.h2.console.path=/h2-console
 
 1. Ensure PostgreSQL is running
 2. Update database configuration in `application.properties`
-3. **Create yjs_updates table** (if not auto-created):
-   ```bash
-   psql -U postgres -d naver_hackathon -f src/main/resources/db/migration/V6__Create_yjs_updates_table.sql
-   ```
-4. Run with Maven:
+3. Run with Maven:
    ```bash
    ./mvnw spring-boot:run
    ```
 
 The application will start on port 8989.
 
-### Yjs Management Endpoints (NEW)
+### Yjs Management Endpoints
 
 Monitor and manage Yjs CRDT persistence:
 
@@ -153,3 +152,25 @@ CORS is configured to allow requests from any origin (`*`). For production, upda
 - The application uses JPA with `ddl-auto=update` for automatic schema updates
 - Logging is configured for DEBUG level on the application package
 - Lombok is used for reducing boilerplate code
+
+### Development Mode (Yjs Persistence Disabled)
+
+For development, you can disable Yjs persistence to prevent sync conflicts after backend restarts:
+
+1. Use the development startup script:
+   ```bash
+   ./start-dev.sh
+   ```
+
+This script automatically sets `YJS_PERSISTENCE_ENABLED=false` to disable Yjs update storage and sending, allowing clean restarts while maintaining real-time collaboration functionality.
+
+**Why disable persistence in development?**
+- Prevents conflicts between stored Yjs updates and fresh frontend initialization
+- Allows clean restarts during development without sync issues
+- Real-time collaboration still works through WebSocket connections
+- Data persistence can be re-enabled for production or testing
+
+To run with persistence enabled (production mode):
+```bash
+./mvnw spring-boot:run
+```

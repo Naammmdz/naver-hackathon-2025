@@ -1,10 +1,10 @@
 import { apiAuthContext } from "@/lib/api/authContext";
 import { workspaceApi } from "@/lib/api/workspaceApi";
 import type {
-    CreateWorkspaceInput,
-    UpdateWorkspaceInput,
-    Workspace,
-    WorkspaceMember,
+  CreateWorkspaceInput,
+  UpdateWorkspaceInput,
+  Workspace,
+  WorkspaceMember,
 } from "@/types/workspace";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -16,6 +16,7 @@ interface WorkspaceState {
   isLoading: boolean;
   error: string | null;
   isInitialized: boolean;
+  lastLoadTime: number;
 
   // Actions
   initialize: () => Promise<void>;
@@ -46,6 +47,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       isLoading: false,
       error: null,
       isInitialized: false,
+      lastLoadTime: 0,
 
       initialize: async () => {
         if (get().isInitialized) return;
@@ -70,21 +72,49 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       },
 
       loadWorkspaces: async () => {
-        set({ isLoading: true, error: null });
+        const now = Date.now();
+        const lastLoad = get().lastLoadTime;
+        const timeSinceLastLoad = now - lastLoad;
+        
+        // Debounce: don't load if called within 5 seconds
+        if (timeSinceLastLoad < 5000) {
+          console.log("[loadWorkspaces] Debounced - called too soon after last load");
+          return;
+        }
+        
+        set({ isLoading: true, error: null, lastLoadTime: now });
         try {
           const workspaces = await workspaceApi.getWorkspaces();
           const currentActiveId = get().activeWorkspaceId;
+          const currentWorkspaces = get().workspaces;
+          
+          // Check if workspaces actually changed
+          const workspacesChanged = JSON.stringify(workspaces) !== JSON.stringify(currentWorkspaces);
+          
+          if (!workspacesChanged) {
+            console.log("[loadWorkspaces] Workspaces unchanged, skipping update");
+            set({ isLoading: false });
+            return;
+          }
+
           const hasActiveWorkspace =
             currentActiveId !== null &&
             workspaces.some((workspace) => workspace.id === currentActiveId);
 
-          const nextActiveWorkspaceId = hasActiveWorkspace
-            ? currentActiveId
-            : workspaces.length > 0
-              ? workspaces[0].id
-              : null;
+          let nextActiveWorkspaceId = currentActiveId;
 
-          console.log("[loadWorkspaces] currentActiveId:", currentActiveId, "nextActiveWorkspaceId:", nextActiveWorkspaceId);
+          if (!hasActiveWorkspace) {
+            // Only change active workspace if current one is not available
+            if (workspaces.length > 0) {
+              // Prefer to keep the same workspace if it exists in new list
+              // If not, use the first available workspace
+              nextActiveWorkspaceId = workspaces[0].id;
+            } else {
+              nextActiveWorkspaceId = null;
+            }
+          }
+
+          console.log("[loadWorkspaces] currentActiveId:", currentActiveId, "hasActiveWorkspace:", hasActiveWorkspace, "nextActiveWorkspaceId:", nextActiveWorkspaceId, "workspacesChanged:", workspacesChanged);
 
           set({
             workspaces,
@@ -262,7 +292,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     {
       name: "workspace-storage",
       partialize: (state) => ({ 
-        activeWorkspaceId: state.activeWorkspaceId 
+        activeWorkspaceId: state.activeWorkspaceId,
+        lastLoadTime: state.lastLoadTime 
       }),
     }
   )

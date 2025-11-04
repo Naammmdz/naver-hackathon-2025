@@ -63,6 +63,7 @@ export const YjsProvider: React.FC<YjsProviderProps> = ({ workspaceId, children 
 
         // Create Yjs document
         const ydoc = new Y.Doc();
+        // Don't set clientID manually - let Yjs handle it
         ydocRef.current = ydoc;
 
         // Create WebSocket provider with auth token
@@ -80,6 +81,10 @@ export const YjsProvider: React.FC<YjsProviderProps> = ({ workspaceId, children 
             maxBackoffTime: 5000, // Max 5s between reconnect attempts
             // Disable awareness (we handle cursors separately)
             awareness: undefined,
+            // Disable loading initial document state to prevent replay
+            disableBc: true,
+            // Only sync real-time changes, not historical ones
+            resyncInterval: -1,
           }
         );
 

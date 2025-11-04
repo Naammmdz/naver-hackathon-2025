@@ -91,8 +91,8 @@ export function DocumentEditor({
   }, [document.id, ydoc, provider, user, generateUserColor]);
 
   // Create editor with or without collaboration
-  // IMPORTANT: Always provide initialContent from DB
-  // Yjs will sync on top of it, ensuring first client has content
+  // IMPORTANT: Always provide initialContent from DB for immediate display
+  // Yjs will sync real-time changes on top of it
   const editor = useCreateBlockNote({
     collaboration: collaborationConfig,
     initialContent: document ? ensureTitleBlock(document.content) : undefined,

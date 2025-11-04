@@ -11,7 +11,7 @@ import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { Task } from '@/types/task';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function Docs() {
   const {
@@ -71,7 +71,8 @@ export default function Docs() {
   const [isDark, setIsDark] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  useEffect(() => {
+  // Debounce ref for content saving
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();  useEffect(() => {
     const checkTheme = () => {
       const savedTheme = localStorage.getItem("theme");
       const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -91,33 +92,50 @@ export default function Docs() {
     return () => observer.disconnect();
   }, []);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Save content to store whenever it changes (called by DocumentEditor)
-  const handleChange = async (content: any[]) => {
+  const handleChange = useCallback(async (content: any[]) => {
     if (!activeDocumentId || !canEditWorkspace) return;
     
-    try {
-      // Save content to store in ALL modes
-      // - Non-collaborative: immediate save for local changes
-      // - Collaborative: Yjs handles real-time sync, but we also persist to DB
-      //   (and let scheduleSave() debounce it)
-      updateDocument(activeDocumentId, { content });
-      
-      // Auto-update title from first heading (always update metadata)
-      if (content.length > 0) {
-        const firstBlock = content[0] as any;
-        if (firstBlock.type === 'heading' && firstBlock.content) {
-          const textContent = Array.isArray(firstBlock.content) 
-            ? firstBlock.content.map((item: any) => item.text || '').join('')
-            : String(firstBlock.content);
-          if (textContent.trim() && textContent.trim() !== activeDocument?.title) {
-            updateDocument(activeDocumentId, { title: textContent.trim() });
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Debounce save operation by 500ms
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Save content to store in ALL modes
+        // - Non-collaborative: immediate save for local changes
+        // - Collaborative: Yjs handles real-time sync, but we also persist to DB
+        //   (and let scheduleSave() debounce it)
+        updateDocument(activeDocumentId, { content });
+        
+        // Auto-update title from first heading (always update metadata)
+        if (content.length > 0) {
+          const firstBlock = content[0] as any;
+          if (firstBlock.type === 'heading' && firstBlock.content) {
+            const textContent = Array.isArray(firstBlock.content) 
+              ? firstBlock.content.map((item: any) => item.text || '').join('')
+              : String(firstBlock.content);
+            if (textContent.trim() && textContent.trim() !== activeDocument?.title) {
+              updateDocument(activeDocumentId, { title: textContent.trim() });
+            }
           }
         }
+      } catch (e) {
+        console.error('Failed to save content:', e);
       }
-    } catch (e) {
-      console.error('Failed to save content:', e);
-    }
-  };
+    }, 500);
+  }, [activeDocumentId, canEditWorkspace, updateDocument, activeDocument?.title]);
 
   // Handle task link clicks
   useEffect(() => {

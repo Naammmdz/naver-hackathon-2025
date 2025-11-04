@@ -2,9 +2,11 @@ package com.naammm.becore.websocket;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.naammm.becore.service.YjsUpdateService;
+import com.naammm.becore.entity.YjsSnapshot;
+import com.naammm.becore.service.YjsSnapshotService;
 
 import org.springframework.stereotype.Component;
 
@@ -13,51 +15,49 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Manages Yjs document states for each workspace.
- * Hybrid approach: Memory cache + Database persistence.
- * 
+ * Hybrid approach: Memory cache + Database snapshots.
+ *
  * - Memory: Fast access for active workspaces
- * - Database: Persistent storage for recovery after restart
+ * - Database: Persistent snapshots for recovery after restart
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class YjsDocumentManager {
 
-    private final YjsUpdateService yjsUpdateService;
+    private final YjsSnapshotService yjsSnapshotService;
 
     // Memory cache: workspaceId -> YjsDocumentState
     private final Map<String, YjsDocumentState> workspaceStates = new ConcurrentHashMap<>();
 
     /**
      * Get or create document state for a workspace.
-     * Loads from database if not in memory.
+     * Loads from snapshot if available, otherwise starts fresh.
      */
     public YjsDocumentState getOrCreateState(String workspaceId) {
         return workspaceStates.computeIfAbsent(workspaceId, id -> {
             log.info("[YjsDocManager] Loading/creating state for workspace: {}", id);
-            
+
             YjsDocumentState state = new YjsDocumentState(id);
-            
-            // Try to load from database - but don't fail if DB has issues
+
+            // Try to load from snapshot - much more efficient than replaying all updates
             try {
-                List<byte[]> persistedUpdates = yjsUpdateService.loadUpdates(id);
-                
-                // Populate state with persisted updates
-                if (!persistedUpdates.isEmpty()) {
-                    for (byte[] update : persistedUpdates) {
-                        state.addUpdate(update);
-                    }
-                    log.info("[YjsDocManager] Loaded {} persisted updates for workspace: {}", 
-                            persistedUpdates.size(), id);
+                Optional<YjsSnapshot> snapshot = yjsSnapshotService.loadLatestSnapshot(id);
+
+                if (snapshot.isPresent()) {
+                    // Load snapshot and vector clock
+                    state.loadSnapshot(snapshot.get().getSnapshot(), snapshot.get().getVector());
+                    log.info("[YjsDocManager] Loaded snapshot for workspace: {} (updated: {})",
+                            id, snapshot.get().getUpdatedAt());
                 } else {
-                    log.info("[YjsDocManager] No persisted updates found, starting fresh for workspace: {}", id);
+                    log.info("[YjsDocManager] No snapshot found, starting fresh for workspace: {}", id);
                 }
             } catch (Exception e) {
-                log.error("[YjsDocManager] Failed to load persisted updates, starting with empty state: workspace={}, error={}", 
+                log.error("[YjsDocManager] Failed to load snapshot, starting with empty state: workspace={}, error={}",
                          id, e.getMessage(), e);
                 // Continue with empty state - real-time sync will still work
             }
-            
+
             return state;
         });
     }
@@ -78,15 +78,6 @@ public class YjsDocumentManager {
         
         log.debug("[YjsDocManager] Stored update in memory: workspace={}, size={} bytes, total={}", 
                   workspaceId, update.length, state.getUpdateCount());
-
-        // Persist to database asynchronously
-        try {
-            yjsUpdateService.saveUpdate(workspaceId, update, userId);
-        } catch (Exception e) {
-            log.error("[YjsDocManager] Failed to persist update to database: workspace={}", 
-                     workspaceId, e);
-            // Continue - memory cache still has the update
-        }
     }
 
     /**
@@ -102,8 +93,7 @@ public class YjsDocumentManager {
     }
 
     /**
-     * Clear workspace state from memory cache.
-     * Note: Does NOT delete from database - use YjsUpdateService for that.
+     * Clear workspace state from memory cache only.
      */
     public void clearWorkspaceCache(String workspaceId) {
         workspaceStates.remove(workspaceId);
@@ -111,11 +101,11 @@ public class YjsDocumentManager {
     }
 
     /**
-     * Clear workspace completely (memory + database).
+     * Clear workspace completely (memory + database snapshots).
      */
     public void clearWorkspaceCompletely(String workspaceId) {
         workspaceStates.remove(workspaceId);
-        yjsUpdateService.clearWorkspace(workspaceId);
+        yjsSnapshotService.deleteSnapshots(workspaceId);
         log.info("[YjsDocManager] Completely cleared workspace: {}", workspaceId);
     }
 
@@ -132,21 +122,19 @@ public class YjsDocumentManager {
     }
 
     /**
-     * Get full statistics including database.
+     * Get full statistics for a workspace (memory cache only).
      */
     public WorkspaceStats getFullStats(String workspaceId) {
         YjsDocumentState memoryState = workspaceStates.get(workspaceId);
         int memoryCount = memoryState != null ? memoryState.getUpdateCount() : 0;
         long memorySize = memoryState != null ? memoryState.getTotalSize() : 0;
         
-        YjsUpdateService.WorkspaceYjsStats dbStats = yjsUpdateService.getStats(workspaceId);
-        
         return new WorkspaceStats(
             workspaceId,
             memoryCount,
             memorySize,
-            dbStats.updateCount(),
-            dbStats.totalSizeBytes()
+            0, // No database update tracking
+            0  // No database size tracking
         );
     }
 
@@ -157,4 +145,18 @@ public class YjsDocumentManager {
         long dbUpdateCount,
         long dbSizeBytes
     ) {}
+
+    /**
+     * Get list of active workspace IDs in memory cache.
+     */
+    public List<String> getActiveWorkspaceIds() {
+        return List.copyOf(workspaceStates.keySet());
+    }
+
+    /**
+     * Get state for a workspace (null if not in memory).
+     */
+    public YjsDocumentState getState(String workspaceId) {
+        return workspaceStates.get(workspaceId);
+    }
 }
