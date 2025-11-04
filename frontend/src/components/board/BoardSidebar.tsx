@@ -1,32 +1,33 @@
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
+import { useWorkspacePermission } from '@/hooks/use-workspace-permission';
 import { useBoardStore } from '@/store/boardStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import type { Board } from '@/types/board';
 import {
-    Edit2,
-    Layers,
-    MoreHorizontal,
-    Plus,
-    Search,
-    Trash2,
+  Edit2,
+  Layers,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -53,14 +54,17 @@ export default function BoardSidebar() {
 
   const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
   const { toast } = useToast();
+  const { currentMemberRole } = useWorkspacePermission();
 
   const notifyReadOnly = useCallback(() => {
-    toast({
-      title: 'Chỉ xem',
-      description: 'Bạn chỉ có quyền xem trong workspace này.',
-      variant: 'destructive',
-    });
-  }, [toast]);
+    if (currentMemberRole === "viewer") {
+      toast({
+        title: 'Chỉ xem',
+        description: 'Bạn chỉ có quyền xem trong workspace này.',
+        variant: 'destructive',
+      });
+    }
+  }, [toast, currentMemberRole]);
 
   // Filter boards by active workspace
   const workspaceFilteredBoards = useWorkspaceFilter(boards);

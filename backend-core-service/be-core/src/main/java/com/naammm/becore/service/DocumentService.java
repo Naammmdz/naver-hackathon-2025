@@ -116,7 +116,11 @@ public class DocumentService {
         }
         
         String workspaceId = document.getWorkspaceId();
-        documentRepository.delete(document);
+        
+        // Mark as trashed instead of deleting
+        document.setTrashed(true);
+        document.setTrashedAt(LocalDateTime.now());
+        documentRepository.save(document);
         
         // Broadcast realtime event
         if (StringUtils.hasText(workspaceId)) {
@@ -127,9 +131,6 @@ public class DocumentService {
                 userId
             );
         }
-        document.setTrashed(true);
-        document.setTrashedAt(LocalDateTime.now());
-        documentRepository.save(document);
     }
 
     public void permanentlyDeleteDocument(String id) {

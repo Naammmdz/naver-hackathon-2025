@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
+import { useWorkspacePermission } from '@/hooks/use-workspace-permission';
 import { useDocumentStore } from '@/store/documentStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import {
@@ -45,13 +46,16 @@ export default function DocumentSidebar() {
   } = useDocumentStore();
   const canEditWorkspace = useWorkspaceStore((state) => state.canEditActiveWorkspace());
   const { toast } = useToast();
+  const { currentMemberRole } = useWorkspacePermission();
   const notifyReadOnly = useCallback(() => {
-    toast({
-      title: 'Chỉ xem',
-      description: 'Bạn chỉ có quyền xem trong workspace này.',
-      variant: 'destructive',
-    });
-  }, [toast]);
+    if (currentMemberRole === "viewer") {
+      toast({
+        title: 'Chỉ xem',
+        description: 'Bạn chỉ có quyền xem trong workspace này.',
+        variant: 'destructive',
+      });
+    }
+  }, [toast, currentMemberRole]);
 
   // Filter documents by active workspace
   const workspaceFilteredDocs = useWorkspaceFilter(documents);
@@ -273,12 +277,8 @@ export default function DocumentSidebar() {
   };
 
   const handleDeleteConfirm = () => {
-    if (!canEditWorkspace) {
-      notifyReadOnly();
-    } else if (documentToDelete) {
-      deleteDocument(documentToDelete);
-      setDocumentToDelete(null);
-    }
+    deleteDocument(documentToDelete);
+    setDocumentToDelete(null);
     setDeleteDialogOpen(false);
   };
 

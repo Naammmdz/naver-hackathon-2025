@@ -7,8 +7,10 @@ import java.util.Map;
 import com.naammm.becore.entity.Task;
 import com.naammm.becore.entity.TaskPriority;
 import com.naammm.becore.entity.TaskStatus;
+import com.naammm.becore.security.UserContext;
 import com.naammm.becore.service.TaskService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,17 +35,43 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks(
-            @RequestHeader("X-User-Id") String userId) {
-        return ResponseEntity.ok(taskService.getAllTasks());
+            @RequestHeader(value = "X-User-Id", required = false) String headerUserId,
+            @RequestParam(value = "userId", required = false) String queryUserId) {
+        String userId = headerUserId != null ? headerUserId : queryUserId;
+        if (userId == null || userId.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        try {
+            UserContext.setUserId(userId);
+            return ResponseEntity.ok(taskService.getAllTasks());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } finally {
+            UserContext.clear();
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(
             @PathVariable String id,
-            @RequestHeader("X-User-Id") String userId) {
-        return taskService.getTaskById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+            @RequestHeader(value = "X-User-Id", required = false) String headerUserId,
+            @RequestParam(value = "userId", required = false) String queryUserId) {
+        String userId = headerUserId != null ? headerUserId : queryUserId;
+        if (userId == null || userId.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        try {
+            UserContext.setUserId(userId);
+            return taskService.getTaskById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } finally {
+            UserContext.clear();
+        }
     }
 
     @GetMapping("/status/{status}")

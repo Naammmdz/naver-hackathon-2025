@@ -143,16 +143,18 @@ public class TaskService {
             ensureCanModifyWorkspace(task.getWorkspaceId(), userId);
         }
         
+        String workspaceId = task.getWorkspaceId();
+        String taskId = task.getId();
         taskRepository.deleteById(id);
         
         // Broadcast realtime event
-        if (StringUtils.hasText(task.getWorkspaceId())) {
+        if (StringUtils.hasText(workspaceId)) {
             log.info("[Realtime] Broadcasting task deleted: taskId={}, workspaceId={}", 
-                task.getId(), task.getWorkspaceId());
+                taskId, workspaceId);
             realtimeEventService.broadcastTaskChange(
-                task.getWorkspaceId(), 
+                workspaceId, 
                 "deleted", 
-                task.getId(), 
+                taskId, 
                 userId
             );
         }
