@@ -170,13 +170,14 @@ export function CollaborationProvider({ children }: { children: React.ReactNode 
           }
         });
         
-        // Send join message
+        // Send join message (include real profile info for avatars)
         client.publish({
           destination: `/app/collaboration/join/${activeWorkspaceId}`,
           body: JSON.stringify({
             id: userId,
-            email: `${userId}@example.com`,
-            name: userId,
+            email: user?.primaryEmailAddress?.emailAddress || `${userId}@example.com`,
+            name: user?.fullName || user?.username || userId,
+            avatarUrl: (user as any)?.imageUrl,
           }),
         });
         

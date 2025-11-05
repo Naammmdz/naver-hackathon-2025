@@ -6,8 +6,8 @@ import { useTaskStore } from '@/store/taskStore';
 import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CollaborationPresence } from './CollaborationPresence';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
+import { OnlineUsers } from "@/components/board/OnlineUsers";
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
@@ -50,7 +50,7 @@ export function ClickupHeader({
     localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
 
     // Force a reflow to apply styles immediately
-    document.documentElement.offsetHeight;
+    void document.documentElement.offsetHeight;
 
     // Re-enable transitions after a small delay
     setTimeout(() => {
@@ -117,8 +117,8 @@ export function ClickupHeader({
           {/* Read Only Badge */}
           <ReadOnlyBadge />
           
-          {/* Collaboration Presence */}
-          <CollaborationPresence />
+          {/* Online Users - global presence */}
+          <OnlineUsers maxVisible={3} size="md" showLabel={false} />
           
           <div className="h-6 w-px bg-border hidden sm:block" />
           

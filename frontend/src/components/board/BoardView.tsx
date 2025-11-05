@@ -2,10 +2,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import BoardSidebar from './BoardSidebar';
 import { CanvasContainer } from './CanvasContainer';
+import { BoardHeader } from './BoardHeader';
+import { useBoardStore } from '@/store/boardStore';
 
 export function BoardView() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showDragHint, setShowDragHint] = useState(false);
+  const { boards, activeBoardId } = useBoardStore();
+  const activeBoard = boards.find(b => b.id === activeBoardId);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -46,8 +50,11 @@ export function BoardView() {
       </div>
 
       {/* Canvas Area */}
-      <div className="flex-1 overflow-hidden relative">
-        <CanvasContainer />
+      <div className="flex-1 overflow-hidden relative flex flex-col">
+        <BoardHeader boardTitle={activeBoard?.title || 'Board'} />
+        <div className="flex-1 overflow-hidden">
+          <CanvasContainer />
+        </div>
       </div>
 
       {/* Show sidebar button when hidden */}
