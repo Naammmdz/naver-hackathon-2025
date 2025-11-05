@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { UserButton } from '@clerk/clerk-react';
+import { EnhancedUserButton } from '@/components/auth/EnhancedUserButton';
 import {
   CheckSquare,
   FileText,
@@ -153,13 +153,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
         <div className="h-px w-6 bg-sidebar-foreground/20 my-1" />
 
         <div className="flex flex-col items-center gap-0.5 mt-2">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: 'h-8 w-8 rounded-lg',
-              },
-            }}
-          />
+          <EnhancedUserButton />
           <span className="text-[10px] text-sidebar-primary-foreground font-medium text-center leading-tight">
             Profile
           </span>
