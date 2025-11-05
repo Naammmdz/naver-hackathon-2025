@@ -1,5 +1,5 @@
+import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
-import { CustomSlashMenu } from '@/components/documents/LinkTaskSlashItem';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
 import { Button } from '@/components/ui/button';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
@@ -8,9 +8,7 @@ import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
-import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
-import { useCreateBlockNote } from '@blocknote/react';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -70,77 +68,6 @@ export default function Docs() {
     
     return () => observer.disconnect();
   }, []);
-
-  // Ensure document always starts with a heading 1
-  const ensureTitleBlock = (content: any[]) => {
-    if (!content || content.length === 0) {
-      return [
-        {
-          type: 'heading',
-          content: 'Untitled',
-          props: { level: 1 },
-        },
-      ];
-    }
-    
-    // Ensure first block is always a heading 1
-    const firstBlock = content[0];
-    if (firstBlock.type !== 'heading' || firstBlock.props?.level !== 1) {
-      return [
-        {
-          type: 'heading',
-          content: firstBlock.content || 'Untitled',
-          props: { level: 1 },
-        },
-        ...content.slice(1),
-      ];
-    }
-    
-    // Ensure heading 1 always has content
-    if (!firstBlock.content || firstBlock.content.length === 0) {
-      firstBlock.content = 'Untitled';
-    }
-    
-    return content;
-  };
-
-  // Create editor instance with active document content
-  const editor = useCreateBlockNote({
-    initialContent: displayDocument ? ensureTitleBlock(displayDocument.content) : undefined,
-  });
-
-  // Update editor content when active document changes
-  useEffect(() => {
-    if (displayDocument && editor) {
-      const content = ensureTitleBlock(displayDocument.content);
-      editor.replaceBlocks(editor.document, content);
-    }
-  }, [activeDocumentId, displayDocument]);
-
-  // Save content to store whenever it changes
-  const handleChange = async () => {
-    if (!activeDocumentId) return;
-    
-    try {
-      const content = editor.document;
-      updateDocument(activeDocumentId, { content });
-      
-      // Auto-update title from first heading
-      if (content.length > 0) {
-        const firstBlock = content[0] as any;
-        if (firstBlock.type === 'heading' && firstBlock.content) {
-          const textContent = Array.isArray(firstBlock.content) 
-            ? firstBlock.content.map((item: any) => item.text || '').join('')
-            : String(firstBlock.content);
-          if (textContent.trim() && textContent.trim() !== activeDocument?.title) {
-            updateDocument(activeDocumentId, { title: textContent.trim() });
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Failed to save content:', e);
-    }
-  };
 
   // Handle task link clicks
   useEffect(() => {
@@ -344,23 +271,32 @@ export default function Docs() {
 
               {/* Editor Container */}
               <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-4xl mx-auto space-y-6">
-                  {/* Editor with Custom Slash Menu */}
-                  <BlockNoteView
-                    editor={editor}
-                    onChange={handleChange}
-                    theme={isDark ? "dark" : "light"}
-                    className="rounded-lg border border-border/50 shadow-sm"
-                    slashMenu={false}
-                  >
-                    <CustomSlashMenu 
-                      editor={editor} 
-                      docId={activeDocument.id} 
-                      docTitle={activeDocument.title}
-                      onTaskClick={setSelectedTask}
-                    />
-                  </BlockNoteView>
-                </div>
+                <DocumentEditor
+                  document={activeDocument}
+                  isDark={isDark}
+                  canEditWorkspace={true}
+                  onTaskClick={setSelectedTask}
+                  onChange={async (content) => {
+                    try {
+                      updateDocument(activeDocumentId!, { content });
+                      
+                      // Auto-update title from first heading
+                      if (content.length > 0) {
+                        const firstBlock = content[0] as any;
+                        if (firstBlock.type === 'heading' && firstBlock.content) {
+                          const textContent = Array.isArray(firstBlock.content) 
+                            ? firstBlock.content.map((item: any) => item.text || '').join('')
+                            : String(firstBlock.content);
+                          if (textContent.trim() && textContent.trim() !== activeDocument?.title) {
+                            updateDocument(activeDocumentId!, { title: textContent.trim() });
+                          }
+                        }
+                      }
+                    } catch (e) {
+                      console.error('Failed to save content:', e);
+                    }
+                  }}
+                />
               </div>
             </>
           )
