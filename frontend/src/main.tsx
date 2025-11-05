@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, useNavigate } from "react-router-dom";
 import App from "./App.tsx";
+import { RealtimeProvider } from "./context/RealtimeProvider";
 import "./index.css";
 import "./i18n";
 
@@ -43,7 +44,9 @@ const Root = () => (
     }}
   >
     <ClerkProviderWithRouter>
-      <App />
+      <RealtimeProvider endpoint={import.meta.env.VITE_REALTIME_WS_URL}>
+        <App />
+      </RealtimeProvider>
     </ClerkProviderWithRouter>
   </BrowserRouter>
 );

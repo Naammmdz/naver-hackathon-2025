@@ -2,6 +2,8 @@ package com.naammm.becore.entity;
 
 import java.time.LocalDateTime;
 
+import com.devflow.common.domain.entity.WorkspaceRole;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

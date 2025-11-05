@@ -1,6 +1,6 @@
 package com.naammm.becore.dto;
 
-import com.naammm.becore.entity.WorkspaceRole;
+import com.devflow.common.domain.entity.WorkspaceRole;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

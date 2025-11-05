@@ -3,17 +3,17 @@ package com.naammm.becore.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.devflow.common.domain.entity.Workspace;
+import com.devflow.common.domain.entity.WorkspaceMember;
+import com.devflow.common.domain.entity.WorkspaceRole;
+import com.devflow.common.domain.repository.WorkspaceMemberRepository;
 import com.naammm.becore.dto.CreateWorkspaceRequest;
 import com.naammm.becore.dto.InviteMemberRequest;
 import com.naammm.becore.dto.UpdateMemberRoleRequest;
 import com.naammm.becore.dto.UpdateWorkspaceRequest;
-import com.naammm.becore.entity.Workspace;
 import com.naammm.becore.entity.WorkspaceInvite;
-import com.naammm.becore.entity.WorkspaceMember;
-import com.naammm.becore.entity.WorkspaceRole;
 import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.WorkspaceInviteRepository;
-import com.naammm.becore.repository.WorkspaceMemberRepository;
 import com.naammm.becore.repository.WorkspaceRepository;
 
 import org.springframework.stereotype.Service;
@@ -58,7 +58,19 @@ public class WorkspaceService {
             .defaultDocumentView(request.getDefaultDocumentView() != null ? request.getDefaultDocumentView() : "list")
             .build();
         
-        return workspaceRepository.save(workspace);
+        Workspace savedWorkspace = workspaceRepository.save(workspace);
+        
+        // Add the creator as the owner member
+        WorkspaceMember ownerMember = WorkspaceMember.builder()
+            .workspace(savedWorkspace)
+            .userId(userId)
+            .role(WorkspaceRole.OWNER)
+            .joinedAt(LocalDateTime.now())
+            .build();
+        
+        memberRepository.save(ownerMember);
+        
+        return savedWorkspace;
     }
 
     @Transactional

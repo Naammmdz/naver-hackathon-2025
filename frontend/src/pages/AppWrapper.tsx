@@ -2,11 +2,13 @@ import { BoardView } from "@/components/board/BoardView";
 import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
+import { useYjsAdapter } from "@/hooks/useYjsAdapter";
 import { useBoardStore } from "@/store/boardStore";
 import { useDocumentStore } from "@/store/documentStore";
 import { useTaskDocStore } from "@/store/taskDocStore";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
+import type { Board } from "@/types/board";
 import { useAuth } from "@clerk/clerk-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,6 +45,75 @@ export default function AppWrapper() {
   const initializeWorkspace = useWorkspaceStore((state) => state.initialize);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
+
+  const tasksRealtime = useYjsAdapter("tasks", useTaskStore, {
+    storeKey: "tasks",
+    selector: (state) => state.tasks,
+    guardLocalUpdate: (state) => Boolean(state.currentUserId) && !state.isLoading,
+    mergeRemotePatch: (state, tasks) => {
+      const currentUserId = state.currentUserId;
+      const filtered = currentUserId ? tasks.filter((task) => task.userId === currentUserId) : [];
+      return {
+        tasks: filtered,
+        isLoading: false,
+        error: null,
+      };
+    },
+  });
+
+  const documentsRealtime = useYjsAdapter("documents", useDocumentStore, {
+    storeKey: "documents",
+    selector: (state) => state.documents,
+    guardLocalUpdate: (state) => Boolean(state.currentUserId) && !state.isLoading,
+    mergeRemotePatch: (state, documents) => {
+      const currentUserId = state.currentUserId;
+      const filtered = currentUserId ? documents.filter((doc) => doc.userId === currentUserId) : [];
+      const activeDocumentId =
+        state.activeDocumentId && filtered.some((doc) => doc.id === state.activeDocumentId)
+          ? state.activeDocumentId
+          : filtered.find((doc) => !doc.trashed)?.id ?? null;
+      return {
+        documents: filtered,
+        activeDocumentId,
+        isLoading: false,
+        error: null,
+      };
+    },
+  });
+
+  const boardsRealtime = useYjsAdapter("boards", useBoardStore, {
+    storeKey: "boards",
+    selector: (state) => state.boards,
+    guardLocalUpdate: (state) => Boolean(state.currentUserId) && !state.isLoading,
+    mergeRemotePatch: (state, boards) => {
+      const normalizedBoards = Array.isArray(boards)
+        ? boards
+        : Object.values((boards ?? {}) as Record<string, Board>);
+      const currentUserId = state.currentUserId;
+      const filtered = currentUserId
+        ? normalizedBoards.filter((board) => board.userId === currentUserId)
+        : [];
+      const activeBoardId =
+        state.activeBoardId && filtered.some((board) => board.id === state.activeBoardId)
+          ? state.activeBoardId
+          : filtered.length > 0
+            ? filtered[0].id
+            : null;
+      return {
+        boards: filtered,
+        activeBoardId,
+        isLoading: false,
+        error: null,
+        isInitialized: true,
+      };
+    },
+  });
+
+  const isRealtimeHydrated =
+    tasksRealtime.isHydrated && documentsRealtime.isHydrated && boardsRealtime.isHydrated;
+  const isRealtimeConnected = [tasksRealtime.status, documentsRealtime.status, boardsRealtime.status].every(
+    (value) => value === "connected" || value === "connecting",
+  );
 
   useEffect(() => {
     if (!isLoaded) {
@@ -190,7 +261,11 @@ export default function AppWrapper() {
       
       {/* Main App - Hidden while onboarding */}
       {!showOnboarding && (
-        <div className="h-screen bg-background flex flex-col overflow-hidden">
+        <div
+          className="h-screen bg-background flex flex-col overflow-hidden"
+          data-realtime-ready={isRealtimeHydrated}
+          data-realtime-connected={isRealtimeConnected}
+        >
           {/* ClickUp Style Header */}
           <ClickupHeader
             currentView={currentView}

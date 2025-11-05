@@ -35,7 +35,7 @@ public class Board {
      * JSON payload representing the Excalidraw snapshot (elements, app state, files).
      */
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String snapshot;
 
     @Column(nullable = false)

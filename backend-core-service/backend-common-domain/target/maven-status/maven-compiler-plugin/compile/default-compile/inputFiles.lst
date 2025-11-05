@@ -1,0 +1,6 @@
+/Users/naammm/Workspace/naver-hackathon-2025/backend-core-service/backend-common-domain/src/main/java/com/devflow/common/domain/entity/User.java
+/Users/naammm/Workspace/naver-hackathon-2025/backend-core-service/backend-common-domain/src/main/java/com/devflow/common/domain/entity/Workspace.java
+/Users/naammm/Workspace/naver-hackathon-2025/backend-core-service/backend-common-domain/src/main/java/com/devflow/common/domain/entity/WorkspaceMember.java
+/Users/naammm/Workspace/naver-hackathon-2025/backend-core-service/backend-common-domain/src/main/java/com/devflow/common/domain/entity/WorkspaceRole.java
+/Users/naammm/Workspace/naver-hackathon-2025/backend-core-service/backend-common-domain/src/main/java/com/devflow/common/domain/repository/BaseWorkspaceRepository.java
+/Users/naammm/Workspace/naver-hackathon-2025/backend-core-service/backend-common-domain/src/main/java/com/devflow/common/domain/repository/WorkspaceMemberRepository.java

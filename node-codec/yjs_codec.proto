@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package devflow.codec.v1;
+
+option java_multiple_files = true;
+option java_package = "com.devflow.realtime.codec";
+option java_outer_classname = "YjsCodecProto";
+
+service YjsCodecService {
+  rpc MergeUpdates(MergeRequest) returns (MergeResponse);
+  rpc EncodeStateAsUpdate(StateAsUpdateRequest) returns (StateAsUpdateResponse);
+  rpc EncodeStateVector(StateVectorRequest) returns (StateVectorResponse);
+}
+
+message MergeRequest {
+  bytes snapshot = 1;
+  bytes update = 2;
+}
+
+message MergeResponse {
+  bytes snapshot = 1;
+  bytes vector = 2;
+}
+
+message StateAsUpdateRequest {
+  bytes snapshot = 1;
+  bytes client_vector = 2;
+}
+
+message StateAsUpdateResponse {
+  bytes update = 1;
+}
+
+message StateVectorRequest {
+  bytes snapshot = 1;
+}
+
+message StateVectorResponse {
+  bytes vector = 1;
+}

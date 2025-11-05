@@ -1,0 +1,402 @@
+package com.devflow.realtime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
+import com.devflow.common.domain.entity.Workspace;
+import com.devflow.common.domain.entity.WorkspaceMember;
+import com.devflow.common.domain.entity.WorkspaceRole;
+import com.devflow.common.domain.repository.WorkspaceMemberRepository;
+import com.devflow.realtime.codec.YjsCodecClient;
+import com.devflow.realtime.redis.YjsRedisService;
+import com.devflow.realtime.websocket.YjsWebSocketHandler;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.connection.DefaultMessage;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketExtension;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import com.devflow.common.domain.repository.BaseWorkspaceRepository;
+
+@SpringBootTest(
+    classes = RealtimeApplication.class,
+    properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.datasource.url=jdbc:h2:mem:realtime;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect",
+        "spring.redis.host=localhost",
+        "spring.redis.port=6379",
+        "yjs.codec.enabled=true",
+        "yjs.persistence.enabled=true",
+        "yjs.redis.enabled=true",
+        "spring.task.scheduling.enabled=false"
+    }
+)
+class RealtimeIntegrationTests {
+
+    @Autowired
+    private YjsWebSocketHandler handler;
+
+    @Autowired
+    private BaseWorkspaceRepository workspaceRepository;
+
+    @Autowired
+    private WorkspaceMemberRepository workspaceMemberRepository;
+
+    @Autowired
+    private YjsRedisService redisService;
+
+    @MockBean
+    private RedisTemplate<String, String> redisTemplate;
+
+    @MockBean
+    private YjsCodecClient codecClient;
+
+    private ValueOperations<String, String> valueOperations;
+    private Map<String, String> redisStore;
+
+    @BeforeEach
+    void setUp() {
+        redisStore = new ConcurrentHashMap<>();
+        valueOperations = mock(ValueOperations.class);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        doAnswer(invocation -> {
+            String key = invocation.getArgument(0);
+            String value = invocation.getArgument(1);
+            redisStore.put(key, value);
+            return null;
+        }).when(valueOperations).set(any(String.class), any(String.class));
+
+        doAnswer(invocation -> {
+            String key = invocation.getArgument(0);
+            String value = invocation.getArgument(1);
+            redisStore.put(key, value);
+            return null;
+        }).when(valueOperations).set(any(String.class), any(String.class), any(Duration.class));
+
+        doAnswer(invocation -> {
+            String key = invocation.getArgument(0);
+            String value = invocation.getArgument(1);
+            redisStore.put(key, value);
+            return null;
+        }).when(valueOperations).set(any(String.class), any(String.class), anyLong(), any(TimeUnit.class));
+
+        when(valueOperations.get(any(String.class))).thenAnswer(invocation -> redisStore.get(invocation.getArgument(0)));
+        when(redisTemplate.convertAndSend(any(String.class), any())).thenReturn(0L);
+
+        configureCodecMock();
+
+        workspaceMemberRepository.deleteAll();
+        workspaceRepository.deleteAll();
+    }
+
+    @Test
+    void nonMemberConnectionRejected() throws Exception {
+        String workspaceId = createWorkspaceWithMembers(Map.of("owner-user", WorkspaceRole.OWNER));
+        RecordingWebSocketSession session = newSession(workspaceId, "guest-user");
+
+        handler.afterConnectionEstablished(session);
+
+        assertThat(session.isOpen()).isFalse();
+        assertThat(session.getCloseStatus()).isNotNull();
+        assertThat(session.getCloseStatus().getCode()).isEqualTo(CloseStatus.POLICY_VIOLATION.getCode());
+        assertThat(session.getCloseStatus().getReason()).contains("not a member");
+
+        handler.afterConnectionClosed(session, CloseStatus.POLICY_VIOLATION);
+    }
+
+    @Test
+    void viewerCannotSendUpdates() throws Exception {
+        String workspaceId = createWorkspaceWithMembers(
+            Map.of(
+                "workspace-owner", WorkspaceRole.OWNER,
+                "readonly-user", WorkspaceRole.VIEWER
+            )
+        );
+
+        RecordingWebSocketSession session = newSession(workspaceId, "readonly-user");
+        handler.afterConnectionEstablished(session);
+        assertThat(session.isOpen()).isTrue();
+
+        handler.handleMessage(session, new BinaryMessage("delta".getBytes(StandardCharsets.UTF_8)));
+
+        assertThat(session.isOpen()).isFalse();
+        assertThat(session.getCloseStatus()).isNotNull();
+        assertThat(session.getCloseStatus().getReason()).isEqualTo("Read-only membership");
+
+        handler.afterConnectionClosed(session, session.getCloseStatus());
+    }
+
+    @Test
+    void membersReceiveBroadcastAndRedisFanOut() throws Exception {
+        String workspaceId = createWorkspaceWithMembers(
+            Map.of(
+                "author-user", WorkspaceRole.ADMIN,
+                "listener-user", WorkspaceRole.MEMBER
+            )
+        );
+
+        RecordingWebSocketSession author = newSession(workspaceId, "author-user");
+        handler.afterConnectionEstablished(author);
+
+        RecordingWebSocketSession listener = newSession(workspaceId, "listener-user");
+        handler.afterConnectionEstablished(listener);
+
+        byte[] localUpdate = "local-update".getBytes(StandardCharsets.UTF_8);
+        handler.handleMessage(author, new BinaryMessage(localUpdate));
+
+        assertThat(listener.getBinaryMessages()).isNotEmpty();
+        assertThat(payload(listener.getBinaryMessages().get(0))).isEqualTo(localUpdate);
+
+        listener.getBinaryMessages().clear();
+        author.getBinaryMessages().clear();
+
+        byte[] remoteUpdate = "remote-update".getBytes(StandardCharsets.UTF_8);
+        String encoded = Base64.getEncoder().encodeToString(remoteUpdate) + ":" + UUID.randomUUID();
+        String channel = redisService.getChannel().getTopic();
+        redisService.onMessage(
+            new DefaultMessage(
+                channel.getBytes(StandardCharsets.UTF_8),
+                (workspaceId + "|" + encoded).getBytes(StandardCharsets.UTF_8)
+            ),
+            null
+        );
+
+        assertThat(listener.getBinaryMessages()).isNotEmpty();
+        assertThat(payload(listener.getBinaryMessages().get(0))).isEqualTo(remoteUpdate);
+        assertThat(author.getBinaryMessages()).isNotEmpty();
+
+        handler.afterConnectionClosed(author, CloseStatus.NORMAL);
+        handler.afterConnectionClosed(listener, CloseStatus.NORMAL);
+    }
+
+    private void configureCodecMock() {
+        when(codecClient.encodeStateVector(Mockito.<byte[]>any()))
+            .thenAnswer(invocation -> digest(invocation.getArgument(0)));
+
+        when(codecClient.merge(Mockito.<byte[]>any(), Mockito.<byte[]>any()))
+            .thenAnswer(invocation -> {
+                byte[] update = invocation.getArgument(1);
+                byte[] snapshot = update != null ? update.clone() : new byte[0];
+                byte[] vector = digest(snapshot);
+                return new YjsCodecClient.MergeResult(snapshot, vector);
+            });
+
+        when(codecClient.encodeStateAsUpdate(Mockito.<byte[]>any(), Mockito.<byte[]>any()))
+            .thenAnswer(invocation -> {
+                byte[] snapshot = invocation.getArgument(0);
+                byte[] clientVector = invocation.getArgument(1);
+                byte[] snapshotVector = digest(snapshot);
+                if (Arrays.equals(snapshotVector, clientVector)) {
+                    return new byte[0];
+                }
+                return snapshot != null ? snapshot.clone() : new byte[0];
+            });
+    }
+
+    private String createWorkspaceWithMembers(Map<String, WorkspaceRole> members) {
+        String ownerId = members.entrySet().stream()
+            .filter(entry -> entry.getValue() == WorkspaceRole.OWNER)
+            .map(Map.Entry::getKey)
+            .findFirst()
+            .orElseGet(() -> members.keySet().stream().findFirst().orElse("owner-" + UUID.randomUUID()));
+
+        Workspace workspace = Workspace.builder()
+            .name("Realtime Workspace")
+            .ownerId(ownerId)
+            .build();
+        workspace = workspaceRepository.save(workspace);
+
+        for (Map.Entry<String, WorkspaceRole> entry : members.entrySet()) {
+            WorkspaceMember member = WorkspaceMember.builder()
+                .workspace(workspace)
+                .userId(entry.getKey())
+                .role(entry.getValue())
+                .build();
+            workspaceMemberRepository.save(member);
+        }
+
+        return workspace.getId();
+    }
+
+    private RecordingWebSocketSession newSession(String workspaceId, String userId) {
+        RecordingWebSocketSession session = new RecordingWebSocketSession();
+        session.setUri(URI.create("ws://localhost/ws/yjs?workspaceId=" + workspaceId + "&userId=" + userId));
+        return session;
+    }
+
+    private static byte[] payload(BinaryMessage message) {
+        ByteBuffer buffer = message.getPayload().asReadOnlyBuffer();
+        byte[] data = new byte[buffer.remaining()];
+        buffer.get(data);
+        return data;
+    }
+
+    private static byte[] digest(byte[] data) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            return md.digest(data != null ? data : new byte[0]);
+        } catch (NoSuchAlgorithmException ignored) {
+            return new byte[0];
+        }
+    }
+
+    private static final class RecordingWebSocketSession implements WebSocketSession {
+        private final String id = UUID.randomUUID().toString();
+        private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+        private final HttpHeaders handshakeHeaders = new HttpHeaders();
+        private final CopyOnWriteArrayList<WebSocketExtension> extensions = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<BinaryMessage> binaryMessages = new CopyOnWriteArrayList<>();
+        private final CopyOnWriteArrayList<TextMessage> textMessages = new CopyOnWriteArrayList<>();
+        private volatile boolean open = true;
+        private CloseStatus closeStatus;
+        private URI uri;
+        private int textMessageSizeLimit = 64 * 1024;
+        private int binaryMessageSizeLimit = 64 * 1024;
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public URI getUri() {
+            return uri;
+        }
+
+        void setUri(URI uri) {
+            this.uri = uri;
+        }
+
+        @Override
+        public HttpHeaders getHandshakeHeaders() {
+            return handshakeHeaders;
+        }
+
+        @Override
+        public Map<String, Object> getAttributes() {
+            return attributes;
+        }
+
+        @Override
+        public java.security.Principal getPrincipal() {
+            return null;
+        }
+
+        @Override
+        public InetSocketAddress getLocalAddress() {
+            return null;
+        }
+
+        @Override
+        public InetSocketAddress getRemoteAddress() {
+            return null;
+        }
+
+        @Override
+        public String getAcceptedProtocol() {
+            return null;
+        }
+
+        @Override
+        public void setTextMessageSizeLimit(int messageSizeLimit) {
+            this.textMessageSizeLimit = messageSizeLimit;
+        }
+
+        @Override
+        public int getTextMessageSizeLimit() {
+            return textMessageSizeLimit;
+        }
+
+        @Override
+        public void setBinaryMessageSizeLimit(int messageSizeLimit) {
+            this.binaryMessageSizeLimit = messageSizeLimit;
+        }
+
+        @Override
+        public int getBinaryMessageSizeLimit() {
+            return binaryMessageSizeLimit;
+        }
+
+        @Override
+        public List<WebSocketExtension> getExtensions() {
+            return extensions;
+        }
+
+        @Override
+        public void sendMessage(WebSocketMessage<?> message) throws IOException {
+            if (!isOpen()) {
+                throw new IOException("WebSocketSession is closed");
+            }
+            if (message instanceof BinaryMessage binary) {
+                binaryMessages.add(binary);
+            } else if (message instanceof TextMessage text) {
+                textMessages.add(text);
+            }
+        }
+
+        @Override
+        public boolean isOpen() {
+            return open;
+        }
+
+        @Override
+        public void close() throws IOException {
+            close(CloseStatus.NORMAL);
+        }
+
+        @Override
+        public void close(CloseStatus status) throws IOException {
+            this.open = false;
+            this.closeStatus = status;
+        }
+
+        CloseStatus getCloseStatus() {
+            return closeStatus;
+        }
+
+        List<BinaryMessage> getBinaryMessages() {
+            return binaryMessages;
+        }
+
+        List<TextMessage> getTextMessages() {
+            return textMessages;
+        }
+    }
+}

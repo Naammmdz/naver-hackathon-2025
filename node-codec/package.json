@@ -1,0 +1,22 @@
+{
+  "name": "devflow-node-codec",
+  "version": "0.1.0",
+  "description": "gRPC Yjs codec bridge for Devflow realtime backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development nodemon server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.4",
+    "@grpc/proto-loader": "^0.7.10",
+    "yjs": "^13.6.15"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

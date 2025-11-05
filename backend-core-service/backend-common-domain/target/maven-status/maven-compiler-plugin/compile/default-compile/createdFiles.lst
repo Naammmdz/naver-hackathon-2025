@@ -1,0 +1,9 @@
+com/devflow/common/domain/entity/WorkspaceMember$WorkspaceMemberBuilder.class
+com/devflow/common/domain/entity/Workspace.class
+com/devflow/common/domain/repository/BaseWorkspaceRepository.class
+com/devflow/common/domain/entity/WorkspaceRole.class
+com/devflow/common/domain/repository/WorkspaceMemberRepository.class
+com/devflow/common/domain/entity/User$UserBuilder.class
+com/devflow/common/domain/entity/Workspace$WorkspaceBuilder.class
+com/devflow/common/domain/entity/User.class
+com/devflow/common/domain/entity/WorkspaceMember.class

@@ -2,13 +2,14 @@ package com.naammm.becore.controller;
 
 import java.util.List;
 
+import com.devflow.common.domain.entity.Workspace;
+import com.devflow.common.domain.entity.WorkspaceMember;
 import com.naammm.becore.dto.CreateWorkspaceRequest;
 import com.naammm.becore.dto.InviteMemberRequest;
 import com.naammm.becore.dto.UpdateMemberRoleRequest;
 import com.naammm.becore.dto.UpdateWorkspaceRequest;
-import com.naammm.becore.entity.Workspace;
 import com.naammm.becore.entity.WorkspaceInvite;
-import com.naammm.becore.entity.WorkspaceMember;
+import com.naammm.becore.security.UserContext;
 import com.naammm.becore.service.WorkspaceService;
 
 import org.springframework.http.HttpStatus;
@@ -34,9 +35,8 @@ public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
 
-    // TODO: Get userId from authentication context
     private String getCurrentUserId() {
-        return "demo-user-id";
+        return UserContext.requireUserId();
     }
 
     @GetMapping
