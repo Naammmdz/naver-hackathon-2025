@@ -35,7 +35,7 @@ import { useTaskStore } from "@/store/taskStore";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { CalendarIcon, Clock, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -59,6 +59,7 @@ export function TaskFormDialog({
   const { addTask, updateTask } = useTaskStore();
   const { t } = useTranslation();
   const [newTag, setNewTag] = useState("");
+  const [selectedTime, setSelectedTime] = useState<string>("09:00");
 
   const taskSchema = z.object({
     title: z.string().min(1, t('form.required')),
@@ -92,6 +93,13 @@ export function TaskFormDialog({
         dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         tags: task.tags,
       });
+      // Extract time from task dueDate if exists
+      if (task.dueDate) {
+        const date = new Date(task.dueDate);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        setSelectedTime(`${hours}:${minutes}`);
+      }
     } else {
       form.reset({
         title: "",
@@ -101,6 +109,7 @@ export function TaskFormDialog({
         dueDate: defaultDate,
         tags: [],
       });
+      setSelectedTime("09:00");
     }
   }, [task, defaultStatus, defaultDate, form]);
 
@@ -256,7 +265,10 @@ export function TaskFormDialog({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            <div className="flex items-center justify-between w-full">
+                              <span>{format(field.value, "PPP")}</span>
+                              <span className="text-sm text-muted-foreground ml-2">{selectedTime}</span>
+                            </div>
                           ) : (
                             <span>{t('form.selectDate')}</span>
                           )}
@@ -268,11 +280,37 @@ export function TaskFormDialog({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          if (date) {
+                            // Preserve the time when changing date
+                            const [hours, minutes] = selectedTime.split(':');
+                            date.setHours(parseInt(hours), parseInt(minutes));
+                          }
+                          field.onChange(date);
+                        }}
                         disabled={(date) => date < new Date("1900-01-01")}
                         initialFocus
                         className="pointer-events-auto"
                       />
+                      <div className="p-3 border-t">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="time"
+                            value={selectedTime}
+                            onChange={(e) => {
+                              const time = e.target.value;
+                              setSelectedTime(time);
+                              const currentDate = field.value || new Date();
+                              const [hours, minutes] = time.split(':');
+                              const newDate = new Date(currentDate);
+                              newDate.setHours(parseInt(hours), parseInt(minutes));
+                              field.onChange(newDate);
+                            }}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
                     </PopoverContent>
                   </Popover>
                   <FormMessage />
