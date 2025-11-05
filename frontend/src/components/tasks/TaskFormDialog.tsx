@@ -292,23 +292,62 @@ export function TaskFormDialog({
                         initialFocus
                         className="pointer-events-auto"
                       />
-                      <div className="p-3 border-t">
+                      <div className="p-3 border-t bg-background">
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="time"
-                            value={selectedTime}
-                            onChange={(e) => {
-                              const time = e.target.value;
+                          <Select
+                            value={selectedTime.split(':')[0]}
+                            onValueChange={(hour) => {
+                              const minutes = selectedTime.split(':')[1];
+                              const time = `${hour}:${minutes}`;
                               setSelectedTime(time);
                               const currentDate = field.value || new Date();
-                              const [hours, minutes] = time.split(':');
                               const newDate = new Date(currentDate);
-                              newDate.setHours(parseInt(hours), parseInt(minutes));
+                              newDate.setHours(parseInt(hour), parseInt(minutes));
                               field.onChange(newDate);
                             }}
-                            className="flex-1"
-                          />
+                          >
+                            <SelectTrigger className="w-[80px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[200px]">
+                              {Array.from({ length: 24 }, (_, i) => {
+                                const hour = i.toString().padStart(2, '0');
+                                return (
+                                  <SelectItem key={hour} value={hour}>
+                                    {hour}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-muted-foreground">:</span>
+                          <Select
+                            value={selectedTime.split(':')[1]}
+                            onValueChange={(minute) => {
+                              const hours = selectedTime.split(':')[0];
+                              const time = `${hours}:${minute}`;
+                              setSelectedTime(time);
+                              const currentDate = field.value || new Date();
+                              const newDate = new Date(currentDate);
+                              newDate.setHours(parseInt(hours), parseInt(minute));
+                              field.onChange(newDate);
+                            }}
+                          >
+                            <SelectTrigger className="w-[80px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[200px]">
+                              {Array.from({ length: 60 }, (_, i) => {
+                                const minute = i.toString().padStart(2, '0');
+                                return (
+                                  <SelectItem key={minute} value={minute}>
+                                    {minute}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     </PopoverContent>
