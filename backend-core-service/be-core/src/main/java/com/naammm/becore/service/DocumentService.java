@@ -10,6 +10,7 @@ import com.naammm.becore.config.RedisConfig;
 import com.naammm.becore.entity.Document;
 import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.DocumentRepository;
+import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ import org.springframework.util.StringUtils;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,9 +37,23 @@ public class DocumentService {
         return documentRepository.findByUserIdAndTrashedFalseOrderByUpdatedAtDesc(userId);
     }
 
+    public List<Document> getAllDocumentsInWorkspace(String workspaceId) {
+        String userId = UserContext.requireUserId();
+        if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
+        return documentRepository.findByWorkspaceIdAndTrashedFalseOrderByUpdatedAtDesc(workspaceId);
+    }
+
     public Optional<Document> getDocumentById(String id) {
         String userId = UserContext.requireUserId();
-        return documentRepository.findByIdAndUserId(id, userId);
+        return documentRepository.findById(id).filter(doc -> {
+            String workspaceId = doc.getWorkspaceId();
+            if (workspaceId == null || workspaceId.isBlank()) {
+                return doc.getUserId().equals(userId);
+            }
+            return workspaceRepository.userHasAccess(workspaceId, userId);
+        });
     }
 
     public List<Document> getDocumentsByParentId(String parentId) {
@@ -58,8 +74,16 @@ public class DocumentService {
 
     public Document updateDocument(String id, Document updatedDocument) {
         String userId = UserContext.requireUserId();
-        return documentRepository.findByIdAndUserId(id, userId)
+        return documentRepository.findById(id)
                 .map(document -> {
+                    String workspaceId = document.getWorkspaceId();
+                    if (workspaceId == null || workspaceId.isBlank()) {
+                        if (!document.getUserId().equals(userId)) {
+                            throw new SecurityException("Access denied");
+                        }
+                    } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+                        throw new SecurityException("Access denied");
+                    }
                     String oldTitle = document.getTitle();
                     
                     if (updatedDocument.getTitle() != null) {
@@ -101,22 +125,49 @@ public class DocumentService {
     }
 
     public void deleteDocument(String id) {
-        Document document = documentRepository.findByIdAndUserId(id, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        String workspaceId = document.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!document.getUserId().equals(userId)) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
         document.setTrashed(true);
         document.setTrashedAt(LocalDateTime.now());
         documentRepository.save(document);
     }
 
     public void permanentlyDeleteDocument(String id) {
-        Document document = documentRepository.findByIdAndUserId(id, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        String workspaceId = document.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!document.getUserId().equals(userId)) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
         documentRepository.delete(document);
     }
 
     public void restoreDocument(String id) {
-        Document document = documentRepository.findByIdAndUserId(id, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
+        String workspaceId = document.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!document.getUserId().equals(userId)) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
         document.setTrashed(false);
         document.setTrashedAt(null);
         documentRepository.save(document);

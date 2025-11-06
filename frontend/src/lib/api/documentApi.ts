@@ -131,6 +131,13 @@ export const documentApi = {
     return data.map(mapDocumentFromApi);
   },
 
+  async listByWorkspace(workspaceId: string): Promise<Document[]> {
+    const data = await request<DocumentApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/workspace/${workspaceId}`),
+    );
+    return data.map(mapDocumentFromApi);
+  },
+
   async listTrashed(): Promise<Document[]> {
     const data = await request<DocumentApiResponse[]>(
       apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/documents/trashed`),

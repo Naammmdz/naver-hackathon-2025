@@ -39,7 +39,8 @@ public class InviteController {
     @Operation(summary = "Accept workspace invite")
     public ResponseEntity<WorkspaceMember> acceptInvite(@PathVariable String inviteId) {
         String email = UserContext.requireEmail();
-        WorkspaceMember member = workspaceService.acceptInvite(inviteId, email);
+        String userId = UserContext.requireUserId();
+        WorkspaceMember member = workspaceService.acceptInvite(inviteId, userId, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(member);
     }
 

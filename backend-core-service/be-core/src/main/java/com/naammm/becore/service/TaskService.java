@@ -13,6 +13,7 @@ import com.naammm.becore.entity.TaskPriority;
 import com.naammm.becore.entity.TaskStatus;
 import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.TaskRepository;
+import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -37,9 +39,23 @@ public class TaskService {
         return taskRepository.findByUserIdOrderByUpdatedAtDesc(userId);
     }
 
+    public List<Task> getAllTasksInWorkspace(String workspaceId) {
+        String userId = UserContext.requireUserId();
+        if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
+        return taskRepository.findByWorkspaceIdOrderByUpdatedAtDesc(workspaceId);
+    }
+
     public Optional<Task> getTaskById(String id) {
         String userId = UserContext.requireUserId();
-        return taskRepository.findByIdAndUserId(id, userId);
+        return taskRepository.findById(id).filter(task -> {
+            String workspaceId = task.getWorkspaceId();
+            if (workspaceId == null || workspaceId.isBlank()) {
+                return task.getUserId().equals(userId);
+            }
+            return workspaceRepository.userHasAccess(workspaceId, userId);
+        });
     }
 
     public List<Task> getTasksByStatus(TaskStatus status) {
@@ -65,8 +81,17 @@ public class TaskService {
 
     public Task updateTask(String id, Task updatedTask) {
         String userId = UserContext.requireUserId();
-        return taskRepository.findByIdAndUserId(id, userId)
+        return taskRepository.findById(id)
                 .map(task -> {
+                    // Access check: workspace member or personal owner
+                    String workspaceId = task.getWorkspaceId();
+                    if (workspaceId == null || workspaceId.isBlank()) {
+                        if (!task.getUserId().equals(userId)) {
+                            throw new SecurityException("Access denied");
+                        }
+                    } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+                        throw new SecurityException("Access denied");
+                    }
                     String oldStatus = task.getStatus().name();
                     
                     task.setTitle(updatedTask.getTitle());
@@ -104,18 +129,36 @@ public class TaskService {
 
     public void deleteTask(String id) {
         String userId = UserContext.requireUserId();
-        Task task = taskRepository.findByIdAndUserId(id, userId)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String workspaceId = task.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!task.getUserId().equals(userId)) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
         taskRepository.delete(task);
     }
 
     public void moveTask(String id, TaskStatus newStatus) {
         String userId = UserContext.requireUserId();
-        Task task = taskRepository.findByIdAndUserId(id, userId)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String workspaceId = task.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!task.getUserId().equals(userId)) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
 
         task.setStatus(newStatus);
-        Integer maxOrder = taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, newStatus);
+        Integer maxOrder = (workspaceId == null || workspaceId.isBlank())
+                ? taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, newStatus)
+                : taskRepository.findMaxOrderIndexByWorkspaceIdAndStatus(workspaceId, newStatus);
         task.setOrderIndex(maxOrder != null ? maxOrder + 1 : 0);
         Task saved = taskRepository.save(task);
         
@@ -140,6 +183,8 @@ public class TaskService {
 
     public void reorderTasks(TaskStatus status, int sourceIndex, int destinationIndex) {
         String userId = UserContext.requireUserId();
+        // Prefer workspace-scoped reorder if user has an active workspace in context (not stored here),
+        // fallback to per-user. Since controller doesn't supply workspaceId, we keep existing behavior.
         List<Task> tasks = taskRepository.findByUserIdAndStatusOrderByOrderIndexAsc(userId, status);
 
         if (sourceIndex < 0 || sourceIndex >= tasks.size() ||

@@ -211,7 +211,7 @@ public class WorkspaceService {
     }
 
     @Transactional
-    public WorkspaceMember acceptInvite(String inviteId, String email) {
+    public WorkspaceMember acceptInvite(String inviteId, String userId, String email) {
         WorkspaceInvite invite = inviteRepository.findById(inviteId)
             .orElseThrow(() -> new ResourceNotFoundException("Invite not found"));
         
@@ -227,10 +227,10 @@ public class WorkspaceService {
         }
         
         // Check if already a member
-        if (memberRepository.existsByWorkspaceIdAndUserId(invite.getWorkspaceId(), email)) {
+        if (memberRepository.existsByWorkspaceIdAndUserId(invite.getWorkspaceId(), userId)) {
             // Delete invite and return existing member
             inviteRepository.delete(invite);
-            return memberRepository.findByWorkspaceIdAndUserId(invite.getWorkspaceId(), email)
+            return memberRepository.findByWorkspaceIdAndUserId(invite.getWorkspaceId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         }
         
@@ -240,7 +240,7 @@ public class WorkspaceService {
         
         WorkspaceMember member = WorkspaceMember.builder()
             .workspace(workspace)
-            .userId(email)
+            .userId(userId)
             .role(invite.getRole())
             .build();
         

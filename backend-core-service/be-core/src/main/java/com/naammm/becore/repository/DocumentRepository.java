@@ -14,6 +14,8 @@ public interface DocumentRepository extends JpaRepository<Document, String> {
 
     List<Document> findByUserIdAndTrashedFalseOrderByUpdatedAtDesc(String userId);
 
+    List<Document> findByWorkspaceIdAndTrashedFalseOrderByUpdatedAtDesc(String workspaceId);
+
     List<Document> findByUserIdAndParentIdAndTrashedFalseOrderByUpdatedAtDesc(String userId, String parentId);
 
     List<Document> findByUserIdAndTrashedTrueOrderByUpdatedAtDesc(String userId);

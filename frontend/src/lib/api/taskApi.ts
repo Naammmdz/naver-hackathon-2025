@@ -134,6 +134,13 @@ export const taskApi = {
     return data.map(mapTaskFromApi);
   },
 
+  async listByWorkspace(workspaceId: string): Promise<Task[]> {
+    const data = await request<TaskApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/workspace/${workspaceId}`),
+    );
+    return data.map(mapTaskFromApi);
+  },
+
   async get(id: string): Promise<Task> {
     const data = await request<TaskApiResponse>(
       apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/tasks/${id}`),

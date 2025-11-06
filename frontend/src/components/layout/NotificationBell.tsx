@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { workspaceApi } from "@/lib/api/workspaceApi";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import type { WorkspaceInvite } from "@/types/workspace";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@clerk/clerk-react";
@@ -13,6 +14,9 @@ export function NotificationBell() {
   const [invites, setInvites] = useState<WorkspaceInvite[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const loadWorkspaces = useWorkspaceStore((state) => state.loadWorkspaces);
+  const upsertWorkspace = useWorkspaceStore((state) => state.upsertWorkspace);
+  const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace);
 
   const unreadCount = useMemo(() => invites.length, [invites]);
 
@@ -49,9 +53,18 @@ export function NotificationBell() {
 
   const handleAccept = async (inviteId: string) => {
     try {
-      await workspaceApi.acceptInvite(inviteId);
+      const member = await workspaceApi.acceptInvite(inviteId);
       toast({ title: "Joined workspace", description: "Invite accepted successfully" });
-      await loadInvites();
+      // Reload invites and workspaces, then switch to the joined workspace
+      await Promise.all([loadInvites(), loadWorkspaces()]);
+      if (member?.workspaceId) {
+        // Ensure the joined workspace exists in the list even if backend list lags
+        try {
+          const ws = await workspaceApi.getWorkspace(member.workspaceId);
+          upsertWorkspace(ws);
+        } catch {}
+        setActiveWorkspace(member.workspaceId);
+      }
     } catch (error: any) {
       toast({ title: "Error", description: error?.message || "Failed to accept invite", variant: "destructive" });
     }
@@ -100,8 +113,8 @@ export function NotificationBell() {
               <span>{new Date(invite.expiresAt).toLocaleDateString()}</span>
             </div>
             <div className="mt-2 flex gap-2">
-              <Button size="xs" className="h-6 text-xs" onClick={() => handleAccept(invite.id)}>Accept</Button>
-              <Button size="xs" variant="secondary" className="h-6 text-xs" onClick={() => handleDecline(invite.id)}>Decline</Button>
+              <Button size="sm" className="h-6 text-xs" onClick={() => handleAccept(invite.id)}>Accept</Button>
+              <Button size="sm" variant="secondary" className="h-6 text-xs" onClick={() => handleDecline(invite.id)}>Decline</Button>
             </div>
           </div>
         ))}

@@ -107,13 +107,15 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
 
       set({ isLoading: true, error: null });
       try {
+        const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
         const [activeDocs, trashedDocs] = await Promise.all([
-          documentApi.list(),
+          activeWorkspaceId ? documentApi.listByWorkspace(activeWorkspaceId) : documentApi.list(),
           documentApi.listTrashed(),
         ]);
-        const documents = mergeDocuments(activeDocs, trashedDocs).filter(
-          (doc) => doc.userId === userId,
-        );
+        const merged = mergeDocuments(activeDocs, trashedDocs);
+        const documents = activeWorkspaceId
+          ? merged.filter((doc) => doc.workspaceId === activeWorkspaceId)
+          : merged.filter((doc) => doc.userId === userId);
         set((state) => ({
           documents,
           activeDocumentId:

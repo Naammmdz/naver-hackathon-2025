@@ -133,7 +133,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
       set({ isLoading: true, error: null });
       try {
-        const tasks = await taskApi.list();
+        const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+        const tasks = activeWorkspaceId
+          ? await taskApi.listByWorkspace(activeWorkspaceId)
+          : await taskApi.list();
         set({ tasks, isLoading: false });
       } catch (error) {
         set({

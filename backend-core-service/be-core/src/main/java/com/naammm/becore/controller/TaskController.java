@@ -35,6 +35,11 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getAllTasks());
     }
 
+    @GetMapping("/workspace/{workspaceId}")
+    public ResponseEntity<List<Task>> getAllTasksInWorkspace(@PathVariable String workspaceId) {
+        return ResponseEntity.ok(taskService.getAllTasksInWorkspace(workspaceId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTaskById(@PathVariable String id) {
         return taskService.getTaskById(id)

@@ -31,6 +31,11 @@ public class BoardController {
         return ResponseEntity.ok(boardService.getAllBoards());
     }
 
+    @GetMapping("/workspace/{workspaceId}")
+    public ResponseEntity<List<Board>> getAllBoardsInWorkspace(@PathVariable String workspaceId) {
+        return ResponseEntity.ok(boardService.getAllBoardsInWorkspace(workspaceId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Board> getBoardById(@PathVariable String id) {
         return boardService.getBoardById(id)

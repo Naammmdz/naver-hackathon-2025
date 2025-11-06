@@ -9,6 +9,7 @@ import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.DocumentRepository;
 import com.naammm.becore.repository.TaskDocRepository;
 import com.naammm.becore.repository.TaskRepository;
+import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class TaskDocService {
     private final TaskDocRepository taskDocRepository;
     private final TaskRepository taskRepository;
     private final DocumentRepository documentRepository;
+    private final WorkspaceRepository workspaceRepository;
 
     public List<TaskDoc> getAllTaskDocs() {
         return taskDocRepository.findByUserIdOrderByCreatedAtAsc(UserContext.requireUserId());
@@ -109,7 +111,14 @@ public class TaskDocService {
         if (taskId == null) {
             throw new ResourceNotFoundException("Task identifier is required");
         }
-        taskRepository.findByIdAndUserId(taskId, userId)
+        taskRepository.findById(taskId)
+                .filter(task -> {
+                    String workspaceId = task.getWorkspaceId();
+                    if (workspaceId == null || workspaceId.isBlank()) {
+                        return task.getUserId().equals(userId);
+                    }
+                    return workspaceRepository.userHasAccess(workspaceId, userId);
+                })
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
     }
 
@@ -117,7 +126,14 @@ public class TaskDocService {
         if (documentId == null) {
             throw new ResourceNotFoundException("Document identifier is required");
         }
-        documentRepository.findByIdAndUserId(documentId, userId)
+        documentRepository.findById(documentId)
+                .filter(doc -> {
+                    String workspaceId = doc.getWorkspaceId();
+                    if (workspaceId == null || workspaceId.isBlank()) {
+                        return doc.getUserId().equals(userId);
+                    }
+                    return workspaceRepository.userHasAccess(workspaceId, userId);
+                })
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
     }
 }

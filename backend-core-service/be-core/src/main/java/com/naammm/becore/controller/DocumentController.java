@@ -31,6 +31,11 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.getAllDocuments());
     }
 
+    @GetMapping("/workspace/{workspaceId}")
+    public ResponseEntity<List<Document>> getAllDocumentsInWorkspace(@PathVariable String workspaceId) {
+        return ResponseEntity.ok(documentService.getAllDocumentsInWorkspace(workspaceId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Document> getDocumentById(@PathVariable String id) {
         return documentService.getDocumentById(id)

@@ -19,6 +19,7 @@ interface WorkspaceState {
   // Actions
   initialize: () => Promise<void>;
   loadWorkspaces: () => Promise<void>;
+  upsertWorkspace: (workspace: Workspace) => void;
   createWorkspace: (input: CreateWorkspaceInput) => Promise<Workspace | undefined>;
   updateWorkspace: (id: string, input: UpdateWorkspaceInput) => Promise<void>;
   deleteWorkspace: (id: string) => Promise<void>;
@@ -75,6 +76,17 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           // Set empty array on error so app doesn't break
           set({ workspaces: [], error: "Failed to load workspaces", isLoading: false });
         }
+      },
+
+      upsertWorkspace: (workspace: Workspace) => {
+        set((state) => {
+          const exists = state.workspaces.some((w) => w.id === workspace.id);
+          return {
+            workspaces: exists
+              ? state.workspaces.map((w) => (w.id === workspace.id ? workspace : w))
+              : [...state.workspaces, workspace],
+          };
+        });
       },
 
       createWorkspace: async (input: CreateWorkspaceInput) => {

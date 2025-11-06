@@ -52,7 +52,11 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const boards = (await boardApi.list()).filter((board) => board.userId === userId);
+      const activeWorkspaceId = useWorkspaceStore.getState().activeWorkspaceId;
+      const boardsRaw = activeWorkspaceId ? await boardApi.listByWorkspace(activeWorkspaceId) : await boardApi.list();
+      const boards = activeWorkspaceId
+        ? boardsRaw.filter((board) => board.workspaceId === activeWorkspaceId)
+        : boardsRaw.filter((board) => board.userId === userId);
       set((state) => {
         const nextActive =
           state.activeBoardId && boards.some((board) => board.id === state.activeBoardId)

@@ -9,6 +9,7 @@ import com.naammm.becore.config.RedisConfig;
 import com.naammm.becore.entity.Board;
 import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.BoardRepository;
+import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +26,7 @@ import org.springframework.util.StringUtils;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -33,8 +35,23 @@ public class BoardService {
         return boardRepository.findByUserIdOrderByUpdatedAtDesc(UserContext.requireUserId());
     }
 
+    public List<Board> getAllBoardsInWorkspace(String workspaceId) {
+        String userId = UserContext.requireUserId();
+        if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
+        return boardRepository.findByWorkspaceIdOrderByUpdatedAtDesc(workspaceId);
+    }
+
     public Optional<Board> getBoardById(String id) {
-        return boardRepository.findByIdAndUserId(id, UserContext.requireUserId());
+        String userId = UserContext.requireUserId();
+        return boardRepository.findById(id).filter(board -> {
+            String workspaceId = board.getWorkspaceId();
+            if (workspaceId == null || workspaceId.isBlank()) {
+                return board.getUserId().equals(userId);
+            }
+            return workspaceRepository.userHasAccess(workspaceId, userId);
+        });
     }
 
     public Board createBoard(Board board) {
@@ -47,8 +64,17 @@ public class BoardService {
     }
 
     public Board updateBoard(String id, Board payload) {
-        return boardRepository.findByIdAndUserId(id, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        return boardRepository.findById(id)
                 .map(board -> {
+                    String workspaceId = board.getWorkspaceId();
+                    if (workspaceId == null || workspaceId.isBlank()) {
+                        if (!board.getUserId().equals(userId)) {
+                            throw new SecurityException("Access denied");
+                        }
+                    } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+                        throw new SecurityException("Access denied");
+                    }
                     String oldTitle = board.getTitle();
                     
                     if (payload.getTitle() != null) {
@@ -74,8 +100,17 @@ public class BoardService {
     }
 
     public Board updateSnapshot(String id, String snapshot) {
-        return boardRepository.findByIdAndUserId(id, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        return boardRepository.findById(id)
                 .map(board -> {
+                    String workspaceId = board.getWorkspaceId();
+                    if (workspaceId == null || workspaceId.isBlank()) {
+                        if (!board.getUserId().equals(userId)) {
+                            throw new SecurityException("Access denied");
+                        }
+                    } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+                        throw new SecurityException("Access denied");
+                    }
                     board.setSnapshot(snapshot);
                     Board saved = boardRepository.save(board);
                     
@@ -105,8 +140,17 @@ public class BoardService {
     }
 
     public void deleteBoard(String id) {
-        Board board = boardRepository.findByIdAndUserId(id, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+        String workspaceId = board.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!board.getUserId().equals(userId)) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
         boardRepository.delete(board);
     }
 }

@@ -12,6 +12,8 @@ public interface BoardRepository extends JpaRepository<Board, String> {
 
     List<Board> findByUserIdOrderByUpdatedAtDesc(String userId);
 
+    List<Board> findByWorkspaceIdOrderByUpdatedAtDesc(String workspaceId);
+
     Optional<Board> findByIdAndUserId(String id, String userId);
 
     void deleteByIdAndUserId(String id, String userId);

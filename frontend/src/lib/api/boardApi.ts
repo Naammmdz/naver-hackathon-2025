@@ -116,6 +116,13 @@ export const boardApi = {
     return data.map(mapBoardFromApi);
   },
 
+  async listByWorkspace(workspaceId: string): Promise<Board[]> {
+    const data = await request<BoardApiResponse[]>(
+      apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards/workspace/${workspaceId}`),
+    );
+    return data.map(mapBoardFromApi);
+  },
+
   async get(id: string): Promise<Board> {
     const data = await request<BoardApiResponse>(
       apiAuthContext.appendUserIdQuery(`${API_BASE_URL}/api/boards/${id}`),
