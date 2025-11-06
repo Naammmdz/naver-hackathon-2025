@@ -89,7 +89,7 @@ export const workspaceApi = {
   async inviteMember(
     workspaceId: string,
     email: string,
-    role: "admin" | "member" | "viewer"
+    role: "ADMIN" | "MEMBER"
   ): Promise<WorkspaceInvite> {
     const headers = await apiAuthContext.getAuthHeaders({
       "Content-Type": "application/json",
@@ -119,7 +119,7 @@ export const workspaceApi = {
   async updateMemberRole(
     workspaceId: string,
     memberId: string,
-    role: "admin" | "member" | "viewer"
+    role: "ADMIN" | "MEMBER"
   ): Promise<WorkspaceMember> {
     const headers = await apiAuthContext.getAuthHeaders({
       "Content-Type": "application/json",
@@ -143,5 +143,62 @@ export const workspaceApi = {
       credentials: "include",
     });
     if (!response.ok) throw new Error("Failed to leave workspace");
+  },
+
+  // Get workspace invites
+  async getInvites(workspaceId: string): Promise<WorkspaceInvite[]> {
+    const headers = await apiAuthContext.getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/workspaces/${workspaceId}/invites`, {
+      headers,
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to fetch invites");
+    return response.json();
+  },
+
+  // Get my invites
+  async getMyInvites(): Promise<WorkspaceInvite[]> {
+    const headers = await apiAuthContext.getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/invites`, {
+      headers,
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to fetch my invites");
+    return response.json();
+  },
+
+  // Accept invite
+  async acceptInvite(inviteId: string): Promise<WorkspaceMember> {
+    const headers = await apiAuthContext.getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/invites/${inviteId}/accept`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to accept invite");
+    return response.json();
+  },
+
+  // Decline invite
+  async declineInvite(inviteId: string): Promise<void> {
+    const headers = await apiAuthContext.getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/invites/${inviteId}/decline`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to decline invite");
+  },
+
+  // Join public workspace
+  async joinPublicWorkspace(workspaceId: string): Promise<WorkspaceMember> {
+    const headers = await apiAuthContext.getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/api/workspaces/${workspaceId}/join`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+    });
+    if (!response.ok) throw new Error("Failed to join workspace");
+    return response.json();
   },
 };

@@ -1,9 +1,12 @@
 package com.naammm.becore.service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.naammm.becore.config.RedisConfig;
 import com.naammm.becore.entity.Subtask;
 import com.naammm.becore.entity.Task;
 import com.naammm.becore.entity.TaskPriority;
@@ -11,7 +14,11 @@ import com.naammm.becore.entity.TaskStatus;
 import com.naammm.becore.exception.ResourceNotFoundException;
 import com.naammm.becore.repository.TaskRepository;
 import com.naammm.becore.security.UserContext;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ChannelTopic metadataChannel;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<Task> getAllTasks() {
         String userId = UserContext.requireUserId();
@@ -57,6 +67,8 @@ public class TaskService {
         String userId = UserContext.requireUserId();
         return taskRepository.findByIdAndUserId(id, userId)
                 .map(task -> {
+                    String oldStatus = task.getStatus().name();
+                    
                     task.setTitle(updatedTask.getTitle());
                     task.setDescription(updatedTask.getDescription());
                     task.setStatus(updatedTask.getStatus());
@@ -75,7 +87,17 @@ public class TaskService {
                         });
                     }
 
-                    return taskRepository.save(task);
+                    Task saved = taskRepository.save(task);
+                    
+                    // Publish metadata update to Redis
+                    publishMetadataUpdate("task", id, "UPDATE", saved);
+                    
+                    // If status changed, also publish status change
+                    if (!oldStatus.equals(saved.getStatus().name())) {
+                        publishMetadataUpdate("task", id, "STATUS_CHANGE", saved.getStatus().name());
+                    }
+                    
+                    return saved;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
     }
@@ -95,7 +117,25 @@ public class TaskService {
         task.setStatus(newStatus);
         Integer maxOrder = taskRepository.findMaxOrderIndexByUserIdAndStatus(userId, newStatus);
         task.setOrderIndex(maxOrder != null ? maxOrder + 1 : 0);
-        taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        
+        // Publish metadata update to Redis
+        publishMetadataUpdate("task", id, "MOVE", newStatus.name());
+    }
+
+    private void publishMetadataUpdate(String type, String id, String action, Object payload) {
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("type", type);
+            message.put("id", id);
+            message.put("action", action);
+            message.put("payload", payload);
+            
+            String jsonMessage = objectMapper.writeValueAsString(message);
+            redisTemplate.convertAndSend(metadataChannel.getTopic(), jsonMessage);
+        } catch (JsonProcessingException e) {
+            System.err.println("Failed to publish metadata update to Redis: " + e.getMessage());
+        }
     }
 
     public void reorderTasks(TaskStatus status, int sourceIndex, int destinationIndex) {

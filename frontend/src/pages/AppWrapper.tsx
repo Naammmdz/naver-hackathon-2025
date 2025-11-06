@@ -10,6 +10,9 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuth } from "@clerk/clerk-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useWorkspaceYjs } from "@/hooks/useWorkspaceYjs";
+import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
+import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
 import Docs from "./Docs";
 import Index from "./Index";
 
@@ -43,6 +46,32 @@ export default function AppWrapper() {
   const initializeWorkspace = useWorkspaceStore((state) => state.initialize);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
+
+  // Initialize workspace-level Yjs for realtime sync
+  const { 
+    tasksMap, 
+    taskOrdersMap, 
+    boardsMap, 
+    boardContentMap,
+    isConnected: isYjsConnected 
+  } = useWorkspaceYjs({
+    workspaceId: activeWorkspaceId,
+    enabled: !!activeWorkspaceId && isSignedIn,
+  });
+
+  // Sync tasks with Yjs
+  useTaskYjsSync({
+    tasksMap,
+    taskOrdersMap,
+    enabled: !!tasksMap && !!taskOrdersMap && isYjsConnected,
+  });
+
+  // Sync boards with Yjs
+  useBoardYjsSync({
+    boardsMap,
+    boardContentMap,
+    enabled: !!boardsMap && !!boardContentMap && isYjsConnected,
+  });
 
   useEffect(() => {
     if (!isLoaded) {

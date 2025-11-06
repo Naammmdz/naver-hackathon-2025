@@ -21,11 +21,13 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Check, ChevronDown, Plus, Settings, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
+import { WorkspaceSettingsDialog } from "./WorkspaceSettingsDialog";
 
 export function WorkspaceSwitcher() {
   const { workspaces, activeWorkspaceId, setActiveWorkspace, deleteWorkspace } = useWorkspaceStore();
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<string | null>(null);
 
@@ -105,7 +107,10 @@ export function WorkspaceSwitcher() {
             <Plus className="mr-2 h-4 w-4" />
             Create Workspace
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem 
+            className="cursor-pointer"
+            onClick={() => setSettingsDialogOpen(true)}
+          >
             <Settings className="mr-2 h-4 w-4" />
             Workspace Settings
           </DropdownMenuItem>
@@ -115,6 +120,11 @@ export function WorkspaceSwitcher() {
       <CreateWorkspaceDialog 
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen}
+      />
+
+      <WorkspaceSettingsDialog
+        open={settingsDialogOpen}
+        onOpenChange={setSettingsDialogOpen}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

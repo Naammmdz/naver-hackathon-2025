@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTaskStore } from '@/store/taskStore';
-import { Bell, Languages, Menu, Moon, Search, Sun } from 'lucide-react';
+import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
+import { NotificationBell } from './NotificationBell';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
@@ -105,14 +106,7 @@ export function ClickupHeader({
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1">
           {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative hidden sm:flex hover-surface"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1 right-0.5 h-2 w-2 bg-primary rounded-full" />
-          </Button>
+          <NotificationBell />
 
           {/* Language Toggle */}
           <Button

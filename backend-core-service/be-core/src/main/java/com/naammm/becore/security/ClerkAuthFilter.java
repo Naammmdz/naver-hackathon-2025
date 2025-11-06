@@ -31,7 +31,8 @@ public class ClerkAuthFilter extends OncePerRequestFilter {
             "/swagger-ui.html",
             "/h2-console",
             "/error",
-            "/api/ai/"
+            "/api/ai/",
+            "/api/internal/"
     );
 
     private final ClerkTokenVerifier tokenVerifier;
@@ -65,12 +66,40 @@ public class ClerkAuthFilter extends OncePerRequestFilter {
 
         try {
             String userId = tokenVerifier.verify(token);
+            String email = tokenVerifier.extractEmail(token);
+            String username = tokenVerifier.extractUsername(token);
+            String firstName = tokenVerifier.extractFirstName(token);
+            String lastName = tokenVerifier.extractLastName(token);
+            String role = tokenVerifier.extractRole(token);
+            String workspaceId = tokenVerifier.extractWorkspaceId(token);
+            String plan = tokenVerifier.extractPlan(token);
             if (!isUserIdentityConsistent(request, userId)) {
                 writeUnauthorized(request, response, "User identity mismatch");
                 return;
             }
 
             UserContext.setUserId(userId);
+            if (StringUtils.hasText(email)) {
+                UserContext.setEmail(email);
+            }
+            if (StringUtils.hasText(username)) {
+                UserContext.setUsername(username);
+            }
+            if (StringUtils.hasText(firstName)) {
+                UserContext.setFirstName(firstName);
+            }
+            if (StringUtils.hasText(lastName)) {
+                UserContext.setLastName(lastName);
+            }
+            if (StringUtils.hasText(role)) {
+                UserContext.setRole(role);
+            }
+            if (StringUtils.hasText(workspaceId)) {
+                UserContext.setWorkspaceId(workspaceId);
+            }
+            if (StringUtils.hasText(plan)) {
+                UserContext.setPlan(plan);
+            }
             filterChain.doFilter(request, response);
         } catch (JwtVerificationException ex) {
             if (log.isDebugEnabled()) {

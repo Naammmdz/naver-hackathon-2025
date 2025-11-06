@@ -187,6 +187,110 @@ public class WorkspaceService {
         memberRepository.deleteByWorkspaceIdAndUserId(workspaceId, userId);
     }
 
+    @Transactional(readOnly = true)
+    public List<WorkspaceInvite> getInvites(String workspaceId, String userId) {
+        Workspace workspace = getWorkspace(workspaceId, userId);
+        
+        // Only owner and admins can see invites
+        boolean isOwner = workspace.getOwnerId().equals(userId);
+        WorkspaceRole userRole = memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+            .map(WorkspaceMember::getRole)
+            .orElse(null);
+        
+        if (!isOwner && userRole != WorkspaceRole.ADMIN) {
+            throw new SecurityException("Only owner and admins can view invites");
+        }
+        
+        return inviteRepository.findByWorkspaceId(workspaceId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WorkspaceInvite> getMyInvites(String email) {
+        // Fetch invites by email
+        return inviteRepository.findByEmail(email);
+    }
+
+    @Transactional
+    public WorkspaceMember acceptInvite(String inviteId, String email) {
+        WorkspaceInvite invite = inviteRepository.findById(inviteId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invite not found"));
+        
+        // Check if invite is for this user (by email)
+        // In production, verify email matches user's email
+        if (!invite.getEmail().equals(email)) {
+            throw new SecurityException("This invite is not for you");
+        }
+        
+        // Check if invite is expired
+        if (invite.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Invite has expired");
+        }
+        
+        // Check if already a member
+        if (memberRepository.existsByWorkspaceIdAndUserId(invite.getWorkspaceId(), email)) {
+            // Delete invite and return existing member
+            inviteRepository.delete(invite);
+            return memberRepository.findByWorkspaceIdAndUserId(invite.getWorkspaceId(), email)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+        }
+        
+        // Create member
+        Workspace workspace = workspaceRepository.findById(invite.getWorkspaceId())
+            .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+        
+        WorkspaceMember member = WorkspaceMember.builder()
+            .workspace(workspace)
+            .userId(email)
+            .role(invite.getRole())
+            .build();
+        
+        member = memberRepository.save(member);
+        
+        // Delete invite
+        inviteRepository.delete(invite);
+        
+        return member;
+    }
+
+    @Transactional
+    public void declineInvite(String inviteId, String email) {
+        WorkspaceInvite invite = inviteRepository.findById(inviteId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invite not found"));
+        
+        // Check if invite is for this user
+        if (!invite.getEmail().equals(email)) {
+            throw new SecurityException("This invite is not for you");
+        }
+        
+        inviteRepository.delete(invite);
+    }
+
+    @Transactional
+    public WorkspaceMember joinPublicWorkspace(String workspaceId, String userId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+        
+        // Check if workspace is public
+        if (!Boolean.TRUE.equals(workspace.getIsPublic())) {
+            throw new SecurityException("Workspace is not public");
+        }
+        
+        // Check if already a member
+        if (memberRepository.existsByWorkspaceIdAndUserId(workspaceId, userId)) {
+            return memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
+        }
+        
+        // Create member with default role
+        WorkspaceMember member = WorkspaceMember.builder()
+            .workspace(workspace)
+            .userId(userId)
+            .role(WorkspaceRole.MEMBER)
+            .build();
+        
+        return memberRepository.save(member);
+    }
+
     private boolean hasAccess(String workspaceId, String userId) {
         return workspaceRepository.userHasAccess(workspaceId, userId);
     }

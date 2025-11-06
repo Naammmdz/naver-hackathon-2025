@@ -6,6 +6,8 @@ export interface Workspace {
   memberIds: string[];
   createdAt: string;
   updatedAt: string;
+  isPublic?: boolean;
+  allowInvites?: boolean;
   settings?: WorkspaceSettings;
 }
 
@@ -20,7 +22,7 @@ export interface WorkspaceMember {
   id: string;
   userId: string;
   workspaceId: string;
-  role: "owner" | "admin" | "member" | "viewer";
+  role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
   joinedAt: string;
   user?: {
     id: string;
@@ -39,6 +41,8 @@ export interface CreateWorkspaceInput {
 export interface UpdateWorkspaceInput {
   name?: string;
   description?: string;
+  isPublic?: boolean;
+  allowInvites?: boolean;
   settings?: Partial<WorkspaceSettings>;
 }
 
@@ -46,7 +50,7 @@ export interface WorkspaceInvite {
   id: string;
   workspaceId: string;
   email: string;
-  role: "admin" | "member" | "viewer";
+  role: "ADMIN" | "MEMBER" | "VIEWER";
   invitedBy: string;
   expiresAt: string;
   createdAt: string;

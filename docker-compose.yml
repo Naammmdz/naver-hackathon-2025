@@ -1,0 +1,123 @@
+version: "3.9"
+
+services:
+  core-postgres:
+    image: postgres:16
+    container_name: core-postgres
+    environment:
+      POSTGRES_DB: core
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - core_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  core_pg_data:
+    driver: local
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: naver-hackathon-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: yjs
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: naver-hackathon-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend-core:
+    build:
+      context: ./backend-core-service/be-core
+      dockerfile: Dockerfile
+    container_name: naver-hackathon-backend-core
+    ports:
+      - "8989:8989"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/yjs
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CLERK_JWKS_URL: ${CLERK_JWKS_URL:-https://direct-newt-10.clerk.accounts.dev/.well-known/jwks.json}
+      CLERK_ISSUER: ${CLERK_ISSUER:-https://direct-newt-10.clerk.accounts.dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend-core-service/be-core/src:/app/src
+    restart: unless-stopped
+
+  hocuspocus:
+    build:
+      context: ./hocuspocus-server
+      dockerfile: Dockerfile
+    container_name: naver-hackathon-hocuspocus
+    ports:
+      - "1234:1234"
+    environment:
+      PORT: 1234
+      CORE_SERVICE_URL: http://backend-core:8989
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      POSTGRES_URL: postgresql://postgres:postgres@postgres:5432/yjs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend-core:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: naver-hackathon-frontend
+    ports:
+      - "8080:8080"
+    environment:
+      VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
+      VITE_CLERK_JWT_TEMPLATE: ${VITE_CLERK_JWT_TEMPLATE}
+      VITE_HOCUSPOCUS_URL: ws://localhost:1234
+    depends_on:
+      - backend-core
+      - hocuspocus
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+

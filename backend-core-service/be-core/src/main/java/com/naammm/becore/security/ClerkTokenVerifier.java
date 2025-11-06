@@ -66,9 +66,87 @@ public class ClerkTokenVerifier {
 
             JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
             validateClaims(claims);
+            // Prefer explicit custom `id` if provided, otherwise fallback to `sub`
+            Object explicitId = claims.getClaim("id");
+            if (explicitId instanceof String s && StringUtils.hasText(s)) {
+                return s;
+            }
             return claims.getSubject();
         } catch (ParseException | JOSEException | BadJWTException e) {
             throw new JwtVerificationException("Invalid Clerk token", e);
+        }
+    }
+
+    /**
+     * Extract primary email from token claims if available. Returns null if not present.
+     */
+    public String extractEmail(String token) {
+        if (!StringUtils.hasText(token)) {
+            return null;
+        }
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+            Object email = claims.getClaim("email");
+            if (email instanceof String s && StringUtils.hasText(s)) {
+                return s;
+            }
+            // Clerk sometimes provides email addresses array
+            Object emails = claims.getClaim("email_addresses");
+            if (emails instanceof List<?> list && !list.isEmpty()) {
+                Object first = list.get(0);
+                if (first instanceof String s && StringUtils.hasText(s)) {
+                    return s;
+                }
+            }
+            return null;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    public String extractUsername(String token) {
+        return extractStringClaim(token, "username");
+    }
+
+    public String extractFirstName(String token) {
+        // Support both custom snake_case and typical Clerk `first_name`
+        String v = extractStringClaim(token, "first_name");
+        return StringUtils.hasText(v) ? v : extractStringClaim(token, "firstName");
+    }
+
+    public String extractLastName(String token) {
+        String v = extractStringClaim(token, "last_name");
+        return StringUtils.hasText(v) ? v : extractStringClaim(token, "lastName");
+    }
+
+    public String extractRole(String token) {
+        return extractStringClaim(token, "role");
+    }
+
+    public String extractWorkspaceId(String token) {
+        String v = extractStringClaim(token, "workspace_id");
+        return StringUtils.hasText(v) ? v : extractStringClaim(token, "workspaceId");
+    }
+
+    public String extractPlan(String token) {
+        return extractStringClaim(token, "plan");
+    }
+
+    private String extractStringClaim(String token, String claimName) {
+        if (!StringUtils.hasText(token)) {
+            return null;
+        }
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+            Object value = claims.getClaim(claimName);
+            if (value instanceof String s && StringUtils.hasText(s)) {
+                return s;
+            }
+            return null;
+        } catch (Exception ignored) {
+            return null;
         }
     }
 

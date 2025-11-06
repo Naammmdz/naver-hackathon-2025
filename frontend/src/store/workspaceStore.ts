@@ -27,9 +27,9 @@ interface WorkspaceState {
 
   // Members
   loadMembers: (workspaceId: string) => Promise<void>;
-  inviteMember: (workspaceId: string, email: string, role: "admin" | "member" | "viewer") => Promise<void>;
+  inviteMember: (workspaceId: string, email: string, role: "ADMIN" | "MEMBER") => Promise<void>;
   removeMember: (workspaceId: string, memberId: string) => Promise<void>;
-  updateMemberRole: (workspaceId: string, memberId: string, role: "admin" | "member" | "viewer") => Promise<void>;
+  updateMemberRole: (workspaceId: string, memberId: string, role: "ADMIN" | "MEMBER") => Promise<void>;
   leaveWorkspace: (workspaceId: string) => Promise<void>;
 }
 
@@ -149,7 +149,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         }
       },
 
-      inviteMember: async (workspaceId: string, email: string, role: "admin" | "member" | "viewer") => {
+      inviteMember: async (workspaceId: string, email: string, role: "ADMIN" | "MEMBER") => {
         try {
           await workspaceApi.inviteMember(workspaceId, email, role);
           // Reload members after invite
@@ -172,7 +172,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         }
       },
 
-      updateMemberRole: async (workspaceId: string, memberId: string, role: "admin" | "member" | "viewer") => {
+      updateMemberRole: async (workspaceId: string, memberId: string, role: "ADMIN" | "MEMBER") => {
         try {
           const updated = await workspaceApi.updateMemberRole(workspaceId, memberId, role);
           set((state) => ({

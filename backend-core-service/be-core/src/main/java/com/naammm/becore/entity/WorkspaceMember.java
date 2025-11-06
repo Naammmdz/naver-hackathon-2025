@@ -2,6 +2,7 @@ package com.naammm.becore.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,6 +34,7 @@ public class WorkspaceMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
+    @JsonIgnore
     private Workspace workspace;
 
     @Column(name = "user_id", nullable = false, length = 160)
