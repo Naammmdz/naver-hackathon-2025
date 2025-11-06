@@ -3,12 +3,6 @@ package com.naammm.becore.security;
 import java.io.IOException;
 import java.util.Set;
 
-import com.naammm.becore.security.ClerkTokenVerifier;
-import com.naammm.becore.security.JwtVerificationException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +10,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class ClerkAuthFilter extends OncePerRequestFilter {
@@ -31,7 +30,8 @@ public class ClerkAuthFilter extends OncePerRequestFilter {
             "/swagger-ui",
             "/swagger-ui.html",
             "/h2-console",
-            "/error"
+            "/error",
+            "/api/ai/"
     );
 
     private final ClerkTokenVerifier tokenVerifier;
