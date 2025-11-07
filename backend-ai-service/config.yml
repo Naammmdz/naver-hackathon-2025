@@ -1,0 +1,48 @@
+
+
+data_preprocessing:
+  chunking:
+    method: "hyrachical"
+    overlap: 50
+    chunk_size: 500
+  embedding:
+    model: "clir-emb-dolphin"
+    batch_size: 16
+
+llm:
+  # Provider mặc định
+  default_provider: "naver"
+  
+  # Cấu hình cho từng provider
+  providers:
+    naver:
+      model: "HCX-007"
+      temperature: 0.1
+      max_tokens: 2000
+      system_prompt: "Bạn là một trợ lý AI hữu ích và thân thiện, chuyên nói tiếng Việt."
+    
+    openai:
+      model: "gpt-4o-mini"
+      temperature: 0.1
+      max_tokens: 2000
+      system_prompt: "You are a helpful and friendly AI assistant."
+    
+    cerebras:
+      model: "llama3.1-8b"
+      temperature: 0.1
+      max_tokens: 2000
+      system_prompt: "You are a helpful and friendly AI assistant."
+    
+    gemini:
+      model: "gemini-2.0-flash-lite"
+      temperature: 0.1
+      max_tokens: 2000
+      system_prompt: "You are a helpful and friendly AI assistant."
+  
+  # Backward compatibility
+  naver_llm:
+    chat_model:
+      name: "HCX-007"
+      temperature: 0.1
+      max_tokens: 2000
+      system_prompt: "Bạn là một trợ lý AI hữu ích và thân thiện, chuyên nói tiếng Việt."

@@ -47,3 +47,8 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
+
+.venv/
+__pycache__/
+test/
+backend-ai-service/docs
