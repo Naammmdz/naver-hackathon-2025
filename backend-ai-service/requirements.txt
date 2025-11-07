@@ -1,0 +1,11 @@
+# Core dependencies
+langchain-core
+pydantic>=2.0
+PyYAML
+python-dotenv
+
+# LLM Providers
+langchain-naver
+langchain-openai
+langchain-cerebras
+langchain-google-genai
