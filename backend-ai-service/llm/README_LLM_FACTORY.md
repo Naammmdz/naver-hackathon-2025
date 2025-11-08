@@ -1,6 +1,6 @@
-# LLM Module - Multi-Provider Support với Structured Output
+# LLM Module - Multi-Provider Support với Structured Output & Token Tracking
 
-Module LLM hỗ trợ nhiều providers khác nhau với khả năng structured output (trích xuất dữ liệu có cấu trúc).
+Module LLM hỗ trợ nhiều providers khác nhau với khả năng structured output (trích xuất dữ liệu có cấu trúc) và token usage tracking.
 
 ## 🚀 Providers được hỗ trợ
 
@@ -8,6 +8,34 @@ Module LLM hỗ trợ nhiều providers khác nhau với khả năng structured 
 - ✅ **OpenAI** - GPT-4o, GPT-4o-mini, GPT-3.5-turbo
 - ✅ **Cerebras** - Llama 3.1 với tốc độ cực nhanh
 - ✅ **Google Gemini** - Gemini 1.5 Flash/Pro
+
+## 🆕 Token Counter
+
+Module mới: **Token Counter** - Track và phân tích token usage across all providers
+
+📖 **[Xem hướng dẫn chi tiết](README_TOKEN_COUNTER.md)**
+
+### Quick example:
+
+```python
+from llm import LLMFactory, extract_token_usage
+
+factory = LLMFactory()
+llm = factory.create_llm(provider="openai")
+response = llm.invoke("Hello")
+
+# Track tokens
+usage = extract_token_usage(response, provider="openai")
+print(f"Used {usage.total_tokens} tokens (input: {usage.input_tokens}, output: {usage.output_tokens})")
+```
+
+**Features:**
+- ✅ Multi-provider token tracking
+- ✅ Input/Output token separation  
+- ✅ Session aggregation
+- ✅ Decorator support
+- ✅ Export to JSON
+- ✅ Context manager
 
 ## 📦 Cài đặt
 
