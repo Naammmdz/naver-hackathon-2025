@@ -31,8 +31,7 @@ public class ClerkAuthFilter extends OncePerRequestFilter {
             "/swagger-ui.html",
             "/h2-console",
             "/error",
-            "/api/ai/",
-            "/api/internal/"
+            "/api/ai/"
     );
 
     private final ClerkTokenVerifier tokenVerifier;

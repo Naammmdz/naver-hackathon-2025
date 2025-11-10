@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Server } from '@hocuspocus/server';
 import { checkPermission } from './utils/checkPermission.js';
 import { createDatabaseExtension } from './extensions/database.js';
@@ -16,9 +17,14 @@ const server = Server.configure({
 
   async onAuthenticate({ token, documentName }) {
     // Call backend-core to check permission
+    if (!token || token.trim() === '') {
+      console.warn(`[onAuthenticate] No token provided for document=${documentName}`);
+    }
+    console.log(`[onAuthenticate] Checking permission: doc=${documentName}, core=${CORE_SERVICE_URL}`);
     const permission = await checkPermission(token, documentName, CORE_SERVICE_URL);
     
     if (!permission.allow) {
+      console.warn(`[onAuthenticate] Unauthorized: doc=${documentName}, readOnly=${permission.readOnly}`);
       throw new Error('Unauthorized');
     }
 

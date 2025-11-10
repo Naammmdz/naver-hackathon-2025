@@ -35,10 +35,31 @@ export function useHocuspocusProvider({
     let mounted = true;
     let hocuspocusProvider: HocuspocusProvider | null = null;
 
+    // Simple in-memory token cache
+    let lastToken: string | null = null;
+    let lastFetchedAt = 0;
+    const CACHE_TTL_MS = 55_000;
+
+    const getStableToken = async (): Promise<string | null> => {
+      const now = Date.now();
+      if (lastToken && now - lastFetchedAt < CACHE_TTL_MS) {
+        return lastToken;
+      }
+      let token = await getToken(); // prefer cached SDK token
+      if (!token) {
+        token = await getToken({ skipCache: true });
+      }
+      if (token) {
+        lastToken = token;
+        lastFetchedAt = Date.now();
+        return token;
+      }
+      return null;
+    };
+
     const initializeProvider = async () => {
       try {
-        // Get token first with skipCache to ensure fresh token
-        const token = await getToken({ skipCache: true });
+        const token = await getStableToken();
         
         // Check if still mounted and have token
         if (!mounted) {
@@ -126,7 +147,7 @@ export function useHocuspocusProvider({
       setYdoc(null);
       setIsConnected(false);
     };
-  }, [documentName, enabled, userId]);
+  }, [documentName, enabled, userId, getToken]);
 
   return {
     provider,

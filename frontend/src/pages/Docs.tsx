@@ -10,8 +10,8 @@ import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { debounce } from 'lodash';
 export default function Docs() {
   const {
     documents,
@@ -22,6 +22,8 @@ export default function Docs() {
     getDocument,
     setActiveDocument,
     isLoading,
+    setDocumentContentLocal,
+    setDocumentTitleLocal,
   } = useDocumentStore();
 
   const { tasks } = useTaskStore();
@@ -29,8 +31,183 @@ export default function Docs() {
 
   // Filter documents by active workspace
   const filteredDocuments = useWorkspaceFilter(documents);
-
+  
+  // Get active document first (before using it in useEffect)
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
+  
+  // Backup content to prevent data loss from errors
+  const contentBackupRef = useRef<Map<string, any[]>>(new Map());
+  
+  // Debounced title update handler to avoid too many API calls
+  const titleUpdateTimerRef = useRef<number | null>(null);
+  const pendingTitleRef = useRef<string | null>(null);
+  
+  // Debounced onChange handler to avoid too many updates
+  const onChangeRef = useRef<(content: any[]) => void>();
+  useEffect(() => {
+    // Backup current content
+    if (activeDocumentId && activeDocument?.content) {
+      const currentContent = activeDocument.content;
+      if (Array.isArray(currentContent) && currentContent.length > 0) {
+        contentBackupRef.current.set(activeDocumentId, JSON.parse(JSON.stringify(currentContent)));
+      }
+    }
+    
+    onChangeRef.current = debounce((content: any[]) => {
+      try {
+        // CRITICAL: Prevent applying empty content if we had content before
+        // This prevents data loss from Yjs/Prosemirror errors
+        if (!content || !Array.isArray(content) || content.length === 0) {
+          const backup = contentBackupRef.current.get(activeDocumentId!);
+          if (backup && backup.length > 0) {
+            console.warn('[BlockNote] Prevented applying empty content, using backup');
+            // Don't apply empty content - keep existing content
+            return;
+          }
+        }
+        
+        // Validate content before applying
+        const hasValidContent = Array.isArray(content) && content.length > 0;
+        const currentDoc = activeDocumentId ? getDocument(activeDocumentId) : null;
+        const hadContent = currentDoc?.content && Array.isArray(currentDoc.content) && currentDoc.content.length > 0;
+        
+        // If we had content before but now it's empty, reject the update
+        if (hadContent && !hasValidContent) {
+          console.warn('[BlockNote] Rejected empty content update - document had content before');
+          return;
+        }
+        
+        // Update backup if content is valid
+        if (hasValidContent) {
+          contentBackupRef.current.set(activeDocumentId!, JSON.parse(JSON.stringify(content)));
+        }
+        
+        // Check if Yjs is active - if so, use local update to avoid API calls
+        // BlockNote collaboration will sync via Yjs automatically
+        const isYjsActive = (window as any).__WORKSPACE_YJS_ACTIVE;
+        
+        if (isYjsActive) {
+          // Use local update when Yjs is active to avoid API feedback loops
+          setDocumentContentLocal(activeDocumentId!, content);
+        } else {
+          // Fallback to API update when Yjs is not available
+          updateDocument(activeDocumentId!, { content }).catch((error) => {
+            // Handle 401 errors gracefully
+            if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+              console.warn('[Docs] Unauthorized error updating document content, token may have expired');
+            } else {
+              console.error('[Docs] Failed to update document content:', error);
+            }
+          });
+        }
+        
+        // Auto-update title from first heading
+        // Always sync title from heading, regardless of Yjs status
+        // When Yjs is active, title also syncs via documentsMap, but we still update API for consistency
+        if (content.length > 0) {
+          const firstBlock = content[0] as any;
+          if (firstBlock.type === 'heading' && firstBlock.content) {
+            // Extract text from heading content
+            const textContent = Array.isArray(firstBlock.content) 
+              ? firstBlock.content.map((item: any) => {
+                  // Handle inline content objects
+                  if (item && typeof item === 'object' && 'text' in item) {
+                    return item.text || '';
+                  }
+                  // Handle string content
+                  if (typeof item === 'string') {
+                    return item;
+                  }
+                  return '';
+                }).join('')
+              : String(firstBlock.content || '');
+            
+            const trimmedTitle = textContent.trim();
+            
+            // Update title if it changed and is not empty
+            // If heading is empty, it will be restored to document title by DocumentEditor
+            if (trimmedTitle && trimmedTitle !== currentDoc?.title) {
+              // Store pending title for debounced update
+              pendingTitleRef.current = trimmedTitle;
+              
+              // Clear existing timer
+              if (titleUpdateTimerRef.current) {
+                clearTimeout(titleUpdateTimerRef.current);
+              }
+              
+              // Debounce title update to avoid too many API calls
+              titleUpdateTimerRef.current = window.setTimeout(() => {
+                const titleToUpdate = pendingTitleRef.current;
+                if (titleToUpdate && activeDocumentId) {
+                  // When Yjs is active, update title locally first to prevent editor re-render
+                  // Then persist to backend via API
+                  if (isYjsActive) {
+                    // Update title locally to prevent editor re-render and cursor loss
+                    setDocumentTitleLocal(activeDocumentId, titleToUpdate);
+                    
+                    // Persist to backend via API (without updating store again to avoid re-render)
+                    // Use documentApi directly to avoid triggering Zustand update
+                    import('@/lib/api/documentApi').then(({ documentApi }) => {
+                      const currentDoc = getDocument(activeDocumentId);
+                      if (currentDoc) {
+                        documentApi.update(activeDocumentId, { title: titleToUpdate }, currentDoc).catch((error) => {
+                          // Handle 401 errors gracefully
+                          if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+                            console.warn('[Docs] Unauthorized error updating document title, token may have expired');
+                            // Retry after a short delay
+                            setTimeout(() => {
+                              const retryDoc = getDocument(activeDocumentId);
+                              if (retryDoc) {
+                                documentApi.update(activeDocumentId, { title: titleToUpdate }, retryDoc).catch((retryError) => {
+                                  console.warn('[Docs] Retry also failed:', retryError);
+                                });
+                              }
+                            }, 1000);
+                          } else {
+                            console.error('[Docs] Failed to update document title:', error);
+                          }
+                        });
+                      }
+                    });
+                  } else {
+                    // When Yjs is not active, use normal updateDocument
+                    updateDocument(activeDocumentId, { title: titleToUpdate }).catch((error) => {
+                      // Handle 401 errors gracefully
+                      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+                        console.warn('[Docs] Unauthorized error updating document title, token may have expired');
+                        // Retry after a short delay
+                        setTimeout(() => {
+                          updateDocument(activeDocumentId, { title: titleToUpdate }).catch((retryError) => {
+                            console.warn('[Docs] Retry also failed:', retryError);
+                          });
+                        }, 1000);
+                      } else {
+                        console.error('[Docs] Failed to update document title:', error);
+                      }
+                    });
+                  }
+                  pendingTitleRef.current = null;
+                }
+              }, 500); // Debounce 500ms for title updates
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Failed to save content:', e);
+      }
+    }, 300); // Debounce 300ms to reduce updates
+    
+    return () => {
+      onChangeRef.current?.cancel();
+      if (titleUpdateTimerRef.current) {
+        clearTimeout(titleUpdateTimerRef.current);
+      }
+    };
+  }, [activeDocumentId, activeDocument?.title, setDocumentContentLocal, updateDocument, getDocument]);
+  
+  const handleDocumentChange = useCallback((content: any[]) => {
+    onChangeRef.current?.(content);
+  }, []);
   
   // Check if active document belongs to current workspace
   const isDocumentInCurrentWorkspace = activeDocument 
@@ -272,30 +449,12 @@ export default function Docs() {
               {/* Editor Container */}
               <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
                 <DocumentEditor
+                  key={activeDocument.id}
                   document={activeDocument}
                   isDark={isDark}
                   canEditWorkspace={true}
                   onTaskClick={setSelectedTask}
-                  onChange={async (content) => {
-                    try {
-                      updateDocument(activeDocumentId!, { content });
-                      
-                      // Auto-update title from first heading
-                      if (content.length > 0) {
-                        const firstBlock = content[0] as any;
-                        if (firstBlock.type === 'heading' && firstBlock.content) {
-                          const textContent = Array.isArray(firstBlock.content) 
-                            ? firstBlock.content.map((item: any) => item.text || '').join('')
-                            : String(firstBlock.content);
-                          if (textContent.trim() && textContent.trim() !== activeDocument?.title) {
-                            updateDocument(activeDocumentId!, { title: textContent.trim() });
-                          }
-                        }
-                      }
-                    } catch (e) {
-                      console.error('Failed to save content:', e);
-                    }
-                  }}
+                  onChange={handleDocumentChange}
                 />
               </div>
             </>

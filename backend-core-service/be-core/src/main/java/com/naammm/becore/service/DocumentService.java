@@ -30,7 +30,7 @@ public class DocumentService {
     private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public List<Document> getAllDocuments() {
         String userId = UserContext.requireUserId();

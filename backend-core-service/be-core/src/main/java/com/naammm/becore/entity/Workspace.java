@@ -1,4 +1,5 @@
 package com.naammm.becore.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDateTime;
@@ -62,6 +63,7 @@ public class Workspace {
 
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonIgnore // Don't serialize members to avoid ConcurrentModificationException and reduce response size
     private Set<WorkspaceMember> members = new HashSet<>();
 
     @PrePersist

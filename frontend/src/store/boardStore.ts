@@ -18,6 +18,9 @@ interface BoardState {
   updateBoard: (id: string, updates: Partial<Pick<Board, "title">>) => Promise<void>;
   updateBoardContent: (id: string, snapshot: BoardSnapshot | null) => Promise<void>;
   setCurrentUser: (userId: string | null) => void;
+  // Local-only updates used by Yjs to prevent API feedback loops
+  mergeBoardsLocal: (boards: Array<Pick<Board, 'id'|'title'|'createdAt'|'updatedAt'|'userId'|'workspaceId'>>) => void;
+  setBoardContentLocal: (id: string, snapshot: BoardSnapshot | null) => void;
 }
 
 const findFallbackActiveBoard = (boards: Board[]): string | null => {
@@ -197,6 +200,30 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       isInitialized: false,
       error: null,
       isLoading: false,
+    }));
+  },
+  mergeBoardsLocal: (incoming) => {
+    set((state) => {
+      const map = new Map(state.boards.map((b) => [b.id, b] as const));
+      for (const b of incoming) {
+        const prev = map.get(b.id);
+        const merged: Board = {
+          id: b.id,
+          title: b.title,
+          snapshot: prev?.snapshot ?? null,
+          createdAt: new Date(b.createdAt),
+          updatedAt: new Date(b.updatedAt),
+          userId: b.userId ?? prev?.userId ?? '',
+          workspaceId: b.workspaceId ?? prev?.workspaceId ?? undefined,
+        };
+        map.set(b.id, merged);
+      }
+      return { boards: Array.from(map.values()) };
+    });
+  },
+  setBoardContentLocal: (id, snapshot) => {
+    set((state) => ({
+      boards: state.boards.map((b) => (b.id === id ? { ...b, snapshot } : b)),
     }));
   },
 }));

@@ -16,7 +16,9 @@ export function useTaskYjsSync({
   enabled = true 
 }: UseTaskYjsSyncOptions) {
   const { tasks, updateTask } = useTaskStore();
+  const mergeTasksLocal = useTaskStore(s => s.mergeTasksLocal);
   const isSyncingRef = useRef(false);
+  const debounceTimer = useRef<number | null>(null);
   const lastTasksRef = useRef<string>(JSON.stringify(tasks));
 
   // Sync tasks from Zustand to Yjs
@@ -25,65 +27,73 @@ export function useTaskYjsSync({
       return;
     }
 
+    const schedule = () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+      debounceTimer.current = window.setTimeout(() => {
+        pushToYjs();
+      }, 60);
+    };
+
+    const pushToYjs = () => {
+      if (!tasksMap || !taskOrdersMap) return;
     const currentTasksJson = JSON.stringify(tasks);
     if (currentTasksJson === lastTasksRef.current) {
       return;
     }
-
     isSyncingRef.current = true;
-
     try {
       // Update tasks in Yjs Map
       tasks.forEach((task) => {
         const taskKey = task.id;
         const existing = tasksMap.get(taskKey);
-        
-        if (!existing || JSON.stringify(existing) !== JSON.stringify(task)) {
-          tasksMap.set(taskKey, {
+          const normalized = {
             ...task,
             dueDate: task.dueDate?.toISOString(),
             createdAt: task.createdAt.toISOString(),
             updatedAt: task.updatedAt.toISOString(),
-          });
+          };
+          if (!existing || JSON.stringify(existing) !== JSON.stringify(normalized)) {
+            tasksMap.set(taskKey, normalized);
         }
       });
-
       // Update task orders for each column
       const statuses: TaskStatus[] = ['Todo', 'In Progress', 'Done'];
       statuses.forEach((status) => {
         const statusTasks = tasks
           .filter((t) => t.status === status)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        
         const orderArray = taskOrdersMap.get(status);
+          const newOrder = statusTasks.map((t) => t.order ?? 0);
         if (orderArray) {
           const currentOrder = orderArray.toArray();
-          const newOrder = statusTasks.map((t) => {
-            const parsedId = parseInt(t.id.split('-').pop() || '0', 16);
-            return parsedId || (t.order ?? 0);
-          });
-          
           if (JSON.stringify(currentOrder) !== JSON.stringify(newOrder)) {
             orderArray.delete(0, orderArray.length);
             orderArray.insert(0, newOrder);
           }
         } else {
           const newArray = new Y.Array<number>();
-          const newOrder = statusTasks.map((t) => {
-            const parsedId = parseInt(t.id.split('-').pop() || '0', 16);
-            return parsedId || (t.order ?? 0);
-          });
           newArray.insert(0, newOrder);
           taskOrdersMap.set(status, newArray);
         }
       });
-
       lastTasksRef.current = currentTasksJson;
     } catch (error) {
       console.error('Failed to sync tasks to Yjs:', error);
     } finally {
       isSyncingRef.current = false;
     }
+    };
+
+    schedule();
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+    };
   }, [tasks, tasksMap, taskOrdersMap, enabled]);
 
   // Sync tasks from Yjs to Zustand
@@ -117,22 +127,8 @@ export function useTaskYjsSync({
         // Only update if there are actual changes
         const yjsTasksJson = JSON.stringify(yjsTasks);
         if (yjsTasksJson !== lastTasksRef.current) {
-          // Update tasks in store
-          yjsTasks.forEach((task) => {
-            const updateInput: UpdateTaskInput = {
-              id: task.id,
-              title: task.title,
-              description: task.description,
-              status: task.status,
-              priority: task.priority,
-              dueDate: task.dueDate,
-              tags: task.tags,
-              subtasks: task.subtasks,
-            };
-            updateTask(updateInput).catch(err => {
-              console.warn('Failed to update task from Yjs:', err);
-            });
-          });
+          // Merge locally without hitting the API to avoid feedback loops
+          mergeTasksLocal(yjsTasks);
           lastTasksRef.current = yjsTasksJson;
         }
       } catch (error) {
@@ -147,7 +143,7 @@ export function useTaskYjsSync({
     return () => {
       tasksMap.unobserve(handleYjsUpdate);
     };
-  }, [tasksMap, enabled, updateTask]);
+  }, [tasksMap, enabled, mergeTasksLocal]);
 
   // Sync task orders from Yjs
   useEffect(() => {

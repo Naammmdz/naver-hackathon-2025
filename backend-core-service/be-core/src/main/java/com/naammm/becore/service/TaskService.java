@@ -32,7 +32,7 @@ public class TaskService {
     private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public List<Task> getAllTasks() {
         String userId = UserContext.requireUserId();
@@ -203,8 +203,18 @@ public class TaskService {
     }
 
     public void addSubtask(String taskId, String title) {
-        Task task = taskRepository.findByIdAndUserId(taskId, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        // Access: personal owner or workspace member
+        String workspaceId = task.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!userId.equals(task.getUserId())) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
 
         Subtask subtask = Subtask.builder()
                 .title(title)
@@ -217,8 +227,17 @@ public class TaskService {
     }
 
     public void updateSubtask(String taskId, String subtaskId, String title, Boolean done) {
-        Task task = taskRepository.findByIdAndUserId(taskId, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String workspaceId = task.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!userId.equals(task.getUserId())) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
 
         task.getSubtasks().stream()
                 .filter(subtask -> subtask.getId().equals(subtaskId))
@@ -237,8 +256,17 @@ public class TaskService {
     }
 
     public void deleteSubtask(String taskId, String subtaskId) {
-        Task task = taskRepository.findByIdAndUserId(taskId, UserContext.requireUserId())
+        String userId = UserContext.requireUserId();
+        Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        String workspaceId = task.getWorkspaceId();
+        if (workspaceId == null || workspaceId.isBlank()) {
+            if (!userId.equals(task.getUserId())) {
+                throw new SecurityException("Access denied");
+            }
+        } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
+            throw new SecurityException("Access denied");
+        }
 
         boolean removed = task.getSubtasks().removeIf(subtask -> subtask.getId().equals(subtaskId));
         if (!removed) {

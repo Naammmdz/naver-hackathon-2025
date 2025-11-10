@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useWorkspaceYjs } from "@/hooks/useWorkspaceYjs";
 import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
 import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
+import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
 import Docs from "./Docs";
 import Index from "./Index";
 
@@ -53,6 +54,8 @@ export default function AppWrapper() {
     taskOrdersMap, 
     boardsMap, 
     boardContentMap,
+    documentsMap,
+    docContentMap,
     isConnected: isYjsConnected 
   } = useWorkspaceYjs({
     workspaceId: activeWorkspaceId,
@@ -71,6 +74,13 @@ export default function AppWrapper() {
     boardsMap,
     boardContentMap,
     enabled: !!boardsMap && !!boardContentMap && isYjsConnected,
+  });
+
+  // Sync documents with Yjs
+  useDocumentYjsSync({
+    documentsMap,
+    docContentMap,
+    enabled: !!documentsMap && !!docContentMap && isYjsConnected,
   });
 
   useEffect(() => {

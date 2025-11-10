@@ -44,7 +44,7 @@ const findFirstActiveDocumentId = (documents: Document[]): string | null => {
 };
 
 export const useDocumentStore = create<DocumentState>((set, get) => {
-  const persistDocument = async (id: string) => {
+  const persistDocument = async (id: string, retryCount = 0) => {
     const document = get().documents.find((doc) => doc.id === id);
     if (!document) {
       return;
@@ -66,9 +66,25 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
         error: null,
       }));
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : String(error),
-      });
+      // Handle 401 errors with retry logic
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const isUnauthorized = errorMessage?.includes('401') || errorMessage?.includes('Unauthorized');
+      
+      if (isUnauthorized && retryCount < 2) {
+        // Retry after a delay to allow token refresh
+        console.warn(`[DocumentStore] Unauthorized error saving document ${id}, retrying... (${retryCount + 1}/2)`);
+        setTimeout(() => {
+          persistDocument(id, retryCount + 1);
+        }, 1000 * (retryCount + 1)); // Exponential backoff: 1s, 2s
+        return;
+      }
+      
+      // Only set error if it's not a 401 or we've exhausted retries
+      if (!isUnauthorized || retryCount >= 2) {
+        set({
+          error: errorMessage,
+        });
+      }
     }
   };
 
@@ -277,12 +293,50 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       set({ activeDocumentId: id });
     },
 
-    getDocument: (id) => {
-      return get().documents.find((doc) => doc.id === id);
-    },
+  getDocument: (id) => {
+    return get().documents.find((doc) => doc.id === id);
+  },
 
-    getTrashedDocuments: () => {
-      return get().documents.filter((doc) => doc.trashed);
-    },
-  };
+  getTrashedDocuments: () => {
+    return get().documents.filter((doc) => doc.trashed);
+  },
+
+  // Local-only updates used by Yjs to prevent API feedback loops
+  mergeDocumentsLocal: (incoming: Array<Pick<Document, 'id'|'title'|'createdAt'|'updatedAt'|'userId'|'workspaceId'|'icon'|'parentId'|'trashed'|'trashedAt'>>) => {
+    set((state) => {
+      const map = new Map(state.documents.map((d) => [d.id, d] as const));
+      for (const d of incoming) {
+        const prev = map.get(d.id);
+        const merged: Document = {
+          id: d.id,
+          title: d.title,
+          content: prev?.content || defaultContent(d.title),
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt,
+          userId: d.userId ?? prev?.userId ?? '',
+          workspaceId: d.workspaceId ?? prev?.workspaceId ?? undefined,
+          icon: d.icon ?? prev?.icon ?? null,
+          parentId: d.parentId ?? prev?.parentId ?? null,
+          trashed: d.trashed ?? prev?.trashed ?? false,
+          trashedAt: d.trashedAt ?? prev?.trashedAt ?? null,
+        };
+        map.set(d.id, merged);
+      }
+      return { documents: Array.from(map.values()) };
+    });
+  },
+
+  setDocumentContentLocal: (id: string, content: any[]) => {
+    set((state) => ({
+      documents: state.documents.map((d) => (d.id === id ? { ...d, content, updatedAt: new Date() } : d)),
+    }));
+  },
+
+  // Local-only title update to prevent editor re-render and cursor loss
+  setDocumentTitleLocal: (id: string, title: string) => {
+    set((state) => ({
+      documents: state.documents.map((d) => (d.id === id ? { ...d, title, updatedAt: new Date() } : d)),
+    }));
+  },
+};
 });

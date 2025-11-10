@@ -29,7 +29,7 @@ public class BoardService {
     private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public List<Board> getAllBoards() {
         return boardRepository.findByUserIdOrderByUpdatedAtDesc(UserContext.requireUserId());

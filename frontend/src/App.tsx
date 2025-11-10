@@ -46,20 +46,34 @@ const App = () => {
       return;
     }
 
-    apiAuthContext.setTokenFetcher(async () => {
-      try {
-        const options = tokenTemplate
-          ? { template: tokenTemplate, skipCache: true }
-          : { skipCache: true };
-        const token = await getToken(options);
+    let lastToken: string | null = null;
+    let lastFetchedAt = 0;
+    const CACHE_TTL_MS = 55_000; // Clerk tokens typically valid ~60s; refresh slightly before
 
-        if (token) {
-          return token;
+    apiAuthContext.setTokenFetcher(async () => {
+      const now = Date.now();
+      if (lastToken && now - lastFetchedAt < CACHE_TTL_MS) {
+        return lastToken;
+      }
+      try {
+        // Prefer cached token from Clerk SDK (no skipCache) to avoid 429s
+        const baseOptions = tokenTemplate ? { template: tokenTemplate } : {};
+        let token = await getToken(baseOptions as any);
+
+        // If token is missing, force refresh once
+        if (!token) {
+          const refreshOptions = tokenTemplate
+            ? { template: tokenTemplate, skipCache: true }
+            : { skipCache: true };
+          token = await getToken(refreshOptions as any);
         }
 
-        // Attempt fallback retrieval without template in case template is not configured yet
-        const fallback = await getToken({ skipCache: true });
-        return fallback ?? null;
+        if (token) {
+          lastToken = token;
+          lastFetchedAt = Date.now();
+          return token;
+        }
+        return null;
       } catch (error) {
         console.warn("Failed to acquire auth token", error);
         return null;
@@ -69,7 +83,7 @@ const App = () => {
     return () => {
       apiAuthContext.setTokenFetcher(null);
     };
-  }, [getToken, isLoaded]);
+  }, [getToken, isLoaded, tokenTemplate]);
 
   useEffect(() => {
     if (!isLoaded) {

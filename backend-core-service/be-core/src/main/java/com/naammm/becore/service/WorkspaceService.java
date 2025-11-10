@@ -19,6 +19,7 @@ import com.naammm.becore.repository.WorkspaceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -28,6 +29,7 @@ public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final WorkspaceInviteRepository inviteRepository;
+    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<Workspace> getAllWorkspaces(String userId) {
@@ -58,7 +60,23 @@ public class WorkspaceService {
             .defaultDocumentView(request.getDefaultDocumentView() != null ? request.getDefaultDocumentView() : "list")
             .build();
         
-        return workspaceRepository.save(workspace);
+        workspace = workspaceRepository.save(workspace);
+        
+        // Add owner as a member with ADMIN role
+        WorkspaceMember ownerMember = WorkspaceMember.builder()
+            .workspace(workspace)
+            .userId(userId)
+            .role(WorkspaceRole.ADMIN)
+            .joinedAt(LocalDateTime.now())
+            .build();
+        memberRepository.save(ownerMember);
+        
+        // Flush to ensure member is saved immediately
+        entityManager.flush();
+        // Don't refresh workspace to avoid ConcurrentModificationException during serialization
+        // The member is already saved and will be available for access checks
+        
+        return workspace;
     }
 
     @Transactional

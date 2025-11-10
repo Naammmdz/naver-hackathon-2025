@@ -64,12 +64,19 @@ function handleMetadataMessage(message: string, server: any) {
     }
     
     if (server) {
-      // Broadcast stateless message to all connections for this document
-      server.broadcastStateless(documentName, {
-        type: 'metadata',
-        action,
-        payload,
-      });
+      // Broadcast stateless message to all connections for this document (compat guard)
+      const payloadMsg = { type: 'metadata', action, payload };
+      if (typeof server.broadcastStateless === 'function') {
+        server.broadcastStateless(documentName, payloadMsg);
+      } else if (typeof server.stateless === 'function') {
+        // Some versions expose `stateless(name, payload)`
+        server.stateless(documentName, payloadMsg);
+      } else if (typeof server.broadcast === 'function') {
+        // Fallback: send as regular broadcast if supported
+        server.broadcast(documentName, payloadMsg);
+      } else {
+        // No-op to avoid crashing
+      }
     }
   } catch (error) {
     console.error('Failed to handle metadata message:', error);

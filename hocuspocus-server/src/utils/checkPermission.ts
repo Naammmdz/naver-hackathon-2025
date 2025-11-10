@@ -16,8 +16,9 @@ export async function checkPermission(
   }
 
   try {
+    const url = `${coreServiceUrl}/api/internal/check-permission`;
     const response = await axios.post(
-      `${coreServiceUrl}/api/internal/check-permission`,
+      url,
       { documentName },
       {
         headers: {
@@ -26,9 +27,14 @@ export async function checkPermission(
       }
     );
 
+    if (process.env.DEBUG_HOCUSPOCUS === '1') {
+      console.log(`[checkPermission] POST ${url} -> ${response.status} allow=${response.data?.allow} ro=${response.data?.readOnly}`);
+    }
     return response.data;
   } catch (error) {
-    console.error('Failed to check permission:', error);
+    const status = (error as any)?.response?.status;
+    const data = (error as any)?.response?.data;
+    console.error(`[checkPermission] Failed: status=${status} data=${JSON.stringify(data)} url=${coreServiceUrl}`);
     return { allow: false, readOnly: true };
   }
 }

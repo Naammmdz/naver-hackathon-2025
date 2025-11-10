@@ -1,6 +1,7 @@
 package com.naammm.becore.service;
 
 import com.naammm.becore.dto.PermissionResponse;
+import com.naammm.becore.entity.Document;
 import com.naammm.becore.entity.Workspace;
 import com.naammm.becore.repository.DocumentRepository;
 import com.naammm.becore.repository.WorkspaceMemberRepository;
@@ -61,8 +62,24 @@ public class PermissionService {
             // Extract document ID from documentName
             String documentId = documentName.substring("document-".length());
             
-            // Check if document exists and user has access
-            boolean hasAccess = documentRepository.findByIdAndUserId(documentId, userId).isPresent();
+            // Find document by ID
+            Document document = documentRepository.findById(documentId).orElse(null);
+            if (document == null) {
+                return new PermissionResponse(false, true, null);
+            }
+            
+            // Check access: workspace member OR document owner
+            boolean hasAccess = false;
+            
+            // If document belongs to a workspace, check workspace membership
+            if (document.getWorkspaceId() != null && !document.getWorkspaceId().isBlank()) {
+                hasAccess = workspaceRepository.userHasAccess(document.getWorkspaceId(), userId);
+            }
+            
+            // If not workspace member, check if user is the document owner
+            if (!hasAccess) {
+                hasAccess = document.getUserId().equals(userId);
+            }
             
             if (hasAccess) {
                 // For now, all users with access can edit (readOnly = false)

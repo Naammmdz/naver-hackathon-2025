@@ -60,6 +60,8 @@ interface TaskState {
   canMoveTaskToDone: (taskId: string) => boolean;
   updateTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
   setCurrentUser: (userId: string | null) => void;
+  // Local-only update (no API): merge provided tasks into state by id
+  mergeTasksLocal: (tasks: Task[]) => void;
 }
 
 const defaultFilters: TaskFilters = {
@@ -89,6 +91,15 @@ export const useTaskStore = create<TaskState>((set, get) => {
         ? state.tasks.map((task) => (task.id === updated.id ? updated : task))
         : [...state.tasks, updated],
     }));
+  };
+  const mergeTasksInState = (incoming: Task[]) => {
+    set((state) => {
+      const map = new Map(state.tasks.map((t) => [t.id, t] as const));
+      for (const t of incoming) {
+        map.set(t.id, t);
+      }
+      return { tasks: Array.from(map.values()) };
+    });
   };
 
   const removeTaskFromState = (id: string) => {
@@ -585,6 +596,10 @@ export const useTaskStore = create<TaskState>((set, get) => {
 
     updateTaskStatus: async (id, status) => {
       await get().moveTask(id, status);
+    },
+
+    mergeTasksLocal: (tasks) => {
+      mergeTasksInState(tasks);
     },
   };
 });

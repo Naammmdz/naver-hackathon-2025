@@ -197,11 +197,20 @@ export function Canvas() {
 
         try {
           const sceneData = serializeSceneForStorage(elements, appState, files);
-          updateBoardContent(boardId, sceneData);
+          const yjsActive = Boolean((window as any).__WORKSPACE_YJS_ACTIVE);
+          if (yjsActive) {
+            // Realtime via Yjs: emit event with shorter debounce upstream
+            window.dispatchEvent(new CustomEvent('board-scene-changed', {
+              detail: { id: boardId, snapshot: sceneData }
+            }));
+          } else {
+            // Fallback persistence via API when Yjs not active
+            updateBoardContent(boardId, sceneData);
+          }
         } catch (error) {
           console.error('Error saving board snapshot:', error);
         }
-      }, 1000);
+      }, 250);
     },
     [updateBoardContent],
   );
