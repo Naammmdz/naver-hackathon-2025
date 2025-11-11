@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
 import * as Y from 'yjs';
 import { useDocumentStore } from '@/store/documentStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { useWorkspaceYjs } from '@/hooks/useWorkspaceYjs';
 
 interface DocumentEditorProps {
@@ -28,6 +28,7 @@ export function DocumentEditor({
   onChange,
 }: DocumentEditorProps) {
   const { isSignedIn, userId } = useAuth();
+  const { user } = useUser();
   const activeWorkspaceId = useWorkspaceStore(s => s.activeWorkspaceId);
   
   // Use workspace-level Yjs provider instead of creating separate provider
@@ -394,12 +395,18 @@ export function DocumentEditor({
     
     if (shouldCreateCollabEditor && provider && fragment) {
       const providerAny = provider as any;
+      const displayName =
+        user?.fullName ||
+        user?.username ||
+        user?.primaryEmailAddress?.emailAddress ||
+        userId ||
+        'Anonymous';
       const config = {
         collaboration: {
           provider: provider as any,
           fragment: fragment,
           user: {
-            name: userId || 'Anonymous',
+            name: displayName,
             color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
           },
         },
@@ -916,25 +923,25 @@ export function DocumentEditor({
           window.removeEventListener('error', errorListener);
         };
       }, [wrappedEditor, document?.id]);
-      
-      return (
-        <BlockNoteView
+
+  return (
+      <BlockNoteView
           editor={wrappedEditor}
           onChange={wrappedHandleChange}
-          theme={isDark ? "dark" : "light"}
-          className="rounded-lg border border-border/50 shadow-sm"
-          slashMenu={false}
-          editable={canEditWorkspace}
-        >
-          {canEditWorkspace && (
-            <CustomSlashMenu
+        theme={isDark ? "dark" : "light"}
+        className="rounded-lg border border-border/50 shadow-sm"
+        slashMenu={false}
+        editable={canEditWorkspace}
+      >
+        {canEditWorkspace && (
+          <CustomSlashMenu
               editor={wrappedEditor}
-              docId={document.id}
+            docId={document.id}
               docTitle={documentTitleRef.current}
-              onTaskClick={onTaskClick}
-            />
-          )}
-        </BlockNoteView>
+            onTaskClick={onTaskClick}
+          />
+        )}
+      </BlockNoteView>
       );
     };
   }, [editorConfig, isDark, canEditWorkspace, document.id, onTaskClick, hasError]); // Remove document.title to prevent re-render

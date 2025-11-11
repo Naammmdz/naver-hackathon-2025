@@ -85,9 +85,9 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       
       // Only set error if it's not a 401 or we've exhausted retries
       if (!isUnauthorized || retryCount >= 2) {
-        set({
+      set({
           error: errorMessage,
-        });
+      });
       }
     }
   };
@@ -297,13 +297,13 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       set({ activeDocumentId: id });
     },
 
-  getDocument: (id) => {
-    return get().documents.find((doc) => doc.id === id);
-  },
+    getDocument: (id) => {
+      return get().documents.find((doc) => doc.id === id);
+    },
 
-  getTrashedDocuments: () => {
-    return get().documents.filter((doc) => doc.trashed);
-  },
+    getTrashedDocuments: () => {
+      return get().documents.filter((doc) => doc.trashed);
+    },
 
   // Local-only updates used by Yjs to prevent API feedback loops
   mergeDocumentsLocal: (incoming: Array<Pick<Document, 'id'|'title'|'createdAt'|'updatedAt'|'userId'|'workspaceId'|'icon'|'parentId'|'trashed'|'trashedAt'>>) => {
@@ -342,5 +342,5 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       documents: state.documents.map((d) => (d.id === id ? { ...d, title, updatedAt: new Date() } : d)),
     }));
   },
-};
+  };
 });

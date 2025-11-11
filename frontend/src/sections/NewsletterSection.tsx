@@ -7,7 +7,7 @@
         <h2 className="tw-text-2xl tw-text-gray-800 dark:tw-text-gray-200 max-md:tw-text-xl">
           Join our newsletter
         </h2>
-        <div className="tw-text-gray-700 dark:tw-text-gray-300">Get product insights and updates.</div>
+        <div className="tw-text-gray-700 dark:tw-text-gray-300">Tips on Tasks, Docs, Boards, and realtime collab.</div>
       </div>
       <div className="tw-flex tw-h-[60px] tw-place-items-center tw-gap-2 tw-overflow-hidden tw-p-2">
         <input type="email" className="input tw-h-full tw-w-full !tw-border-black dark:!tw-border-white tw-p-2 tw-outline-none" placeholder="email" />

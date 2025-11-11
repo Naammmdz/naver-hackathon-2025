@@ -79,8 +79,8 @@ export function DocumentEditorDialog({
             isDark={false}
             canEditWorkspace={true && isConnected}
             onTaskClick={() => {}}
-            onChange={handleChange}
-          />
+              onChange={handleChange}
+            />
         </div>
 
         <DialogFooter className="flex-shrink-0">

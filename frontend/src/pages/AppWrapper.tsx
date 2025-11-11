@@ -15,10 +15,12 @@ import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
 import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
 import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
 import Docs from "./Docs";
+import Home from "./Home";
 import Index from "./Index";
+import Teams from "./Teams";
 
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board">("tasks");
+  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { t } = useTranslation();
@@ -248,12 +250,15 @@ export default function AppWrapper() {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
-              {currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
+              {currentView === 'home' ? <Home onViewChange={setCurrentView} /> :
+               currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
                 const event = new CustomEvent('openSmartParser');
                 window.dispatchEvent(event);
               }} /> :
                currentView === 'docs' ? <Docs /> :
-               <BoardView />}
+               currentView === 'board' ? <BoardView /> :
+               currentView === 'teams' ? <Teams onViewChange={setCurrentView} /> :
+               <Home onViewChange={setCurrentView} />}
             </main>
           </div>
         </div>

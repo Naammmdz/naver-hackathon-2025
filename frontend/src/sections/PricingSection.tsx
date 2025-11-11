@@ -13,21 +13,21 @@
           <span className="tw-text-2xl tw-text-gray-600 dark:tw-text-gray-300">/mo</span>
         </h3>
         <p className="tw-mt-3 tw-text-center tw-text-gray-800 dark:tw-text-gray-100">
-          Perfect for individual developers
+          Perfect for individual creators
         </p>
         <hr />
         <ul className="tw-mt-4 tw-flex tw-flex-col tw-gap-4 tw-text-base tw-text-gray-800 dark:tw-text-gray-200">
           <li className="tw-flex tw-gap-2">
             <i className="bi bi-check-circle-fill" />
-            <span>Unlimited tasks and projects</span>    
+            <span>Unlimited tasks</span>    
           </li>
           <li className="tw-flex tw-gap-2">
             <i className="bi bi-check-circle-fill" />
-            <span>Inline Markdown editing</span>    
+            <span>Docs editor (BlockNote)</span>    
           </li>
           <li className="tw-flex tw-gap-2">
             <i className="bi bi-check-circle-fill" />
-            <span>Git branch visualization</span>    
+            <span>Boards (Excalidraw)</span>    
           </li>
           <li className="tw-flex tw-gap-2 ">
             <i className="bi bi-check-circle-fill tw-text-gray-400 dark:tw-text-gray-500" />
@@ -38,7 +38,7 @@
             <span>Advanced integrations</span>    
           </li>
         </ul>
-        <a href="#" className="btn tw-mt-auto !tw-w-full tw-transition-transform tw-duration-[0.3s] 
+        <a href="/app" className="btn tw-mt-auto !tw-w-full tw-transition-transform tw-duration-[0.3s] 
                           hover:tw-scale-x-[1.02] !tw-text-black dark:!tw-text-white !tw-bg-transparent !tw-border-[1px]
                            tw-border-black dark:tw-border-white">
           Choose plan
@@ -51,7 +51,7 @@
           <span className="tw-text-2xl max-md:tw-text-xl  tw-text-gray-600 dark:tw-text-gray-300">/mo</span>
         </h3>
         <p className="tw-mt-3 tw-text-center tw-text-gray-800 dark:tw-text-gray-200">
-          Advanced features for growing teams
+          Collaboration for growing teams
         </p>
         <hr />
         <ul className="tw-mt-4 tw-flex tw-flex-col tw-gap-4  tw-text-base tw-text-gray-800 dark:tw-text-gray-100">
@@ -65,7 +65,7 @@
           </li>
           <li className="tw-flex tw-gap-2">
             <i className="bi bi-check-circle-fill" />
-            <span>Real-time collaboration</span>    
+            <span>Realtime collaboration (Yjs)</span>    
           </li>
           <li className="tw-flex tw-gap-2 ">
             <i className="bi bi-check-circle-fill" />
@@ -76,7 +76,7 @@
             <span>Priority support</span>    
           </li>
         </ul>
-        <a href="#" className="btn tw-mt-auto !tw-w-full tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.02]">
+        <a href="/app" className="btn tw-mt-auto !tw-w-full tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.02]">
           Choose plan
         </a>
       </div>
@@ -87,7 +87,7 @@
           <span className="tw-text-2xl tw-text-gray-600 dark:tw-text-gray-300">/mo</span>
         </h3>
         <p className="tw-mt-3 tw-text-center tw-text-gray-800 dark:tw-text-gray-100">
-          Unlimited power for large organizations
+          Unlimited for large organizations
         </p>
         <hr />
         <ul className="tw-mt-4 tw-flex tw-flex-col tw-gap-4 tw-text-base 
@@ -113,7 +113,7 @@
             <span>Advanced security features</span>    
           </li>
         </ul>
-        <a href="#" className="btn tw-mt-8 !tw-w-full tw-transition-transform tw-duration-[0.3s] 
+        <a href="/app" className="btn tw-mt-8 !tw-w-full tw-transition-transform tw-duration-[0.3s] 
                           hover:tw-scale-x-[1.02] !tw-text-black dark:!tw-text-white !tw-bg-transparent 
                           !tw-border-[1px] tw-border-black dark:tw-border-white">
           Choose plan

@@ -64,8 +64,8 @@ const isBoardMetaEqual = (existing: any, meta: BoardMeta): boolean => {
   );
 };
 
-export function useBoardYjsSync({
-  boardsMap,
+export function useBoardYjsSync({ 
+  boardsMap, 
   boardContentMap,
   enabled = true,
 }: UseBoardYjsSyncOptions) {
@@ -173,11 +173,11 @@ export function useBoardYjsSync({
             lastSnapshotsRef.current[id] = token;
           }
         });
-        return;
-      }
+      return;
+    }
 
-      isSyncingRef.current = true;
-      try {
+    isSyncingRef.current = true;
+    try {
         // Sync board metadata
         metaEntries.forEach((meta) => {
           const existing = boardsMap.get(meta.id);
@@ -218,11 +218,11 @@ export function useBoardYjsSync({
             }
           });
         }
-      } catch (error) {
-        console.error('Failed to sync boards to Yjs:', error);
-      } finally {
-        isSyncingRef.current = false;
-      }
+    } catch (error) {
+      console.error('Failed to sync boards to Yjs:', error);
+    } finally {
+      isSyncingRef.current = false;
+    }
     };
 
     if (debounceTimer.current) {

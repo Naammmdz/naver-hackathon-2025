@@ -12,14 +12,14 @@
         </div>
         <div className="tw-text-gray-600 dark:tw-text-gray-300 tw-justify-between tw-flex tw-gap-2">
           <div className="tw-text-gray-800 dark:tw-text-gray-200">
-            Productivity
+            Realtime Collaboration
           </div>
           <div className="tw-text-gray-600 dark:tw-text-gray-400">
             Oct, 16, 2025
           </div>
         </div>
         <h3 className="tw-mt-1 tw-font-medium tw-text-xl max-md:tw-text-xl">
-          How DevFlow Transforms Developer Workflows
+          Realtime Docs with BlockNote + Yjs: A Practical Guide
         </h3>
       </a>
       <a href="#" className="tw-flex tw-h-[500px] tw-w-[400px] tw-flex-col tw-gap-2 tw-overflow-clip tw-rounded-lg tw-p-4 max-lg:tw-w-[350px]">
@@ -28,14 +28,14 @@
         </div>
         <div className="tw-text-gray-600 dark:tw-text-gray-300 tw-justify-between tw-flex tw-gap-2">
           <div className="tw-text-gray-800 dark:tw-text-gray-200">
-            Features
+            Whiteboard
           </div>
           <div className="tw-text-gray-600 dark:tw-text-gray-400">
             Oct, 10, 2025
           </div>
         </div>
         <h3 className="tw-mt-1 tw-font-medium tw-text-xl max-md:tw-text-xl">
-          Introducing Git Branch Visualization
+          Collaborative Boards with Excalidraw + Yjs Awareness
         </h3>
       </a>
       <a href="#" className="tw-flex tw-h-[500px] tw-w-[400px] tw-flex-col tw-gap-2 tw-overflow-clip tw-rounded-lg tw-p-4 max-lg:tw-w-[350px]">
@@ -44,14 +44,14 @@
         </div>
         <div className="tw-text-gray-600 dark:tw-text-gray-300 tw-justify-between tw-flex tw-gap-2">
           <div className="tw-text-gray-800 dark:tw-text-gray-200">
-            Tutorial
+            Tasks
           </div>
           <div className="tw-text-gray-600 dark:tw-text-gray-400">
             Oct, 1, 2025
           </div>
         </div>
         <h3 className="tw-mt-1 tw-font-medium tw-text-xl max-md:tw-text-xl">
-          Getting Started with Kanban Boards
+          Plan and Track Work: List, Kanban, and Calendar Views
         </h3>
       </a>
     </div>

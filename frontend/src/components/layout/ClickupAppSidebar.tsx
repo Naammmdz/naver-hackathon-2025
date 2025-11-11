@@ -8,18 +8,25 @@ import {
   Kanban,
   Users
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ClickupAppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewChange?: (view: 'tasks' | 'docs' | 'board') => void;
-  currentView?: 'tasks' | 'docs' | 'board';
+  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void;
+  currentView?: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
 }
 
-export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'tasks' }: ClickupAppSidebarProps) {
-  const [activeNav, setActiveNav] = useState('tasks');
+export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'home' }: ClickupAppSidebarProps) {
+  const [activeNav, setActiveNav] = useState(currentView || 'home');
   const [expandedSpaces, setExpandedSpaces] = useState<string[]>(['workspace-1']);
+
+  // Update activeNav when currentView changes
+  useEffect(() => {
+    if (currentView) {
+      setActiveNav(currentView);
+    }
+  }, [currentView]);
 
   const toggleSpace = (id: string) => {
     setExpandedSpaces(prev =>
@@ -32,7 +39,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-[#c084fc] to-[#a78bfa]' },
     { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-[#fb923c] to-[#fdba74]' },
     { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-[#f472b6] to-[#fb7185]' },
-    { id: 'team', icon: Users, label: 'Teams', gradient: 'from-[#34d399] to-[#4ade80]' },
+    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-[#34d399] to-[#4ade80]' },
   ];
 
   const spaces = [
@@ -113,7 +120,9 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
                 }}
                 onClick={() => {
                   setActiveNav(item.id);
-                  if (item.view && onViewChange) {
+                  if (item.id === 'home' && onViewChange) {
+                    onViewChange('home');
+                  } else if (item.view && onViewChange) {
                     onViewChange(item.view);
                   }
                 }}

@@ -33,7 +33,7 @@ export function HeroSection() {
       },
       {
         type: "paragraph",
-        content: "DevFlow is an AI-powered workspace that combines task management, documentation, and Git integration into a single seamless experience.",
+        content: "DevFlow is a collaborative workspace for Tasks, Documents, and Boards with realtime sync powered by Yjs.",
       },
       {
         type: "heading",
@@ -42,19 +42,19 @@ export function HeroSection() {
       },
       {
         type: "bulletListItem",
-        content: "📝 Rich text documentation with Markdown support",
+        content: "📝 Documents: BlockNote editor with realtime collaboration (Yjs + Hocuspocus)",
       },
       {
         type: "bulletListItem",
-        content: "✅ Interactive task management with Kanban boards",
+        content: "✅ Tasks: Plan and track work across list/board/calendar views",
       },
       {
         type: "bulletListItem",
-        content: "🔄 Real-time Git branch visualization",
+        content: "🧩 Boards: Excalidraw whiteboard with live cursors (Yjs Awareness)",
       },
       {
         type: "bulletListItem",
-        content: "🤖 AI-powered code suggestions and automation",
+        content: "🔐 Auth: Clerk-based authentication and org workspaces",
       },
       {
         type: "heading",
@@ -63,15 +63,15 @@ export function HeroSection() {
       },
       {
         type: "paragraph",
-        content: "Start by creating your first document or task. Use the toolbar above to format text, add code blocks, or create checklists.",
+        content: "Create your first task or document. Use the toolbar to format text, add code blocks, or sketch on the board.",
       },
       {
         type: "codeBlock",
-        content: `// Example: Create a task
-- [ ] Set up project structure
-- [ ] Implement authentication
-- [ ] Add API endpoints
-- [ ] Write documentation`,
+        content: `// Example: First steps
+- [ ] Create a task in Tasks
+- [ ] Draft a document in Docs
+- [ ] Sketch ideas on Boards
+- [ ] Invite your team (Teams coming soon)`,
       },
     ],
   });
@@ -108,7 +108,7 @@ export function HeroSection() {
         </h2>
         <div className="reveal-up tw-mt-8 tw-max-w-[450px] tw-text-lg max-lg:tw-text-base tw-p-2 tw-text-center
                    tw-text-gray-800 dark:tw-text-white max-lg:tw-max-w-full">
-          DevFlow merges tasks, documentation, and Git into one workspace. Write Markdown, track Kanban tasks, and visualize branches.
+          Plan tasks, write documents, and sketch boards — all in one place with realtime collaboration.
         </div>
         <div className="reveal-up tw-mt-10 max-md:tw-flex-col tw-flex tw-place-items-center tw-gap-4">
           <button onClick={() => window.openVideo?.()} className="btn !tw-w-[170px] max-lg:!tw-w-[160px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-flex tw-gap-2 tw-group !tw-bg-transparent !tw-text-black dark:!tw-text-white tw-transition-colors 
@@ -120,7 +120,7 @@ export function HeroSection() {
             </div>
             <span>Watch video</span>
           </button>
-          <a className="btn tw-group max-lg:!tw-w-[160px] tw-flex tw-gap-2 tw-shadow-lg !tw-w-[170px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]" href="#">
+          <a className="btn tw-group max-lg:!tw-w-[160px] tw-flex tw-gap-2 tw-shadow-lg !tw-w-[170px] !tw-rounded-xl !tw-py-4 max-lg:!tw-py-2 tw-transition-transform tw-duration-[0.3s] hover:tw-scale-x-[1.03]" href="/app">
             <span>Get started</span>
             <i className="bi bi-arrow-right group-hover:tw-translate-x-1 tw-duration-300" />
           </a>

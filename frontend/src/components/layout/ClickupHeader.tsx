@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useBoardStore } from '@/store/boardStore';
+import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -9,7 +11,7 @@ import { NotificationBell } from './NotificationBell';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
-  currentView: 'tasks' | 'docs' | 'board';
+  currentView: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
 }
 
 export function ClickupHeader({
@@ -17,8 +19,16 @@ export function ClickupHeader({
   currentView,
 }: ClickupHeaderProps) {
   const { filters, setFilters } = useTaskStore();
+  const activeDocumentId = useDocumentStore((state) => state.activeDocumentId);
+  const getDocument = useDocumentStore((state) => state.getDocument);
+  const activeBoardId = useBoardStore((state) => state.activeBoardId);
+  const boards = useBoardStore((state) => state.boards);
   const [isDark, setIsDark] = useState(false);
   const { t, i18n } = useTranslation();
+
+  // Get context for breadcrumb
+  const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
+  const activeBoard = activeBoardId ? boards.find((b) => b.id === activeBoardId) : null;
 
   const handleSearchChange = (value: string) => {
     setFilters({ search: value });
@@ -86,7 +96,40 @@ export function ClickupHeader({
 
           {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-            <span>/ {currentView === 'tasks' ? 'Tasks' : 'Documents'}</span>
+            {(() => {
+              const viewLabels: Record<string, string> = {
+                home: 'Home',
+                tasks: 'Tasks',
+                docs: 'Documents',
+                board: 'Boards',
+                teams: 'Teams',
+              };
+              
+              const breadcrumbParts = [viewLabels[currentView] || currentView];
+              
+              // Add context for documents
+              if (currentView === 'docs' && activeDocument) {
+                breadcrumbParts.push(activeDocument.title);
+              }
+              
+              // Add context for boards
+              if (currentView === 'board' && activeBoard) {
+                breadcrumbParts.push(activeBoard.title);
+              }
+              
+              return (
+                <span>
+                  / {breadcrumbParts.map((part, index) => (
+                    <span key={index}>
+                      {index > 0 && <span className="mx-1">/</span>}
+                      <span className={index === breadcrumbParts.length - 1 ? 'text-foreground font-medium' : ''}>
+                        {part}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              );
+            })()}
           </div>
         </div>
 

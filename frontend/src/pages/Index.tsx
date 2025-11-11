@@ -25,7 +25,7 @@ import { CheckSquare, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles, Zap } 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (view: 'tasks' | 'docs' | 'board') => void; onSmartCreate?: () => void }) {
+export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void; onSmartCreate?: () => void }) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { setActiveDocument } = useDocumentStore();

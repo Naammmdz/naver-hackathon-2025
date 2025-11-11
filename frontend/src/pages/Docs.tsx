@@ -31,7 +31,7 @@ export default function Docs() {
 
   // Filter documents by active workspace
   const filteredDocuments = useWorkspaceFilter(documents);
-  
+
   // Get active document first (before using it in useEffect)
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
   

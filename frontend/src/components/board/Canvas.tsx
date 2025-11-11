@@ -234,7 +234,7 @@ export function Canvas() {
             // Fallback persistence via API when Yjs not active
             // eslint-disable-next-line no-console
             console.log('[Canvas] saving via API (Yjs inactive)');
-            updateBoardContent(boardId, sceneData);
+          updateBoardContent(boardId, sceneData);
           }
         } catch (error) {
           console.error('Error saving board snapshot:', error);
@@ -267,7 +267,8 @@ export function Canvas() {
       const state = awareness.getLocalState() || {};
       awareness.setLocalState({
         ...state,
-        cursor: { x, y, boardId: activeBoardId },
+        // IMPORTANT: use namespaced key to avoid colliding with BlockNote's collab cursor
+        boardCursor: { x, y, boardId: activeBoardId },
       });
     };
 
@@ -278,14 +279,17 @@ export function Canvas() {
         if (!st || !st.cursor) return;
         // Ignore own cursor using Awareness.clientID
         if (clientId === selfIdRef.current) return;
-        if (st.cursor.boardId && st.cursor.boardId !== activeBoardId) return;
+        // Use namespaced boardCursor; fallback to cursor for backward compatibility
+        const bc = st.boardCursor || st.cursor;
+        if (!bc) return;
+        if (bc.boardId && bc.boardId !== activeBoardId) return;
         next[clientId] = {
           clientId,
-          x: st.cursor.x,
-          y: st.cursor.y,
+          x: bc.x,
+          y: bc.y,
           color: st.color || '#12b886',
           name: st.name,
-          boardId: st.cursor.boardId ?? null,
+          boardId: bc.boardId ?? null,
         };
       });
       setRemoteCursors(next);
@@ -296,14 +300,20 @@ export function Canvas() {
     // seed identity
     try {
       const user = (window as any).Clerk?.user || null;
-      const name = user?.username || user?.id || 'User';
+      const name =
+        user?.fullName ||
+        user?.username ||
+        user?.primaryEmailAddress?.emailAddress ||
+        user?.id ||
+        'User';
       const color = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
       const state = awareness.getLocalState() || {};
       awareness.setLocalState({
         ...state,
         name,
         color,
-        cursor: { x: 0, y: 0, boardId: activeBoardId },
+        // IMPORTANT: use namespaced key to avoid colliding with BlockNote's collab cursor
+        boardCursor: { x: 0, y: 0, boardId: activeBoardId },
       });
     } catch {}
 

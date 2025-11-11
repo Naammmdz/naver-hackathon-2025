@@ -63,8 +63,8 @@ const App = () => {
         // If token is missing, force refresh once
         if (!token) {
           const refreshOptions = tokenTemplate
-            ? { template: tokenTemplate, skipCache: true }
-            : { skipCache: true };
+          ? { template: tokenTemplate, skipCache: true }
+          : { skipCache: true };
           token = await getToken(refreshOptions as any);
         }
 
