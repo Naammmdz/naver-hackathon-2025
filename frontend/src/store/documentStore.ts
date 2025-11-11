@@ -22,6 +22,10 @@ type DocumentState = DocumentStore & {
   getDocument: (id: string) => Document | undefined;
   getTrashedDocuments: () => Document[];
   setCurrentUser: (userId: string | null) => void;
+  // Local-only helpers for Yjs sync
+  mergeDocumentsLocal: (incoming: Array<Pick<Document, 'id'|'title'|'createdAt'|'updatedAt'|'userId'|'workspaceId'|'icon'|'parentId'|'trashed'|'trashedAt'>>) => void;
+  setDocumentContentLocal: (id: string, content: any[]) => void;
+  setDocumentTitleLocal: (id: string, title: string) => void;
 };
 
 const defaultContent = (title: string) => [

@@ -20,6 +20,7 @@ export function useWorkspaceYjs({
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const providerRef = useRef<HocuspocusProvider | null>(null);
+  const refreshTimerRef = useRef<number | null>(null);
 
   // Yjs Maps for workspace data
   const [tasksMap, setTasksMap] = useState<Y.Map<any> | null>(null);
@@ -106,11 +107,15 @@ export function useWorkspaceYjs({
             if (mounted) {
               setIsConnected(true);
               setError(null);
+              // eslint-disable-next-line no-console
+              console.log('[WorkspaceYjs] connected');
             }
           },
           onDisconnect: () => {
             if (mounted) {
               setIsConnected(false);
+              // eslint-disable-next-line no-console
+              console.warn('[WorkspaceYjs] disconnected');
             }
           },
           onStateless: (payload) => {
@@ -125,6 +130,8 @@ export function useWorkspaceYjs({
           onDestroy: () => {
             if (mounted) {
               setIsConnected(false);
+              // eslint-disable-next-line no-console
+              console.warn('[WorkspaceYjs] destroyed');
             }
           },
           onClose: ({ event }) => {
@@ -138,6 +145,10 @@ export function useWorkspaceYjs({
         if (mounted) {
           providerRef.current = hocuspocusProvider;
           setProvider(hocuspocusProvider);
+          // expose provider for consumers that cannot easily receive via props
+          try {
+            (window as any).__WORKSPACE_PROVIDER = hocuspocusProvider;
+          } catch {}
           setYdoc(doc);
 
           // Initialize Yjs Maps
@@ -155,6 +166,72 @@ export function useWorkspaceYjs({
           setDocumentsMap(documents);
           setDocContentMap(docContent as unknown as Y.Map<Y.Text>);
           setError(null);
+
+          // Auto-refresh token periodically and on disconnect
+          const attachTokenRefresher = () => {
+            // Clear old timer if any
+            if (refreshTimerRef.current) {
+              clearInterval(refreshTimerRef.current);
+              refreshTimerRef.current = null;
+            }
+            // Refresh token every ~50s
+            refreshTimerRef.current = window.setInterval(async () => {
+              try {
+                const newToken = await getStableToken();
+                if (newToken && providerRef.current) {
+                  // @ts-expect-error setToken exists in provider runtime
+                  if (typeof (providerRef.current as any).setToken === 'function') {
+                    (providerRef.current as any).setToken(newToken);
+                    // eslint-disable-next-line no-console
+                    console.log('[WorkspaceYjs] token refreshed');
+                  } else {
+                    // Fallback: update configuration
+                    try {
+                      (providerRef.current as any).configuration.token = newToken;
+                    } catch {}
+                  }
+                  // If currently disconnected, try reconnect
+                  try {
+                    const p: any = providerRef.current;
+                    if (p && p.status === 'disconnected' && typeof p.connect === 'function') {
+                      p.connect();
+                    }
+                  } catch {}
+                }
+              } catch (e) {
+                console.warn('[WorkspaceYjs] token refresh failed', e);
+              }
+            }, 50_000);
+          };
+
+          attachTokenRefresher();
+
+          // Also attempt to refresh token immediately on disconnect
+          (hocuspocusProvider as any).on('status', async (event: any) => {
+            if (!mounted) return;
+            try {
+              // eslint-disable-next-line no-console
+              console.log('[WorkspaceYjs] status', event?.status);
+              if (event?.status === 'disconnected') {
+                const newToken = await getStableToken();
+                if (newToken && providerRef.current) {
+                  if (typeof (providerRef.current as any).setToken === 'function') {
+                    (providerRef.current as any).setToken(newToken);
+                  } else {
+                    try {
+                      (providerRef.current as any).configuration.token = newToken;
+                    } catch {}
+                  }
+                  const p: any = providerRef.current;
+                  if (p && typeof p.connect === 'function') {
+                    p.connect();
+                  }
+                }
+              }
+            } catch (e) {
+              console.warn('[WorkspaceYjs] status handler error', e);
+            }
+          });
         } else {
           // If unmounted while initializing, destroy the provider
           hocuspocusProvider.destroy();
@@ -172,6 +249,10 @@ export function useWorkspaceYjs({
 
     return () => {
       mounted = false;
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
       if (providerRef.current) {
         providerRef.current.destroy();
         providerRef.current = null;
@@ -179,6 +260,9 @@ export function useWorkspaceYjs({
       if (hocuspocusProvider) {
         hocuspocusProvider.destroy();
       }
+      try {
+        delete (window as any).__WORKSPACE_PROVIDER;
+      } catch {}
       setProvider(null);
       setYdoc(null);
       setTasksMap(null);

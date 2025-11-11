@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as Y from 'yjs';
 import { Board, BoardSnapshot } from '@/types/board';
 import { useBoardStore } from '@/store/boardStore';
+import { boardApi } from '@/lib/api/boardApi';
 
 interface UseBoardYjsSyncOptions {
   boardsMap: Y.Map<any> | null;
@@ -68,6 +69,16 @@ export function useBoardYjsSync({
   boardContentMap,
   enabled = true,
 }: UseBoardYjsSyncOptions) {
+  // Debug status
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('[BoardYjsSync] init', {
+      enabled,
+      hasBoardsMap: !!boardsMap,
+      hasBoardContentMap: !!boardContentMap,
+    });
+  }, [enabled, boardsMap, boardContentMap]);
+
   const boards = useBoardStore((state) => state.boards);
   const mergeBoardsLocal = useBoardStore((state) => state.mergeBoardsLocal);
   const setBoardContentLocal = useBoardStore((state) => state.setBoardContentLocal);
@@ -76,6 +87,33 @@ export function useBoardYjsSync({
   const debounceTimer = useRef<number | null>(null);
   const lastBoardMetaRef = useRef<string>('');
   const lastSnapshotsRef = useRef<Record<string, string>>({});
+  const saveTimersRef = useRef<Map<string, number>>(new Map());
+  const lastPersistedTokenRef = useRef<Record<string, string>>({});
+
+  const schedulePersist = (id: string, snapshot: BoardSnapshot | null) => {
+    const token = snapshotToToken(snapshot);
+    // Skip if already persisted with same token
+    if (lastPersistedTokenRef.current[id] === token) {
+      return;
+    }
+    // Clear previous timer
+    const existing = saveTimersRef.current.get(id);
+    if (existing) {
+      clearTimeout(existing);
+    }
+    const timer = window.setTimeout(async () => {
+      saveTimersRef.current.delete(id);
+      try {
+        await boardApi.updateSnapshot(id, snapshot);
+        lastPersistedTokenRef.current[id] = token;
+        // eslint-disable-next-line no-console
+        console.log('[BoardYjsSync] persisted snapshot to backend', { id, bytes: token === NULL_SNAPSHOT_TOKEN ? 0 : token.length });
+      } catch (e) {
+        console.warn('[BoardYjsSync] failed to persist snapshot', e);
+      }
+    }, 600); // debounce persist
+    saveTimersRef.current.set(id, timer);
+  };
 
   // Keep global flag so UI components can skip API persistence when realtime is active
   useEffect(() => {
@@ -284,7 +322,10 @@ export function useBoardYjsSync({
           const value = (boardContentMap.get(key) ?? null) as BoardSnapshot | null;
           const token = snapshotToToken(value);
           if (lastSnapshotsRef.current[key] !== token) {
+            // Update local store without triggering API to avoid loop
             setBoardContentLocal(key, value);
+            // Persist to backend so reload has latest snapshot
+            schedulePersist(key, value);
           }
           lastSnapshotsRef.current[key] = token;
         });
@@ -319,6 +360,9 @@ export function useBoardYjsSync({
       const detail = (e as CustomEvent).detail as { id: string; snapshot: BoardSnapshot } | undefined;
       if (!detail || !detail.id) return;
 
+      // eslint-disable-next-line no-console
+      console.log('[BoardYjsSync] scene-changed event', { id: detail.id, snapshotBytes: JSON.stringify(detail.snapshot).length });
+
       const { id, snapshot } = detail;
       try {
         const prevToken = lastSnapshotsRef.current[id];
@@ -336,6 +380,8 @@ export function useBoardYjsSync({
           };
           boardsMap.set(id, updatedMeta);
         }
+        // Also persist to backend from the originating client
+        schedulePersist(id, snapshot);
       } catch (err) {
         console.warn('Failed to propagate board scene change to Yjs:', err);
       }

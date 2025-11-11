@@ -17,6 +17,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type StoredScene = BoardSnapshot | null;
 
+type RemoteCursor = {
+  clientId: number;
+  x: number;
+  y: number;
+  color: string;
+  name?: string;
+  boardId?: string | null;
+};
+
 const sanitizeAppStateForStorage = (appState: AppState): Record<string, any> => {
   const sanitized: Record<string, any> = {
     ...appState,
@@ -61,11 +70,14 @@ const prepareSceneForEditor = (snapshot: StoredScene): ExcalidrawInitialDataStat
 
   const { elements = [], appState = {}, files = {} } = snapshot;
   const { collaborators, ...restAppState } = appState;
+  // Avoid syncing per-user UI state like active tool/selection
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { activeTool, selectedElementIds, previousSelectedElementIds, ...appStatePersisted } = restAppState as any;
 
   return {
     elements,
     appState: {
-      ...restAppState,
+      ...appStatePersisted,
       zenModeEnabled: false,
     },
     files,
@@ -79,10 +91,13 @@ export function Canvas() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
   const [isApiReady, setIsApiReady] = useState(false);
-  const lastAppliedRef = useRef<{ id: string | null; hasSnapshot: boolean }>({
+  const lastAppliedRef = useRef<{ id: string | null; snapshotToken: string }>({
     id: null,
-    hasSnapshot: false,
+    snapshotToken: '__INIT__',
   });
+  const lastDispatchedTokenRef = useRef<string>('__INIT__');
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [remoteCursors, setRemoteCursors] = useState<Record<number, RemoteCursor>>({});
 
   // AI Diagram Generation states
   const [isGenerating, setIsGenerating] = useState(false);
@@ -143,15 +158,12 @@ export function Canvas() {
 
     const scene = prepareSceneForEditor(snapshot);
 
-    api.resetScene();
-
     if (!scene) {
       return;
     }
 
     api.updateScene({
       elements: scene.elements ?? [],
-      appState: scene.appState,
       captureUpdate: CaptureUpdateAction.NEVER,
     });
 
@@ -167,24 +179,32 @@ export function Canvas() {
     }
 
     const boardId = activeBoard?.id ?? null;
-    const hasSnapshot = Boolean(activeBoard?.snapshot);
+    const snapshotToken = JSON.stringify(activeBoard?.snapshot ?? null);
 
-    if (
-      boardId === lastAppliedRef.current.id &&
-      hasSnapshot === lastAppliedRef.current.hasSnapshot
-    ) {
+    // Only apply when board changed or snapshot content actually changed
+    if (boardId === lastAppliedRef.current.id &&
+        snapshotToken === lastAppliedRef.current.snapshotToken) {
+      return;
+    }
+
+    // Skip applying if this snapshot is exactly the one we just dispatched locally
+    if (snapshotToken === lastDispatchedTokenRef.current) {
       return;
     }
 
     applySceneToCanvas(activeBoard?.snapshot ?? null);
     lastAppliedRef.current = {
       id: boardId,
-      hasSnapshot,
+      snapshotToken,
     };
   }, [applySceneToCanvas, activeBoard?.id, activeBoard?.snapshot, isApiReady]);
 
   const handleSceneChange = useCallback(
     (elements: readonly any[], appState: AppState, files: BinaryFiles) => {
+      // Debug: log when scene changes and whether Yjs is active
+      const yjsActive = Boolean((window as any).__WORKSPACE_YJS_ACTIVE);
+      // eslint-disable-next-line no-console
+      console.log('[Canvas] onChange', { yjsActive, activeBoardId: activeBoardIdRef.current });
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
@@ -197,14 +217,23 @@ export function Canvas() {
 
         try {
           const sceneData = serializeSceneForStorage(elements, appState, files);
-          const yjsActive = Boolean((window as any).__WORKSPACE_YJS_ACTIVE);
           if (yjsActive) {
             // Realtime via Yjs: emit event with shorter debounce upstream
+            // eslint-disable-next-line no-console
+            console.log('[Canvas] dispatch board-scene-changed', { id: boardId });
+            // Record token to avoid re-applying our own update
+            try {
+              lastDispatchedTokenRef.current = JSON.stringify(sceneData ?? null);
+            } catch {
+              lastDispatchedTokenRef.current = '__ERROR__';
+            }
             window.dispatchEvent(new CustomEvent('board-scene-changed', {
               detail: { id: boardId, snapshot: sceneData }
             }));
           } else {
             // Fallback persistence via API when Yjs not active
+            // eslint-disable-next-line no-console
+            console.log('[Canvas] saving via API (Yjs inactive)');
             updateBoardContent(boardId, sceneData);
           }
         } catch (error) {
@@ -219,6 +248,70 @@ export function Canvas() {
     excalidrawAPIRef.current = api;
     setIsApiReady(true);
   }, []);
+
+  // Awareness (cursors)
+  useEffect(() => {
+    const provider: any = (window as any).__WORKSPACE_PROVIDER;
+    if (!provider || !activeBoardId) {
+      return;
+    }
+    const awareness = provider.awareness;
+    if (!awareness) return;
+    const selfIdRef = { current: awareness.clientID as number };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const state = awareness.getLocalState() || {};
+      awareness.setLocalState({
+        ...state,
+        cursor: { x, y, boardId: activeBoardId },
+      });
+    };
+
+    const onAwarenessUpdate = () => {
+      const states = awareness.getStates(); // Map<clientId, state>
+      const next: Record<number, RemoteCursor> = {};
+      states.forEach((st: any, clientId: number) => {
+        if (!st || !st.cursor) return;
+        // Ignore own cursor using Awareness.clientID
+        if (clientId === selfIdRef.current) return;
+        if (st.cursor.boardId && st.cursor.boardId !== activeBoardId) return;
+        next[clientId] = {
+          clientId,
+          x: st.cursor.x,
+          y: st.cursor.y,
+          color: st.color || '#12b886',
+          name: st.name,
+          boardId: st.cursor.boardId ?? null,
+        };
+      });
+      setRemoteCursors(next);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    awareness.on('change', onAwarenessUpdate);
+    // seed identity
+    try {
+      const user = (window as any).Clerk?.user || null;
+      const name = user?.username || user?.id || 'User';
+      const color = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+      const state = awareness.getLocalState() || {};
+      awareness.setLocalState({
+        ...state,
+        name,
+        color,
+        cursor: { x: 0, y: 0, boardId: activeBoardId },
+      });
+    } catch {}
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      awareness.off('change', onAwarenessUpdate);
+    };
+  }, [activeBoardId]);
 
   // AI Diagram Generation
   const generateDiagram = useCallback(async () => {
@@ -269,7 +362,7 @@ export function Canvas() {
   }, [prompt]);
 
   return (
-    <div className="w-full h-full relative" onClick={(event) => event.stopPropagation()}>
+    <div ref={containerRef} className="w-full h-full relative" onClick={(event) => event.stopPropagation()}>
       <Excalidraw
         key={activeBoard?.id ?? 'default'}
         initialData={initialScene ?? undefined}
@@ -277,6 +370,25 @@ export function Canvas() {
         theme={isDark ? 'dark' : 'light'}
         excalidrawAPI={handleApiReady}
       />
+      {/* Remote cursors overlay */}
+      <div className="pointer-events-none absolute inset-0">
+        {Object.values(remoteCursors).map((c) => (
+          <div key={c.clientId} className="absolute z-20" style={{ left: c.x, top: c.y }}>
+            <div
+              style={{ borderLeftColor: c.color }}
+              className="w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent"
+            />
+            {c.name && (
+              <div
+                className="mt-1 px-2 py-0.5 text-[10px] rounded text-white"
+                style={{ background: c.color }}
+              >
+                {c.name}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
       {/* AI Diagram Generation Button */}
       <div className="absolute bottom-4 right-4 z-10">

@@ -14,9 +14,8 @@ export function useDocumentYjsSync({
   docContentMap,
   enabled = true 
 }: UseDocumentYjsSyncOptions) {
-  const { documents, updateDocument } = useDocumentStore();
+  const documents = useDocumentStore(s => s.documents);
   const mergeDocumentsLocal = useDocumentStore(s => s.mergeDocumentsLocal);
-  const setDocumentContentLocal = useDocumentStore(s => s.setDocumentContentLocal);
   const isSyncingRef = useRef(false);
   const debounceTimer = useRef<number | null>(null);
   const lastDocumentsRef = useRef<string>(JSON.stringify(documents));
