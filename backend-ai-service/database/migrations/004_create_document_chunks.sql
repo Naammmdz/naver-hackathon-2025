@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS document_chunks (
     chunk_text TEXT NOT NULL,
     chunk_index INTEGER NOT NULL,
     
-    -- Vector embedding (768 dimensions for clir-emb-dolphin)
-    embedding vector(768),
+    -- Vector embedding (1024 dimensions for Qwen/HuggingFace models)
+    embedding vector(1024),
     
     -- Metadata
     metadata JSONB DEFAULT '{}',
@@ -82,7 +82,7 @@ COMMENT ON COLUMN document_chunks.chunk_index IS
 'Sequential index of chunk within document (0-based)';
 
 COMMENT ON COLUMN document_chunks.embedding IS 
-'Vector embedding (768-dim for clir-emb-dolphin model)';
+'Vector embedding (1024-dim for Qwen/HuggingFace models)';
 
 COMMENT ON COLUMN document_chunks.metadata IS 
 'Additional metadata: {section, page_number, heading, source_type, etc.}';
