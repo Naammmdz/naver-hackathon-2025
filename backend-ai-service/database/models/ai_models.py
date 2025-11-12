@@ -19,7 +19,7 @@ class DocumentChunk(BaseModel, UUIDMixin, TimestampMixin):
     workspace_id = Column(String, ForeignKey('workspaces.id'), nullable=False, index=True)
     chunk_text = Column(Text, nullable=False)
     chunk_index = Column(Integer, nullable=False, index=True)
-    embedding = Column(Vector(768), nullable=True)  # 768-dim for clir-emb-dolphin
+    embedding = Column(Vector(1024), nullable=True)  # 1024-dim for Naver clir-emb-dolphin
     chunk_metadata = Column('metadata', JSONB, nullable=True, default={})
     
     # Relationships
