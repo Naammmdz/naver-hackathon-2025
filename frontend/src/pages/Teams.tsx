@@ -15,109 +15,180 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import { useWorkspaceStore } from '@/store/workspaceStore';
+import { workspaceApi } from '@/lib/api/workspaceApi';
 import { useAuth } from '@clerk/clerk-react';
-import { Crown, Mail, MoreHorizontal, Plus, Search, UserPlus, Users } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Crown, Mail, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-interface TeamMember {
-  id: string;
-  userId: string;
-  name: string;
-  email: string;
-  role: 'ADMIN' | 'MEMBER';
-  avatar?: string;
-  joinedAt: Date;
-}
+import type { WorkspaceMember, WorkspaceInvite } from '@/types/workspace';
 
 export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
-  const { userId, user } = useAuth();
+  const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
+  const { inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
+  const [members, setMembers] = useState<WorkspaceMember[]>([]);
+  const [invites, setInvites] = useState<WorkspaceInvite[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER');
   const [isInviting, setIsInviting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock team members - replace with actual API call later
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const currentUserMember = members.find((m) => m.userId === currentUser?.id);
+  const isOwner = activeWorkspace?.ownerId === currentUser?.id;
+  const isAdmin = currentUserMember?.role === 'ADMIN' || isOwner;
 
   useEffect(() => {
-    // TODO: Fetch team members from API
-    // For now, show current user as admin
-    if (userId && user) {
-      setTeamMembers([
-        {
-          id: userId,
-          userId: userId,
-          name: user.fullName || user.firstName || 'User',
-          email: user.primaryEmailAddress?.emailAddress || '',
-          role: 'ADMIN',
-          joinedAt: new Date(),
-        },
-      ]);
+    if (activeWorkspaceId) {
+      loadData();
     }
-  }, [userId, user, activeWorkspaceId]);
+  }, [activeWorkspaceId]);
 
-  const filteredMembers = teamMembers.filter((member) =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const loadData = async () => {
+    if (!activeWorkspaceId) return;
+    
+    setIsLoading(true);
+    try {
+      const [membersData, invitesData] = await Promise.all([
+        workspaceApi.getMembers(activeWorkspaceId),
+        workspaceApi.getInvites(activeWorkspaceId).catch(() => []), // Ignore if no permission
+      ]);
+      setMembers(membersData);
+      setInvites(invitesData);
+    } catch (error) {
+      console.error('Failed to load workspace data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load team members',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper function to get display name for a member
+  const getMemberDisplayName = (member: WorkspaceMember) => {
+    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
+    const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
+    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    
+    if (member.user?.fullName) return member.user.fullName;
+    if (member.user?.email) return member.user.email;
+    if (isCurrentUserNormalized && currentUser) {
+      if (currentUser.fullName) return currentUser.fullName;
+      if (currentUser.firstName || currentUser.lastName) {
+        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(' ').trim();
+      }
+      if (currentUser.primaryEmailAddress?.emailAddress) {
+        return currentUser.primaryEmailAddress.emailAddress;
+      }
+    }
+    // Format userId for display
+    if (member.userId.length > 20) {
+      return `User ${member.userId.substring(member.userId.length - 8)}`;
+    }
+    return member.userId;
+  };
+
+  // Helper function to get display email for a member
+  const getMemberDisplayEmail = (member: WorkspaceMember) => {
+    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
+    const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
+    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    
+    if (member.user?.email) return member.user.email;
+    if (isCurrentUserNormalized && currentUser?.primaryEmailAddress?.emailAddress) {
+      return currentUser.primaryEmailAddress.emailAddress;
+    }
+    return undefined;
+  };
+
+  // Helper function to get avatar URL for a member
+  const getMemberAvatarUrl = (member: WorkspaceMember) => {
+    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
+    const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
+    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    
+    if (member.user?.avatarUrl) return member.user.avatarUrl;
+    if (isCurrentUserNormalized && currentUser?.imageUrl) return currentUser.imageUrl;
+    return undefined;
+  };
+
+  const filteredMembers = members.filter((member) => {
+    const displayName = getMemberDisplayName(member).toLowerCase();
+    const displayEmail = getMemberDisplayEmail(member)?.toLowerCase() || '';
+    const query = searchQuery.toLowerCase();
+    return displayName.includes(query) || displayEmail.includes(query);
+  });
 
   const handleInvite = async () => {
-    if (!inviteEmail.trim()) return;
+    if (!activeWorkspaceId || !inviteEmail.trim()) return;
 
     setIsInviting(true);
     try {
-      // TODO: Call API to invite user
-      console.log('Inviting user:', inviteEmail);
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Add mock member (remove this when API is ready)
-      const newMember: TeamMember = {
-        id: `member-${Date.now()}`,
-        userId: `user-${Date.now()}`,
-        name: inviteEmail.split('@')[0],
-        email: inviteEmail,
-        role: 'MEMBER',
-        joinedAt: new Date(),
-      };
-      setTeamMembers([...teamMembers, newMember]);
-      
+      await inviteMember(activeWorkspaceId, inviteEmail.trim(), inviteRole);
       setInviteEmail('');
       setIsInviteDialogOpen(false);
-    } catch (error) {
-      console.error('Failed to invite user:', error);
+      toast({
+        title: 'Success',
+        description: 'Invite sent successfully',
+      });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send invite',
+        variant: 'destructive',
+      });
     } finally {
       setIsInviting(false);
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
+    if (!activeWorkspaceId) return;
     if (!confirm('Are you sure you want to remove this member?')) return;
 
     try {
-      // TODO: Call API to remove member
-      console.log('Removing member:', memberId);
-      setTeamMembers(teamMembers.filter((m) => m.id !== memberId));
-    } catch (error) {
-      console.error('Failed to remove member:', error);
+      await removeMember(activeWorkspaceId, memberId);
+      toast({
+        title: 'Success',
+        description: 'Member removed successfully',
+      });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to remove member',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleChangeRole = async (memberId: string, newRole: 'ADMIN' | 'MEMBER') => {
+    if (!activeWorkspaceId) return;
+
     try {
-      // TODO: Call API to change role
-      console.log('Changing role:', memberId, newRole);
-      setTeamMembers(
-        teamMembers.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
-      );
-    } catch (error) {
-      console.error('Failed to change role:', error);
+      await updateMemberRole(activeWorkspaceId, memberId, newRole);
+      toast({
+        title: 'Success',
+        description: `Member role updated to ${newRole}`,
+      });
+      await loadData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to change role',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -136,13 +207,14 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
             </p>
           </div>
 
-          <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Invite Member
-              </Button>
-            </DialogTrigger>
+          {isAdmin && (
+            <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Invite Member
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Invite Team Member</DialogTitle>
@@ -168,6 +240,20 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                     }}
                   />
                 </div>
+                <div className="space-y-2">
+                  <label htmlFor="role" className="text-sm font-medium">
+                    Role
+                  </label>
+                  <select
+                    id="role"
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as 'ADMIN' | 'MEMBER')}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="MEMBER">Member</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                </div>
               </div>
               <DialogFooter>
                 <Button
@@ -183,6 +269,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          )}
         </div>
 
         {/* Workspace Info */}
@@ -195,7 +282,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-muted-foreground">Total Members</p>
-                <p className="text-lg font-semibold">{teamMembers.length}</p>
+                <p className="text-lg font-semibold">{members.length}</p>
               </div>
             </div>
           </div>
@@ -217,13 +304,17 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
           <div className="p-4 border-b">
             <h2 className="text-lg font-semibold">All Members ({filteredMembers.length})</h2>
           </div>
-          {filteredMembers.length === 0 ? (
+          {isLoading ? (
+            <div className="p-12 text-center">
+              <p className="text-muted-foreground">Loading members...</p>
+            </div>
+          ) : filteredMembers.length === 0 ? (
             <div className="p-12 text-center">
               <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
               <p className="text-muted-foreground">
                 {searchQuery ? 'No members found' : 'No team members yet'}
               </p>
-              {!searchQuery && (
+              {!searchQuery && isAdmin && (
                 <Button
                   variant="outline"
                   className="mt-4"
@@ -236,77 +327,99 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
             </div>
           ) : (
             <div className="divide-y">
-              {filteredMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="p-4 hover:bg-accent/50 transition-colors flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="relative">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
-                      {member.role === 'ADMIN' && (
-                        <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-yellow-500 flex items-center justify-center border-2 border-background">
-                          <Crown className="h-3 w-3 text-white" />
+                {filteredMembers.map((member) => {
+                  const displayName = getMemberDisplayName(member);
+                  const displayEmail = getMemberDisplayEmail(member);
+                  const avatarUrl = getMemberAvatarUrl(member);
+                  const initials = displayName.charAt(0).toUpperCase();
+                  const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
+                  const canManage = isAdmin && member.userId !== activeWorkspace?.ownerId;
+                  
+                  return (
+                    <div
+                      key={member.id}
+                      className="p-4 hover:bg-accent/50 transition-colors flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="relative">
+                          {avatarUrl ? (
+                            <img 
+                              src={avatarUrl} 
+                              alt={displayName}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                              {initials}
+                            </div>
+                          )}
+                          {(member.role === 'ADMIN' || member.role === 'OWNER') && (
+                            <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-yellow-500 flex items-center justify-center border-2 border-background">
+                              <Crown className="h-3 w-3 text-white" />
+                            </div>
+                          )}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium truncate">{displayName}</p>
+                            {member.userId === activeWorkspace?.ownerId && (
+                              <Badge variant="outline">Owner</Badge>
+                            )}
+                            {member.role === 'ADMIN' && member.userId !== activeWorkspace?.ownerId && (
+                              <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+                                Admin
+                              </Badge>
+                            )}
+                            {member.role === 'MEMBER' && (
+                              <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                Member
+                              </Badge>
+                            )}
+                          </div>
+                          {displayEmail && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <Mail className="h-3 w-3 text-muted-foreground" />
+                              <p className="text-sm text-muted-foreground truncate">{displayEmail}</p>
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Joined {new Date(member.joinedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      {canManage && !isCurrentUser && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {member.role === 'MEMBER' && (
+                              <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'ADMIN')}>
+                                <Crown className="h-4 w-4 mr-2" />
+                                Make Admin
+                              </DropdownMenuItem>
+                            )}
+                            {member.role === 'ADMIN' && (
+                              <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'MEMBER')}>
+                                <Users className="h-4 w-4 mr-2" />
+                                Make Member
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => handleRemoveMember(member.id)}
+                              className="text-destructive"
+                            >
+                              Remove from Workspace
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{member.name}</p>
-                        {member.role === 'ADMIN' && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded">
-                            Admin
-                          </span>
-                        )}
-                        {member.role === 'MEMBER' && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded">
-                            Member
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Mail className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground truncate">{member.email}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Joined {member.joinedAt.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  {member.userId !== userId && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {member.role === 'MEMBER' && (
-                          <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'ADMIN')}>
-                            <Crown className="h-4 w-4 mr-2" />
-                            Make Admin
-                          </DropdownMenuItem>
-                        )}
-                        {member.role === 'ADMIN' && (
-                          <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'MEMBER')}>
-                            <Users className="h-4 w-4 mr-2" />
-                            Make Member
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => handleRemoveMember(member.id)}
-                          className="text-destructive"
-                        >
-                          Remove from Workspace
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
           )}
         </div>
 

@@ -44,8 +44,19 @@ export function WorkspaceSettingsDialog({
   onOpenChange,
 }: WorkspaceSettingsDialogProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user: currentUser, isLoaded: isAuthLoaded } = useAuth();
   const { activeWorkspaceId, workspaces, updateWorkspace, loadMembers, inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
+  
+  // Debug: log when currentUser changes
+  useEffect(() => {
+    console.log('[WorkspaceSettings] Current user state:', {
+      isAuthLoaded,
+      currentUserId: currentUser?.id,
+      currentUserFullName: currentUser?.fullName,
+      currentUserEmail: currentUser?.primaryEmailAddress?.emailAddress,
+      currentUser: currentUser,
+    });
+  }, [currentUser, isAuthLoaded]);
   
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [invites, setInvites] = useState<WorkspaceInvite[]>([]);
@@ -54,8 +65,8 @@ export function WorkspaceSettingsDialog({
   const [inviteRole, setInviteRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
-  const currentUserMember = members.find((m) => m.userId === user?.id);
-  const isOwner = activeWorkspace?.ownerId === user?.id;
+  const currentUserMember = members.find((m) => m.userId === currentUser?.id);
+  const isOwner = activeWorkspace?.ownerId === currentUser?.id;
   const isAdmin = currentUserMember?.role === "ADMIN" || isOwner;
 
   useEffect(() => {
@@ -246,20 +257,91 @@ export function WorkspaceSettingsDialog({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {members.map((member) => (
+                {members.map((member) => {
+                  // Debug: log all members and current user
+                  console.log('[WorkspaceSettings] Member check:', {
+                    memberUserId: member.userId,
+                    currentUserId: currentUser?.id,
+                    isMatch: currentUser?.id === member.userId,
+                    currentUserExists: !!currentUser,
+                    memberUserInfo: member.user,
+                  });
+                  
+                  // Use current user info if this is the current user
+                  // Normalize both IDs for comparison (trim and case-insensitive)
+                  const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
+                  const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+                  
+                  // Format userId for display if no user info available
+                  const formatUserId = (userId: string) => {
+                    if (userId.length > 20) {
+                      return `User ${userId.substring(userId.length - 8)}`;
+                    }
+                    return userId;
+                  };
+                  
+                  // Get display name: prefer current user info (if match), then user info from API, then formatted userId
+                  let displayName: string;
+                  if (isCurrentUser && currentUser) {
+                    // Always use current user's info if this is the current user
+                    if (currentUser.fullName) {
+                      displayName = currentUser.fullName;
+                    } else if (currentUser.firstName || currentUser.lastName) {
+                      displayName = [currentUser.firstName, currentUser.lastName].filter(Boolean).join(' ').trim();
+                    } else if (currentUser.primaryEmailAddress?.emailAddress) {
+                      displayName = currentUser.primaryEmailAddress.emailAddress;
+                    } else {
+                      displayName = formatUserId(member.userId);
+                    }
+                  } else if (member.user?.fullName) {
+                    displayName = member.user.fullName;
+                  } else if (member.user?.email) {
+                    displayName = member.user.email;
+                  } else {
+                    displayName = formatUserId(member.userId);
+                  }
+                  
+                  // Get email: prefer current user email (if match), then user info from API
+                  const displayEmail = 
+                    (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) ||
+                    member.user?.email ||
+                    undefined;
+                  
+                  // Get avatar: prefer current user image (if match), then user info from API
+                  const avatarUrl = 
+                    (isCurrentUser && currentUser?.imageUrl) ||
+                    member.user?.avatarUrl ||
+                    undefined;
+                  
+                  const initials = displayName.charAt(0).toUpperCase();
+                  
+                  return (
                   <TableRow key={member.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
-                          {member.userId.charAt(0).toUpperCase()}
-                        </div>
+                        {avatarUrl ? (
+                          <img 
+                            src={avatarUrl} 
+                            alt={displayName}
+                            className="h-8 w-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
+                            {initials}
+                          </div>
+                        )}
                         <div>
                           <div className="font-medium">
-                            {member.userId}
+                            {displayName}
                             {member.userId === activeWorkspace.ownerId && (
                               <Badge variant="outline" className="ml-2">Owner</Badge>
                             )}
                           </div>
+                          {displayEmail && displayEmail !== displayName && (
+                            <div className="text-xs text-muted-foreground">
+                              {displayEmail}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </TableCell>
@@ -302,7 +384,8 @@ export function WorkspaceSettingsDialog({
                       </TableCell>
                     }
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

@@ -70,6 +70,7 @@ export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (
     deleteTask,
     updateTaskStatus,
     addTask,
+    addSubtask,
     isLoading,
     error,
     loadTasks,
@@ -248,16 +249,24 @@ const handleDragEnd = (event: DragEndEvent) => {
     updateTaskStatus(taskId, "Done");
   };
 
-  const handleSmartParserCreate = (parsedTask: ParsedTask) => {
-    addTask({
+  const handleSmartParserCreate = async (parsedTask: ParsedTask) => {
+    const created = await addTask({
       title: parsedTask.title,
-      description: "",
+      description: parsedTask.description || "",
       status: defaultStatus || "Todo",
       priority: parsedTask.priority,
       dueDate: parsedTask.dueAt,
       tags: parsedTask.tags,
       subtasks: [],
     });
+    // Create subtasks if AI returned them
+    if (created && parsedTask.subtasks && parsedTask.subtasks.length > 0) {
+      for (const st of parsedTask.subtasks) {
+        if (st && st.trim()) {
+          await addSubtask(created.id, st.trim());
+        }
+      }
+    }
     setShowSmartParser(false);
   };
 

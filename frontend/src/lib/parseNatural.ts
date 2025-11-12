@@ -14,6 +14,7 @@ export interface ParsedTask {
   dueAt: Date;
   priority: TaskPriority;
   tags: string[];
+  subtasks?: string[];
 }
 
 export function parseNaturalLanguage(input: string): ParsedTask {
