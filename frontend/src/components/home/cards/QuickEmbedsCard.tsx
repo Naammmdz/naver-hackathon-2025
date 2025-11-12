@@ -171,11 +171,9 @@ export function QuickEmbedsCard() {
               />
               <div className="space-y-1">
                 <p className="text-[10px] text-muted-foreground">
-                  ✓ YouTube, Loom, Figma, CodePen
+                  YouTube, Loom, Figma,.. link
                 </p>
-                <p className="text-[10px] text-amber-600 dark:text-amber-500">
-                  ⚠️ Google Docs/Sheets/Slides: Must be shared as "Anyone with the link can view"
-                </p>
+                
               </div>
             </div>
           ) : (
