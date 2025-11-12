@@ -14,10 +14,12 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Docs from "./Docs";
 import Index from "./Index";
+import HomePage from "./HomePage";
+import GalleryHomePage from "./GalleryHomePage";
 import WorkspaceSettings from "./WorkspaceSettings";
 
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "settings">("tasks");
+  const [currentView, setCurrentView] = useState<"home" | "tasks" | "docs" | "board" | "settings">("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { t } = useTranslation();
@@ -238,7 +240,8 @@ export default function AppWrapper() {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
-              {currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
+              {currentView === 'home' ? <GalleryHomePage onViewChange={setCurrentView} /> :
+               currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
                 const event = new CustomEvent('openSmartParser');
                 window.dispatchEvent(event);
               }} /> :

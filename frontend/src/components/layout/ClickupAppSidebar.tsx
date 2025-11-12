@@ -13,12 +13,12 @@ import { useState } from 'react';
 interface ClickupAppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'settings') => void;
-  currentView?: 'tasks' | 'docs' | 'board' | 'settings';
+  onViewChange?: (view: 'home' | 'tasks' | 'docs' | 'board' | 'settings') => void;
+  currentView?: 'home' | 'tasks' | 'docs' | 'board' | 'settings';
 }
 
-export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'tasks' }: ClickupAppSidebarProps) {
-  const [activeNav, setActiveNav] = useState('tasks');
+export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'home' }: ClickupAppSidebarProps) {
+  const [activeNav, setActiveNav] = useState('home');
   const [expandedSpaces, setExpandedSpaces] = useState<string[]>(['workspace-1']);
 
   const toggleSpace = (id: string) => {
@@ -28,7 +28,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home', gradient: 'from-[#60a5fa] to-[#38bdf8]' },
+    { id: 'home', icon: Home, label: 'Home', view: 'home' as const, gradient: 'from-[#60a5fa] to-[#38bdf8]' },
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-[#c084fc] to-[#a78bfa]' },
     { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-[#fb923c] to-[#fdba74]' },
     { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-[#f472b6] to-[#fb7185]' },
