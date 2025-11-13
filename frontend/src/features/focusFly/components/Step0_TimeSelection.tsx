@@ -24,7 +24,7 @@ export const Step0_TimeSelection = () => {
     return (
         <div className="p-6 text-center max-w-2xl mx-auto">
             <div className="flex items-center justify-center gap-2 mb-2">
-                <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <Clock className="w-6 h-6 text-primary" />
                 <h2 className="text-2xl font-bold">{t('focusFly.timeSelection.title')}</h2>
             </div>
             <p className="text-muted-foreground mb-8">
@@ -38,7 +38,7 @@ export const Step0_TimeSelection = () => {
                         key={minutes}
                         onClick={() => handleTimeSelect(minutes)}
                         variant="outline"
-                        className="h-20 flex flex-col items-center justify-center gap-1 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950"
+                        className="h-20 flex flex-col items-center justify-center gap-1 hover:bg-muted/60 hover:border-primary/40 dark:hover:bg-muted/40"
                     >
                         <div className="text-lg font-bold">{label}</div>
                         <div className="text-xs text-muted-foreground">{description}</div>
@@ -87,14 +87,14 @@ export const Step0_TimeSelection = () => {
             </div>
 
             {/* Flight Preview */}
-            <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-950 dark:to-sky-950 rounded-lg border">
+            <div className="mt-8 p-4 bg-gradient-to-r from-secondary to-muted dark:from-secondary dark:to-muted rounded-lg border border-border">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                    <Plane className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    <Plane className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-medium text-foreground">
                         {t('focusFly.timeSelection.flightRouteReady')}
                     </span>
                 </div>
-                <p className="text-xs text-blue-600 dark:text-blue-300">
+                <p className="text-xs text-muted-foreground">
                     {t('focusFly.timeSelection.journeyDescription')}
                 </p>
             </div>

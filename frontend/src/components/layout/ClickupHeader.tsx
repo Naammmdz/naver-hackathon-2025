@@ -1,24 +1,34 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useBoardStore } from '@/store/boardStore';
+import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
-import { Bell, ChevronDown, Languages, Menu, Moon, Search, Settings, Sun, Zap } from 'lucide-react';
+import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
+import { NotificationBell } from './NotificationBell';
 
 interface ClickupHeaderProps {
-  onSmartCreate?: () => void;
   onMenuClick?: () => void;
-  currentView: 'tasks' | 'docs' | 'board';
+  currentView: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
 }
 
 export function ClickupHeader({
-  onSmartCreate,
   onMenuClick,
   currentView,
 }: ClickupHeaderProps) {
   const { filters, setFilters } = useTaskStore();
+  const activeDocumentId = useDocumentStore((state) => state.activeDocumentId);
+  const getDocument = useDocumentStore((state) => state.getDocument);
+  const activeBoardId = useBoardStore((state) => state.activeBoardId);
+  const boards = useBoardStore((state) => state.boards);
   const [isDark, setIsDark] = useState(false);
   const { t, i18n } = useTranslation();
+
+  // Get context for breadcrumb
+  const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
+  const activeBoard = activeBoardId ? boards.find((b) => b.id === activeBoardId) : null;
 
   const handleSearchChange = (value: string) => {
     setFilters({ search: value });
@@ -70,25 +80,56 @@ export function ClickupHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      data-app-header
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    >
       <div className="flex h-10 items-center justify-between px-4 gap-4 mx-2 my-2">
         {/* Left Section - Workspace & Search */}
         <div className="flex items-center gap-3 flex-1">
           {/* Workspace Selector */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-2 hidden sm:flex"
-          >
-            <span className="text-sm font-semibold">Giang Nam's Workspace</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </Button>
+          <div className="hidden sm:block min-w-[200px]">
+            <WorkspaceSwitcher />
+          </div>
 
           <div className="hidden sm:block h-6 w-px bg-border" />
 
           {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-            <span>/ {currentView === 'tasks' ? 'Tasks' : 'Documents'}</span>
+            {(() => {
+              const viewLabels: Record<string, string> = {
+                home: 'Home',
+                tasks: 'Tasks',
+                docs: 'Documents',
+                board: 'Boards',
+                teams: 'Teams',
+              };
+              
+              const breadcrumbParts = [viewLabels[currentView] || currentView];
+              
+              // Add context for documents
+              if (currentView === 'docs' && activeDocument) {
+                breadcrumbParts.push(activeDocument.title);
+              }
+              
+              // Add context for boards
+              if (currentView === 'board' && activeBoard) {
+                breadcrumbParts.push(activeBoard.title);
+              }
+              
+              return (
+                <span>
+                  / {breadcrumbParts.map((part, index) => (
+                    <span key={index}>
+                      {index > 0 && <span className="mx-1">/</span>}
+                      <span className={index === breadcrumbParts.length - 1 ? 'text-foreground font-medium' : ''}>
+                        {part}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              );
+            })()}
           </div>
         </div>
 
@@ -100,40 +141,22 @@ export function ClickupHeader({
               placeholder={t('header.searchPlaceholder', 'Search everything...')}
               value={filters.search || ''}
               onChange={e => handleSearchChange(e.target.value)}
-              className="pl-10 bg-muted/50 border-0 focus:bg-background h-9 text-sm rounded-lg"
+              className="pl-10 bg-muted/40 border-0 h-9 text-sm rounded-lg hover:bg-primary/5 focus:ring-primary focus:ring-offset-0"
             />
           </div>
         </div>
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1">
-          {currentView === 'tasks' && (
-            <Button
-              onClick={onSmartCreate}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 rounded-lg hidden sm:flex"
-              size="sm"
-            >
-              <Zap className="h-4 w-4" />
-              <span className="text-sm font-medium">Smart Create</span>
-            </Button>
-          )}
-
           {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="relative hidden sm:flex"
-          >
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1 right-0.5 h-2 w-2 bg-red-500 rounded-full" />
-          </Button>
+          <NotificationBell />
 
           {/* Language Toggle */}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleLanguage}
-            className="hidden sm:flex gap-1"
+            className="hidden sm:flex gap-1 hover-surface"
             title={
               i18n.language === 'en'
                 ? 'Switch to Vietnamese'
@@ -148,7 +171,7 @@ export function ClickupHeader({
             variant="ghost"
             size="sm"
             onClick={toggleDarkMode}
-            className="hidden sm:flex"
+            className="hidden sm:flex hover-surface"
           >
             {isDark ? (
               <Sun className="h-4 w-4" />
@@ -157,17 +180,12 @@ export function ClickupHeader({
             )}
           </Button>
 
-          {/* Settings */}
-          <Button variant="ghost" size="sm" className="hidden sm:flex">
-            <Settings className="h-4 w-4" />
-          </Button>
-
           {/* Mobile Menu */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onMenuClick}
-            className="sm:hidden"
+            className="sm:hidden hover-surface"
           >
             <Menu className="h-4 w-4" />
           </Button>

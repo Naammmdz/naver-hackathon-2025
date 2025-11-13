@@ -5,7 +5,7 @@ export function Footer() {
     <div className="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around">
       <div className="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full">
         <a href="#" className="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6">
-          <img src="/assets/logo/logo.png" alt="logo" className="tw-max-w-[120px] dark:tw-invert" />
+          <img src="/devflow-demo.png" alt="logo" className="tw-max-w-[120px]" />
           <div className="tw-max-w-[120px] tw-text-center tw-text-3xl tw-h-fit">
             DevFlow
           </div>

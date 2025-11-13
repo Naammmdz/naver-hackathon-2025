@@ -2,7 +2,7 @@
   return (
   <section className="tw-flex tw-min-h-[100vh] tw-w-full tw-flex-col tw-place-content-center tw-place-items-center tw-p-[2%]">
     <h3 className="reveal-up tw-text-4xl tw-font-medium tw-text-center max-md:tw-text-2xl">
-      Join developers using DevFlow
+      Teams love DevFlow for realtime collaboration
     </h3>
     {/* Testimonials */}
     <div className="tw-mt-20 tw-gap-10 tw-space-y-8  max-md:tw-columns-1 lg:tw-columns-2 xl:tw-columns-3">
@@ -19,7 +19,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          DevFlow has transformed how our team manages projects. The unified workspace keeps everything in one place, and the Kanban boards make task tracking effortless. Our productivity has increased significantly since we started using it.
+          DevFlow’s unified Tasks, Docs, and Boards with live sync keeps our team aligned. Kanban and collaborative docs eliminated context switching and boosted our delivery speed.
         </p>
       </div>
       <div className="reveal-up tw-flex tw-h-fit tw-w-[350px] tw-break-inside-avoid 
@@ -35,7 +35,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          The inline Markdown editing in DevFlow is a game-changer for documentation. I can write technical docs without switching between tools, and the Git integration keeps everything versioned. Highly recommended for development teams.
+          BlockNote + Yjs is a game-changer. We co-edit specs and RFCs with live cursors and zero conflicts, then track work right next to the document.
         </p>
       </div>
       <div className="reveal-up tw-flex tw-h-fit tw-w-[350px] tw-break-inside-avoid 
@@ -51,7 +51,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          DevFlow's Git branch visualization helps our team understand complex project histories at a glance. Combined with the task management features, it's become our central hub for all development activities.
+          Excalidraw boards with Yjs awareness let us brainstorm in real time. Everyone keeps their own toolbar state — no more fighting over tools during workshops.
         </p>
       </div>
       <div className="reveal-up tw-flex tw-h-fit tw-w-[350px] tw-break-inside-avoid 
@@ -67,8 +67,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          Lorem ipsum dolor sit amet consectetur, adipisicing
-          elit. Beatae, vero.
+          Clerk auth and workspace orgs made onboarding easy. Invites are seamless and our sessions stay reliable.
         </p>
       </div>
       <div className="reveal-up tw-flex tw-h-fit tw-w-[350px] tw-break-inside-avoid 
@@ -101,7 +100,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit. Est, nihil vitae fuga ab reiciendis optio et corporis dolorem alias deserunt, molestias in iusto! Ratione, quisquam incidunt. Reprehenderit ipsam officiis enim.
+          From sprint planning to design sessions, DevFlow centralizes everything. Realtime sync across tasks, docs, and boards keeps momentum high.
         </p>
       </div>
     </div>

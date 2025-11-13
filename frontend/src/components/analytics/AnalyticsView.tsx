@@ -1,24 +1,23 @@
-import { useMemo } from "react";
-import { format } from "date-fns";
-import { 
-  BarChart3, 
-  TrendingUp, 
-  CheckCircle, 
-  Clock, 
-  AlertTriangle,
-  Target,
-  Calendar,
-  Tag,
-  Activity,
-  Award
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAnalytics } from "@/hooks/use-analytics";
-import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+import {
+    Activity,
+    AlertTriangle,
+    Award,
+    BarChart3,
+    Calendar,
+    CheckCircle,
+    Clock,
+    Tag,
+    Target,
+    TrendingUp
+} from "lucide-react";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 // Simple chart components using CSS and HTML
 interface SimpleBarChartProps {
@@ -228,7 +227,7 @@ function StatCard({ title, value, icon, trend, color = "blue" }: StatCardProps) 
             {trend && (
               <div className={cn(
                 "flex items-center text-xs mt-1",
-                trend.isPositive ? "text-green-600" : "text-red-600"
+                trend.isPositive ? "text-primary" : "text-destructive"
               )}>
                 <TrendingUp className={cn(
                   "h-3 w-3 mr-1",
@@ -240,10 +239,10 @@ function StatCard({ title, value, icon, trend, color = "blue" }: StatCardProps) 
           </div>
           <div className={cn(
             "p-3 rounded-full",
-            color === "blue" && "bg-blue-100 text-blue-600",
-            color === "green" && "bg-green-100 text-green-600", 
-            color === "orange" && "bg-orange-100 text-orange-600",
-            color === "red" && "bg-red-100 text-red-600"
+            color === "blue" && "bg-secondary text-secondary-foreground",
+            color === "green" && "bg-primary text-primary-foreground", 
+            color === "orange" && "bg-muted text-foreground",
+            color === "red" && "bg-destructive text-destructive-foreground"
           )}>
             {icon}
           </div>
@@ -279,17 +278,17 @@ export function AnalyticsView() {
     { 
       label: t('tasks.priority.high'), 
       value: analytics.priorityBreakdown.high, 
-      color: "hsl(0 84% 60%)" 
+      color: "hsl(var(--priority-high))" 
     },
     { 
       label: t('tasks.priority.medium'), 
       value: analytics.priorityBreakdown.medium, 
-      color: "hsl(43 96% 56%)" 
+      color: "hsl(var(--priority-medium))" 
     },
     { 
       label: t('tasks.priority.low'), 
       value: analytics.priorityBreakdown.low, 
-      color: "hsl(142 76% 36%)" 
+      color: "hsl(var(--priority-low))" 
     },
   ], [analytics.priorityBreakdown, t]);
 
@@ -448,7 +447,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCreatedTasks} 
-              color="bg-blue-500"
+              color="bg-gradient-to-t from-[#60a5fa] to-[#3b82f6]"
             />
           </CardContent>
         </Card>
@@ -460,7 +459,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCompletedTasks} 
-              color="bg-green-500"
+              color="bg-gradient-to-t from-[#34d399] to-[#10b981]"
             />
           </CardContent>
         </Card>

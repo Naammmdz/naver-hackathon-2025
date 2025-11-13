@@ -46,16 +46,20 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
     (task) => !linkedTasks.some((td) => td.taskId === task.id)
   );
 
-  const handleLink = () => {
+  const handleLink = async () => {
     if (!selectedTaskId) return;
 
-    addTaskDoc({
+    const created = await addTaskDoc({
       taskId: selectedTaskId,
       docId,
       relationType,
       note: note || undefined,
       createdBy: "user",
     });
+
+    if (!created) {
+      return;
+    }
 
     setSelectedTaskId("");
     setNote("");
@@ -65,9 +69,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Done":
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-primary" />;
       case "In Progress":
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
       default:
         return <Circle className="h-4 w-4 text-muted-foreground" />;
     }
@@ -76,11 +80,11 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
-        return "text-red-600 dark:text-red-400";
+        return "text-destructive";
       case "Medium":
-        return "text-orange-600 dark:text-orange-400";
+        return "text-foreground";
       case "Low":
-        return "text-blue-600 dark:text-blue-400";
+        return "text-muted-foreground";
       default:
         return "text-muted-foreground";
     }
@@ -89,11 +93,11 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   const getRelationColor = (type: TaskDocRelationType) => {
     switch (type) {
       case "reference":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-secondary text-secondary-foreground";
       case "reflection":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-muted text-foreground";
       case "resource":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+        return "bg-primary text-primary-foreground";
     }
   };
 
@@ -204,9 +208,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
             if (!task) return null;
 
             return (
-              <div
+            <div
                 key={taskDoc.id}
-                className="flex items-start gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+                className="flex items-start gap-3 p-3 border rounded-lg hover-card"
               >
                 <div className="flex-1 space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -254,7 +258,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0"
-                    onClick={() => removeTaskDoc(taskDoc.id)}
+                    onClick={async () => {
+                      await removeTaskDoc(taskDoc.id);
+                    }}
                   >
                     <X className="h-4 w-4" />
                     <span className="sr-only">Remove link</span>

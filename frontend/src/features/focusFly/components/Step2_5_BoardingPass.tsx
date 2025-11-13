@@ -10,7 +10,7 @@ export const Step2_5_BoardingPass = () => {
     return (
         <div className="p-6 text-center bg-background max-w-lg mx-auto">
             <div className="flex items-center justify-center gap-2 mb-2">
-                <Plane className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <Plane className="w-6 h-6 text-primary" />
                 <h2 className="text-2xl font-bold">{t('focusFly.boardingPass.title')}</h2>
             </div>
             <p className="text-muted-foreground mb-6">

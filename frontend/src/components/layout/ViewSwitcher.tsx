@@ -34,8 +34,8 @@ export function ViewSwitcher({ currentView, onViewChange, className }: ViewSwitc
             size="sm"
             onClick={() => onViewChange(view.id)}
             className={cn(
-              "flex items-center gap-1 h-7",
-              isActive && "shadow-sm"
+              "flex items-center gap-1 h-7 hover-surface",
+              isActive ? "shadow-sm bg-primary text-primary-foreground" : "text-muted-foreground"
             )}
           >
             <Icon className="h-3 w-3" />

@@ -18,18 +18,18 @@
 :root {
     --primary-text-color: #000;
     --bg-color: #ffffff;
-    --btn-color: #fdfdfd;
-    --btn-bg: #000;
-    --header-link-hover: #000000;
-    --header-link-hover-bg: #bababa36;
+    --btn-color: #ffffff;
+    --btn-bg: #000000;
+    --header-link-hover: #111111;
+    --header-link-hover-bg: #00000020;
     --input-hover-bd-color: #232323;
     --dropdown-bg: #f3f4f6;
     --dropdown-hover-bg: #dddddd84;
     --faq-h-text: #0e0e0e;
     --faq-content-text: #1e1e1e;
     --hr-color: #e5e7eb;
-    --footer-link: #282828;
-    --footer-link-hover: #000;
+    --footer-link: #000000;
+    --footer-link-hover: #1f1f1f;
     --header-bg: #edececa5;
     --hero-gradient: #fcfcfc;
     --hero-bg-img: url("/assets/images/background/dots-dark.svg");
@@ -42,16 +42,16 @@
     --bg-color: #000000;
     --btn-color: #000000;
     --btn-bg: #ffffff;
-    --header-link-hover: #ffffff;
-    --header-link-hover-bg: #8a8a8a5e;
+    --header-link-hover: #f5f5f5;
+    --header-link-hover-bg: #ffffff30;
     --input-hover-bd-color: #f8f8f8;
     --dropdown-bg: #171717;
     --dropdown-hover-bg: #2d2d2ddb;
     --faq-h-text: #efefef;
     --faq-content-text: #d4d4d4;
     --hr-color: #e1e1e195;
-    --footer-link: #cfcfcf;
-    --footer-link-hover: #ffffff;
+    --footer-link: #ffffff;
+    --footer-link-hover: #e5e5e5;
     --header-bg: #232323a5;
     --hero-gradient: #000;
     --hero-bg-img: url("/assets/images/background/dots.svg");
@@ -202,18 +202,18 @@ hr{
     border-radius: 25px;
 }
 
-.dropdown {
+#landing-page .dropdown {
     position: relative;
     display: inline-block;
     width: 100%;
 }
 
-.dropdown-toggle {
+#landing-page .dropdown-toggle {
     width: 100%;
     outline: none;
 }
 
-.dropdown-menu {
+#landing-page .dropdown-menu {
     display: none;
     position: absolute;
     z-index: 1;
@@ -226,12 +226,12 @@ hr{
     overflow: hidden;
 }
 
-.dropdown-menu li {
+#landing-page .dropdown-menu li {
     padding: 8px 12px;
     cursor: pointer;
 }
 
-.dropdown-menu li:hover {
+#landing-page .dropdown-menu li:hover {
     background-color: var(--dropdown-hover-bg);
 }
 

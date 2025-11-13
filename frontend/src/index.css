@@ -17,176 +17,182 @@ body {
 }
 
 /* DevFlow - Developer Productivity Suite
-Modern gradient-based design with green productivity colors
+Monochrome theme using black & white accents.
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Base colors - using consistent hue to prevent yellow transition */
-    --background: 220 14% 98%; /* light gray with consistent hue */
-    --foreground: 220 24% 12%; /* dark gray */
+    /* Base colors - monochrome palette */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
 
-    /* Card system - consistent hue */
-    --card: 220 14% 100%; /* white with consistent hue */
-    --card-foreground: 220 24% 12%;
-    --card-shadow: 220 13% 18% / 0.1; /* subtle shadows */
+    /* Card system */
+    --card: 0 0% 96%;
+    --card-foreground: 0 0% 7%;
+    --card-shadow: 0 0% 0% / 0.06;
 
-    /* Popover system - consistent hue */
-    --popover: 220 14% 100%;
-    --popover-foreground: 220 24% 12%;
+    /* Popover system */
+    --popover: 0 0% 96%;
+    --popover-foreground: 0 0% 7%;
 
-    /* Primary brand colors - DevFlow Green */
-    --primary: 142 76% 36%; /* green-600 */
-    --primary-dark: 142 76% 32%; /* green-700 */
-    --primary-foreground: 220 14% 100%; /* consistent white */
-    --primary-glow: 142 76% 36% / 0.15;
+    /* Primary accents */
+    --primary: 0 0% 11%;
+    --primary-dark: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 0 0% 11% / 0.18;
 
-    /* Secondary colors - Clean neutrals */
-    --secondary: 220 14% 96%; /* slate-100 */
-    --secondary-foreground: 220 24% 12%;
-    --secondary-hover: 220 14% 91%; /* slate-200 */
+    /* Secondary surfaces */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 7%;
+    --secondary-hover: 0 0% 92%;
 
-    /* Muted colors */
-    --muted: 220 14% 96%;
-    --muted-foreground: 215 16% 47%; /* slate-500 */
+    /* Muted content */
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 29%;
 
-    /* Accent colors - Dark gray highlights */
-    --accent: 220 13% 18%; /* slate-800 */
-    --accent-foreground: 220 14% 100%;
-    --accent-glow: 220 13% 18% / 0.15;
+    /* Accent surfaces */
+    --accent: 0 0% 11%;
+    --accent-foreground: 0 0% 96%;
+    --accent-glow: 0 0% 11% / 0.24;
 
     /* Status colors */
-    --success: 142 76% 36%; /* green-600 */
-    --success-foreground: 220 14% 100%;
-    --success-light: 142 76% 36% / 0.1;
+    --success: 0 0% 29%;
+    --success-foreground: 0 0% 96%;
+    --success-light: 0 0% 29% / 0.12;
 
-    --warning: 25 95% 53%; /* more orange, less yellow */
-    --warning-foreground: 220 14% 100%;
-    --warning-light: 25 95% 53% / 0.1;
+    --warning: 0 0% 29%;
+    --warning-foreground: 0 0% 96%;
+    --warning-light: 0 0% 29% / 0.08;
 
-    --destructive: 0 84% 60%; /* red-500 */
-    --destructive-foreground: 220 14% 100%;
-    --destructive-light: 0 84% 60% / 0.1;
+    --destructive: 0 0% 0%;
+    --destructive-foreground: 0 0% 96%;
+    --destructive-light: 0 0% 0% / 0.08;
 
-    /* Priority colors */
-    --priority-low: 142 76% 36%; /* green */
-    --priority-medium: 25 95% 53%; /* orange - more orange, less yellow */  
-    --priority-high: 0 84% 60%; /* red */
+    /* Priority shades */
+    --priority-high: 2 72% 48%;
+    --priority-medium: 30 82% 54%;
+    --priority-low: 204 82% 56%;
+
+    /* Chart colors for analytics */
+    --chart-1: 204 82% 56%; /* Blue - for Todo */
+    --chart-2: 30 82% 54%; /* Orange - for In Progress */
+    --chart-3: 142 76% 36%; /* Green - for Done */
 
     /* Border system */
-    --border: 220 13% 91%; /* slate-200 */
-    --border-strong: 215 25% 85%; /* slate-300 */
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    --border: 0 0% 88%;
+    --border-strong: 0 0% 80%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 11%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 32%));
-    --gradient-secondary: linear-gradient(135deg, hsl(220 14% 96%), hsl(0 0% 100%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36% / 0.9), hsl(220 13% 18% / 0.9));
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 96%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 88%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0% / 0.04), hsl(0 0% 11% / 0.08));
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(220 13% 18% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(220 13% 18% / 0.1), 0 2px 4px -1px hsl(220 13% 18% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(220 13% 18% / 0.1), 0 4px 6px -2px hsl(220 13% 18% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(220 13% 18% / 0.1), 0 10px 10px -5px hsl(220 13% 18% / 0.04);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.08);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.12), 0 4px 6px -2px hsl(0 0% 0% / 0.07);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.12), 0 10px 10px -5px hsl(0 0% 0% / 0.06);
 
     /* Border radius */
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 0 0% 86%;
+    --sidebar-ring: 0 0% 24%;
   }
 
   .dark {
-    /* Dark mode base - updated for #1f1f1f background */
-    --background: 0 0% 12%; /* #1f1f1f - user's preferred dark background */
-    --foreground: 0 0% 95%; /* very light gray for contrast */
+    /* Dark mode base */
+    --background: 0 0% 7%;
+    --foreground: 0 0% 88%;
 
-    /* Dark mode cards - slightly lighter than background */
-    --card: 0 0% 15%; /* #262626 - slightly lighter than background */
-    --card-foreground: 0 0% 95%;
-    --card-shadow: 0 0% 0% / 0.3;
+    /* Dark cards */
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 88%;
+    --card-shadow: 0 0% 0% / 0.4;
 
-    /* Dark mode popover - match card colors */
-    --popover: 0 0% 15%;
-    --popover-foreground: 0 0% 95%;
+    /* Dark popovers */
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 88%;
 
-    /* Dark mode primary - maintain green brand colors */
-    --primary: 142 76% 55%; /* brighter green for better visibility */
-    --primary-dark: 142 76% 45%;
-    --primary-foreground: 0 0% 12%; /* dark background for contrast */
-    --primary-glow: 142 76% 55% / 0.25;
+    /* Dark primary */
+    --primary: 0 0% 85%;
+    --primary-dark: 0 0% 96%;
+    --primary-foreground: 0 0% 7%;
+    --primary-glow: 0 0% 96% / 0.25;
 
-    /* Dark mode secondary - slightly lighter than background */
-    --secondary: 0 0% 18%; /* #2e2e2e - for subtle secondary elements */
-    --secondary-foreground: 0 0% 90%;
-    --secondary-hover: 0 0% 22%; /* #383838 - hover state */
+    /* Dark secondary */
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 85%;
+    --secondary-hover: 0 0% 16%;
 
-    /* Dark mode muted - for subtle backgrounds */
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 65%; /* medium gray text */
+    /* Dark muted */
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 63%;
 
-    /* Dark mode accent - for highlights */
-    --accent: 0 0% 25%; /* #404040 - accent elements */
-    --accent-foreground: 0 0% 95%;
-    --accent-glow: 0 0% 25% / 0.2;
+    /* Dark accent */
+    --accent: 0 0% 85%;
+    --accent-foreground: 0 0% 7%;
+    --accent-glow: 0 0% 96% / 0.35;
 
-    /* Dark mode status colors - brighter for visibility */
-    --success: 142 76% 55%; /* brighter green */
-    --success-foreground: 0 0% 12%;
-    --success-light: 142 76% 55% / 0.2;
+    /* Dark status */
+    --success: 0 0% 63%;
+    --success-foreground: 0 0% 7%;
+    --success-light: 0 0% 63% / 0.3;
 
-    --warning: 25 95% 65%; /* brighter orange */
-    --warning-foreground: 0 0% 12%;
-    --warning-light: 25 95% 65% / 0.2;
+    --warning: 0 0% 43%;
+    --warning-foreground: 0 0% 7%;
+    --warning-light: 0 0% 43% / 0.25;
 
-    --destructive: 0 84% 75%; /* brighter red */
-    --destructive-foreground: 0 0% 12%;
-    --destructive-light: 0 84% 75% / 0.2;
+    --destructive: 0 0% 35%;
+    --destructive-foreground: 0 0% 7%;
+    --destructive-light: 0 0% 35% / 0.25;
 
-    /* Dark mode priority colors */
-    --priority-low: 142 76% 55%;
-    --priority-medium: 25 95% 65%;
-    --priority-high: 0 84% 75%;
+    /* Dark priority */
+    --priority-high: 1 74% 62%;
+    --priority-medium: 28 84% 58%;
+    --priority-low: 202 88% 68%;
 
-    /* Dark mode borders - subtle borders */
-    --border: 0 0% 22%; /* #383838 - border color */
-    --border-strong: 0 0% 28%; /* #474747 - stronger borders */
-    --input: 0 0% 22%;
-    --ring: 142 76% 55%; /* use primary color for focus rings */
+    /* Dark chart colors for analytics */
+    --chart-1: 202 88% 68%; /* Blue - for Todo */
+    --chart-2: 28 84% 58%; /* Orange - for In Progress */
+    --chart-3: 142 70% 45%; /* Green - for Done */
 
-    /* Dark mode gradients - updated for new background */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 55%), hsl(142 76% 45%));
-    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 18%), hsl(0 0% 12%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 55% / 0.9), hsl(0 0% 25% / 0.9));
+    /* Dark borders */
+    --border: 0 0% 16%;
+    --border-strong: 0 0% 20%;
+    --input: 0 0% 16%;
+    --ring: 0 0% 85%;
 
-    /* Dark mode shadows - adjusted for new background */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -1px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -2px hsl(0 0% 0% / 0.3);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 10px 10px -5px hsl(0 0% 0% / 0.3);
-    --sidebar-background: 0 0% 10%; /* #1a1a1a - slightly darker than main background */
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 142 76% 55%;
-    --sidebar-primary-foreground: 0 0% 12%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 0 0% 22%;
-    --sidebar-ring: 142 76% 55%;
+    /* Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 7%), hsl(0 0% 12%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 16%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 85% / 0.08), hsl(0 0% 96% / 0.12));
+
+    /* Dark shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.5);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.45), 0 2px 4px -1px hsl(0 0% 0% / 0.35);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.45), 0 4px 6px -2px hsl(0 0% 0% / 0.35);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 10px 10px -5px hsl(0 0% 0% / 0.35);
+
+    /* Dark sidebar */
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 0 0% 7%;
+    --sidebar-primary-foreground: 0 0% 96%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 0 0% 75%;
   }
 }
 
@@ -290,15 +296,18 @@ All colors MUST be HSL.
   }
 
   .priority-low {
-    @apply bg-success;
+    background: hsl(var(--priority-low));
+    box-shadow: 0 0 6px 0 hsl(var(--priority-low) / 0.35);
   }
 
   .priority-medium {
-    @apply bg-warning;
+    background: hsl(var(--priority-medium));
+    box-shadow: 0 0 6px 0 hsl(var(--priority-medium) / 0.35);
   }
 
   .priority-high {
-    @apply bg-destructive;
+    background: hsl(var(--priority-high));
+    box-shadow: 0 0 6px 0 hsl(var(--priority-high) / 0.35);
   }
 
   /* Status badges */
@@ -316,6 +325,31 @@ All colors MUST be HSL.
 
   .status-done {
     @apply bg-success text-success-foreground;
+  }
+
+  /* Shared hover surfaces */
+  .hover-surface {
+    @apply transition-colors duration-150 rounded-md;
+  }
+
+  .hover-surface:hover {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .hover-card {
+    @apply transition-colors duration-150 rounded-lg;
+  }
+
+  .hover-card:hover {
+    @apply bg-primary/5 border-primary/30;
+  }
+
+  .dark .hover-surface:hover {
+    @apply bg-muted/40 text-muted-foreground;
+  }
+
+  .dark .hover-card:hover {
+    @apply bg-muted/40 border-muted-foreground/30 text-muted-foreground;
   }
 }
 
@@ -421,13 +455,14 @@ div.custom-controls.react-flow__controls button svg {
   top: auto !important;
   transform: none !important;
 }
-.custom-controls.react-flow__controls {
-  position: absolute !important;
-  bottom: 16px !important;
-  right: 16px !important;
-  left: auto !important;
-  top: auto !important;
-  transform: none !important;
+
+/* Force pointer events on Excalidraw buttons */
+button.dropdown-menu-button {
+  pointer-events: auto !important;
+}
+
+button.dropdown-menu-button svg {
+  pointer-events: none !important;
 }
 
 /* Tldraw Board Styles */

@@ -1,45 +1,45 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { format } from "date-fns";
-import { CalendarIcon, Plus, X } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { Task, TaskStatus, TaskPriority } from "@/types/task";
-import { useTaskStore } from "@/store/taskStore";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useTaskStore } from "@/store/taskStore";
+import { Task, TaskStatus } from "@/types/task";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { CalendarIcon, Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 interface TaskFormDialogProps {
   open: boolean;
@@ -104,15 +104,15 @@ export function TaskFormDialog({
     }
   }, [task, defaultStatus, defaultDate, form]);
 
-  const onSubmit = (data: TaskFormData) => {
+  const onSubmit = async (data: TaskFormData) => {
     if (task) {
-      updateTask({
+      await updateTask({
         id: task.id,
         ...data,
         dueDate: data.dueDate,
       });
     } else {
-      addTask({
+      const created = await addTask({
         ...data,
         dueDate: data.dueDate,
         subtasks: [],
@@ -159,15 +159,19 @@ export function TaskFormDialog({
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.title')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t('form.titlePlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>{t('form.title')}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t('form.titlePlaceholder')}
+                  className="hover-surface focus-visible:ring-primary"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
             <FormField
               control={form.control}
@@ -175,13 +179,13 @@ export function TaskFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('form.description')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('form.descriptionPlaceholder')}
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
+            <FormControl>
+                <Textarea
+                  placeholder={t('form.descriptionPlaceholder')}
+                  className="min-h-[80px] hover:bg-primary/5 focus-visible:ring-primary"
+                  {...field}
+                />
+            </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -194,12 +198,12 @@ export function TaskFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('form.status')}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('form.selectStatus')} />
-                        </SelectTrigger>
-                      </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                      <SelectValue placeholder={t('form.selectStatus')} />
+                    </SelectTrigger>
+                  </FormControl>
                       <SelectContent>
                         <SelectItem value="Todo">{t('tasks.status.todo')}</SelectItem>
                         <SelectItem value="In Progress">{t('tasks.status.inProgress')}</SelectItem>
@@ -219,9 +223,9 @@ export function TaskFormDialog({
                     <FormLabel>{t('form.priority')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('form.selectPriority')} />
-                        </SelectTrigger>
+                    <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                      <SelectValue placeholder={t('form.selectPriority')} />
+                    </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Low">{t('tasks.priority.low')}</SelectItem>

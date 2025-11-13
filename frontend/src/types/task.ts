@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Task status enum
+// Task status enum (UI-friendly labels)
 export type TaskStatus = "Todo" | "In Progress" | "Done";
 
 // Task priority enum  
@@ -28,6 +28,8 @@ export const taskSchema = z.object({
   order: z.number().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  userId: z.string(),
+  workspaceId: z.string().optional(), // Add workspace support
 });
 
 export type Task = z.infer<typeof taskSchema>;
@@ -78,3 +80,11 @@ export interface BulkActionPayload {
   taskIds: string[];
   tag?: string; // for addTag action
 }
+
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  Todo: "Todo",
+  "In Progress": "In Progress",
+  Done: "Done",
+};
+
+export const TASK_STATUS_LIST: TaskStatus[] = ["Todo", "In Progress", "Done"];

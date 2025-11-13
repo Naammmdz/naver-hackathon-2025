@@ -1,123 +1,68 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-    DefaultSizeStyle,
-    ErrorBoundary,
-    TLComponents,
-    Tldraw,
-    TldrawUiToastsProvider,
-    TLUiOverrides,
-    useEditor,
-} from 'tldraw'
-import { TldrawAgent } from '../../agent/TldrawAgent'
-import { useTldrawAgent } from '../../agent/useTldrawAgent'
-import { enableLinedFillStyle } from '../../enableLinedFillStyle'
-import { TargetAreaTool } from '../../tools/TargetAreaTool'
-import { TargetShapeTool } from '../../tools/TargetShapeTool'
-import { ChatPanel } from './ChatPanel'
-import { ChatPanelFallback } from './ChatPanelFallback'
-import { CustomHelperButtons } from './CustomHelperButtons'
-import { AgentViewportBoundsHighlight } from './highlights/AgentViewportBoundsHighlights'
-import { ContextHighlights } from './highlights/ContextHighlights'
-
-/**
- * The ID used for this project's agent.
- * If you want to support multiple agents, you can use a different ID for each agent.
- */
-export const AGENT_ID = 'agent-starter'
-
-// Customize tldraw's styles to play to the agent's strengths
-DefaultSizeStyle.setDefaultValue('s')
-enableLinedFillStyle()
-
-// Custom tools for picking context items
-const tools = [TargetShapeTool, TargetAreaTool]
-const overrides: TLUiOverrides = {
-	tools: (editor, tools) => {
-		return {
-			...tools,
-			'target-area': {
-				id: 'target-area',
-				label: 'Pick Area',
-				kbd: 'c',
-				icon: 'tool-frame',
-				onSelect() {
-					editor.setCurrentTool('target-area')
-				},
-			},
-			'target-shape': {
-				id: 'target-shape',
-				label: 'Pick Shape',
-				kbd: 's',
-				icon: 'tool-frame',
-				onSelect() {
-					editor.setCurrentTool('target-shape')
-				},
-			},
-		}
-	},
-}
-
-function BoardViewContent() {
-	const [agent, setAgent] = useState<TldrawAgent | undefined>()
-	const [sidebarHidden, setSidebarHidden] = useState(false)
-
-	// Custom components to visualize what the agent is doing
-	const components: TLComponents = useMemo(() => {
-		return {
-			HelperButtons: () => agent && <CustomHelperButtons agent={agent} />,
-			InFrontOfTheCanvas: () => (
-				<>
-					{agent && <AgentViewportBoundsHighlight agent={agent} />}
-					{agent && <ContextHighlights agent={agent} />}
-				</>
-			),
-		}
-	}, [agent])
-
-	return (
-		<TldrawUiToastsProvider>
-			<div className={`tldraw-agent-container ${sidebarHidden ? 'sidebar-hidden' : ''}`}>
-				{sidebarHidden && (
-					<button
-						onClick={() => setSidebarHidden(false)}
-						className="absolute bottom-4 right-4 z-[1001] bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-colors"
-						title="Open Chat"
-					>
-						💬
-					</button>
-				)}
-				<div className="tldraw-canvas">
-					<Tldraw
-						persistenceKey="tldraw-agent-demo"
-						tools={tools}
-						overrides={overrides}
-						components={components}
-					>
-						<AppInner setAgent={setAgent} />
-					</Tldraw>
-				</div>
-				<ErrorBoundary fallback={ChatPanelFallback}>
-					{agent && !sidebarHidden && <ChatPanel agent={agent} onClose={() => setSidebarHidden(true)} />}
-				</ErrorBoundary>
-			</div>
-		</TldrawUiToastsProvider>
-	)
-}
-
-function AppInner({ setAgent }: { setAgent: (agent: TldrawAgent) => void }) {
-	const editor = useEditor()
-	const agent = useTldrawAgent(editor, AGENT_ID)
-
-	useEffect(() => {
-		if (!editor || !agent) return
-		setAgent(agent)
-		;(window as any).editor = editor
-		;(window as any).agent = agent
-	}, [agent, editor, setAgent])
-
-	return null
-}
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import BoardSidebar from './BoardSidebar';
+import { CanvasContainer } from './CanvasContainer';
 
 export function BoardView() {
-	return <BoardViewContent />
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showDragHint, setShowDragHint] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  return (
+    <div 
+      className="flex w-full h-full bg-background"
+    >
+      {/* Board Sidebar */}
+      <div
+        className={`transition-all duration-300 ease-out overflow-hidden ${
+          isSidebarOpen ? 'w-64' : 'w-0'
+        }`}
+      >
+        <BoardSidebar />
+      </div>
+
+      {/* Drag Handle - Small indicator bar like iPhone navigation */}
+      <div
+        onClick={toggleSidebar}
+        onMouseEnter={() => setShowDragHint(true)}
+        onMouseLeave={() => setShowDragHint(false)}
+        className={`relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
+        title={isSidebarOpen ? 'Click to hide sidebar' : 'Click to show sidebar'}
+      >
+        {/* Small navigation bar in the middle */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
+        
+        {/* Chevron indicator */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          {isSidebarOpen ? (
+            <ChevronLeft className="w-4 h-4 text-primary" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-primary" />
+          )}
+        </div>
+      </div>
+
+      {/* Canvas Area */}
+      <div className="flex-1 overflow-hidden relative">
+        <CanvasContainer />
+      </div>
+
+      {/* Show sidebar button when hidden */}
+      {!isSidebarOpen && (
+        <div className="text-xs text-muted-foreground/50 pointer-events-none absolute left-4 top-4">
+          Click handle to show
+        </div>
+      )}
+
+      {/* Keyboard shortcut hint */}
+      {isSidebarOpen && (
+        <div className="absolute right-4 top-4 text-xs text-muted-foreground/50 pointer-events-none">
+          Ctrl+B to hide
+        </div>
+      )}
+    </div>
+  );
 }

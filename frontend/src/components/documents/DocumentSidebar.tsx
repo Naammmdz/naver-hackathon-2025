@@ -1,30 +1,31 @@
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import {
-    ChevronDown,
-    ChevronRight,
-    Edit2,
-    FileText,
-    MoreHorizontal,
-    Plus,
-    Search,
-    Trash2,
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  FileText,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -41,6 +42,9 @@ export default function DocumentSidebar() {
     getTrashedDocuments,
   } = useDocumentStore();
 
+  // Filter documents by active workspace
+  const workspaceFilteredDocs = useWorkspaceFilter(documents);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
@@ -52,7 +56,8 @@ export default function DocumentSidebar() {
   const [showNoSubdocs, setShowNoSubdocs] = useState<Set<string>>(new Set());
   const [showTrash, setShowTrash] = useState(false);
 
-  const filteredDocuments = (showTrash ? getTrashedDocuments() : documents.filter(doc => !doc.trashed))
+  // Apply workspace filter first, then trash and search filter
+  const filteredDocuments = (showTrash ? getTrashedDocuments() : workspaceFilteredDocs.filter(doc => !doc.trashed))
     .filter((doc) =>
       doc.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -62,12 +67,12 @@ export default function DocumentSidebar() {
 
   // Get child documents for a parent
   const getChildDocuments = (parentId: string) => {
-    return documents.filter(doc => doc.parentId === parentId);
+    return workspaceFilteredDocs.filter(doc => doc.parentId === parentId);
   };
 
   // Check if document has children
   const hasChildren = (docId: string) => {
-    return documents.some(doc => doc.parentId === docId);
+    return workspaceFilteredDocs.some(doc => doc.parentId === docId);
   };
 
   // Toggle expanded state
@@ -110,8 +115,8 @@ export default function DocumentSidebar() {
         <div
           className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
             activeDocumentId === doc.id 
-              ? 'bg-accent text-accent-foreground' 
-              : 'hover:bg-accent/50'
+              ? 'bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-muted/50 dark:text-muted-foreground dark:ring-muted-foreground/20 hover-surface' 
+              : 'hover-surface text-muted-foreground'
           }`}
           style={{ paddingLeft: `${8 + level * 16}px` }}
           onClick={() => setActiveDocument(doc.id)}
@@ -220,10 +225,10 @@ export default function DocumentSidebar() {
         {isExpanded && children.map(child => renderDocumentItem(child, level + 1))}
         {showNoSubdocsMessage && (
           <div 
-            className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground italic"
+            className="group flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground/70 italic transition-colors hover:text-primary/80 hover:bg-primary/10 dark:hover:bg-muted/40 dark:hover:text-muted-foreground rounded-md"
             style={{ paddingLeft: `${8 + (level + 1) * 16}px` }}
           >
-            <span className="opacity-50">└──</span>
+            <span className="opacity-40 transition-opacity group-hover:opacity-60">└──</span>
             No subdocuments
           </div>
         )}
@@ -318,22 +323,22 @@ export default function DocumentSidebar() {
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-2 space-y-1">
             {filteredDocuments.length === 0 ? (
-              <div className="text-center py-12 px-4 text-muted-foreground text-sm">
+              <div className="group text-center py-12 px-4 text-muted-foreground/75 text-sm transition-colors hover:text-primary/80 hover:bg-primary/5 dark:hover:bg-muted/40 rounded-xl border border-dashed border-muted-foreground/20 hover:border-primary/30">
                 {searchQuery ? (
                   <>
-                    <FileText className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                    <p className="mb-1 font-medium">No documents found</p>
-                    <p className="text-xs">Try a different search term</p>
+                    <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/60 group-hover:text-primary/70 transition-colors" />
+                    <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">No documents found</p>
+                    <p className="text-xs text-muted-foreground/70 group-hover:text-primary/60 transition-colors">Try a different search term</p>
                   </>
                 ) : (
                   <>
-                    <FileText className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                    <p className="mb-1 font-medium">No documents yet</p>
+                    <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/60 group-hover:text-primary/70 transition-colors" />
+                    <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">No documents yet</p>
                     <Button
                       variant="link"
                       size="sm"
                       onClick={handleCreateDocument}
-                      className="mt-1 h-auto p-0 text-xs"
+                      className="mt-1 h-auto p-0 text-xs text-primary hover:text-primary/90 transition-colors"
                     >
                       Create your first document
                     </Button>

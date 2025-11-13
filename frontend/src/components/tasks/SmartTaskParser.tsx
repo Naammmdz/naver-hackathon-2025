@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { parseNaturalLanguage, ParsedTask } from '@/lib/parseNatural';
-import { parseWithOpenAI, hasOpenAIKey } from '@/lib/openaiParser';
+import { generateAI } from '@/lib/aiClient';
 import { useTaskStore } from '@/store/taskStore';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,9 +33,10 @@ export function SmartTaskParser({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [parsedTask, setParsedTask] = useState<ParsedTask | null>(null);
-  const [parseMethod, setParseMethod] = useState<'openai' | 'local' | null>(null);
+  const [parseMethod, setParseMethod] = useState<'server' | 'local' | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState<ParsedTask | null>(null);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
 
   // Load API key on mount
   useState(() => {
@@ -52,39 +53,34 @@ export function SmartTaskParser({
     setIsLoading(true);
     
     try {
-      // First try OpenAI API
-      const openAIResult = await parseWithOpenAI(inputText);
-      if (openAIResult) {
-        setParsedTask(openAIResult);
-        setEditedTask(openAIResult);
-        setParseMethod('openai');
+      // First try server AI (same source as Board AI)
+      const serverResult = await generateAI<{ task: any }>({ type: 'task', prompt: inputText });
+      if (serverResult?.task) {
+        const t = serverResult.task;
+        const normalized: ParsedTask = {
+          title: t.title,
+          description: t.description,
+          // Convert ISO local 'yyyy-MM-ddTHH:mm' to Date
+          dueAt: t.dueAt ? new Date(t.dueAt) : new Date(),
+          priority: t.priority,
+          tags: Array.isArray(t.tags) ? t.tags : [],
+          subtasks: Array.isArray(t.subtasks) ? t.subtasks : [],
+        };
+        setParsedTask(normalized);
+        setEditedTask(normalized);
+        setParseMethod('server');
         setIsEditing(false);
         setIsLoading(false);
         return;
       }
     } catch (error: any) {
-      console.warn('OpenAI parsing failed, falling back to local parser:', error);
+      console.warn('Server AI parsing failed, falling back to local parser:', error);
       
-      // Show user-friendly error messages
-      if (error.message?.includes('429') || error.message?.includes('quota')) {
-        toast({
-          title: "API Limit Reached",
-          description: "OpenAI API quota exceeded. Using local parser instead.",
-          variant: "destructive",
-        });
-      } else if (error.message?.includes('API key')) {
-        toast({
-          title: "API Key Issue",
-          description: "OpenAI API key invalid. Using local parser instead.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "AI Parser Unavailable", 
-          description: "Using local natural language parser instead.",
-          variant: "default",
-        });
-      }
+      toast({
+        title: "AI Parser Unavailable", 
+        description: "Using local natural language parser instead.",
+        variant: "default",
+      });
     }
 
     // Fallback to local parser
@@ -161,12 +157,31 @@ export function SmartTaskParser({
     }
   };
 
+  const handleAddSubtask = () => {
+    const title = newSubtaskTitle.trim();
+    if (!editedTask || !title) return;
+    const next = Array.isArray(editedTask.subtasks) ? editedTask.subtasks : [];
+    setEditedTask({
+      ...editedTask,
+      subtasks: [...next, title],
+    });
+    setNewSubtaskTitle('');
+  };
+
+  const handleRemoveSubtask = (index: number) => {
+    if (!editedTask || !Array.isArray(editedTask.subtasks)) return;
+    setEditedTask({
+      ...editedTask,
+      subtasks: editedTask.subtasks.filter((_, i) => i !== index),
+    });
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "High": return "bg-red-100 text-red-800 border-red-300";
-      case "Medium": return "bg-yellow-100 text-yellow-800 border-yellow-300";
-      case "Low": return "bg-green-100 text-green-800 border-green-300";
-      default: return "bg-gray-100 text-gray-800 border-gray-300";
+      case "High": return "bg-destructive text-destructive-foreground border-destructive";
+      case "Medium": return "bg-muted text-foreground border-border";
+      case "Low": return "bg-primary text-primary-foreground border-primary";
+      default: return "bg-secondary text-secondary-foreground border-border";
     }
   };
 
@@ -183,34 +198,28 @@ export function SmartTaskParser({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            {parseMethod === 'openai' && (
-              <div title="Powered by OpenAI">
-                <Sparkles className="h-4 w-4 text-blue-500" />
+            {parseMethod === 'server' && (
+              <div title="Powered by DevFlow AI">
+                <Sparkles className="h-4 w-4 text-primary" />
               </div>
             )}
             {parseMethod === 'local' && (
               <div title="Local parser">
-                <Zap className="h-4 w-4 text-orange-500" />
+                <Zap className="h-4 w-4 text-foreground" />
               </div>
             )}
           </div>
           <span className="text-sm text-muted-foreground">
-            {parseMethod === 'openai' && 'AI Enhanced'}
+            {parseMethod === 'server' && 'AI Enhanced'}
             {parseMethod === 'local' && 'Local Parser'}
             {isLoading && 'Parsing...'}
           </span>
         </div>
         
         <div className="flex items-center gap-2">
-          {hasOpenAIKey() ? (
-            <Badge variant="outline" className="text-xs">
-              AI Ready
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="text-xs">
-              Local Only
-            </Badge>
-          )}
+          <Badge variant={parseMethod === 'server' ? 'outline' : 'secondary'} className="text-xs">
+            {parseMethod === 'server' ? 'AI Ready' : 'Local Only'}
+          </Badge>
         </div>
       </div>
 
@@ -239,7 +248,7 @@ export function SmartTaskParser({
                   <button
                     key={index}
                     onClick={() => setInput(example)}
-                    className="text-left text-xs text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                    className="text-left text-xs text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-primary/10"
                   >
                     "{example}"
                   </button>
@@ -426,6 +435,51 @@ export function SmartTaskParser({
                       </div>
                     </div>
 
+                    {/* Subtasks Edit */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Subtasks:
+                      </label>
+                      <div className="space-y-2">
+                        {(editedTask.subtasks ?? []).length === 0 ? (
+                          <p className="text-xs text-muted-foreground">Chưa có subtask. Bạn có thể thêm ở dưới.</p>
+                        ) : (
+                          <ul className="space-y-1">
+                            {(editedTask.subtasks ?? []).map((st, i) => (
+                              <li key={i} className="flex items-center justify-between gap-2 rounded-md border px-2 py-1">
+                                <span className="text-sm">{st}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => handleRemoveSubtask(i)}
+                                  title="Remove subtask"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Input
+                            placeholder="Thêm subtask..."
+                            value={newSubtaskTitle}
+                            onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddSubtask();
+                              }
+                            }}
+                          />
+                          <Button variant="outline" onClick={handleAddSubtask}>
+                            Thêm
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Save Changes Button */}
                     <div className="pt-2 border-t">
                       <Button
@@ -490,6 +544,20 @@ export function SmartTaskParser({
                             </Badge>
                           ))}
                         </div>
+                      </div>
+                    )}
+
+                    {/* Subtasks (View only) */}
+                    {(editedTask || parsedTask).subtasks && (editedTask || parsedTask).subtasks!.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-base font-medium text-muted-foreground">
+                          Subtasks:
+                        </span>
+                        <ul className="list-disc pl-6 space-y-1">
+                          {(editedTask || parsedTask).subtasks!.map((st, i) => (
+                            <li key={i} className="text-sm text-foreground">{st}</li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </>

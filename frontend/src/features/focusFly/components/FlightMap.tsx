@@ -38,16 +38,16 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
   const airplanePos = getPointAtProgress(progress);
 
   return (
-    <div className="relative w-full max-w-md mx-auto bg-gradient-to-b from-sky-100 to-blue-100 dark:from-slate-800 dark:to-slate-900 rounded-lg p-6 border border-blue-200 dark:border-slate-600">
+    <div className="relative w-full max-w-md mx-auto bg-gradient-to-b from-secondary to-muted dark:from-secondary dark:to-muted rounded-lg p-6 border border-border dark:border-border">
       {/* Map Header */}
       <div className="flex justify-between items-center mb-4 text-sm font-semibold">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-          <span className="text-green-700 dark:text-green-400">{origin}</span>
+          <div className="w-3 h-3 bg-primary rounded-full"></div>
+          <span className="text-primary">{origin}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-red-700 dark:text-red-400">{destination}</span>
-          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+          <span className="text-destructive">{destination}</span>
+          <div className="w-3 h-3 bg-destructive rounded-full"></div>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
             strokeWidth="3"
             strokeDasharray="8 4"
             fill="none"
-            className="text-blue-500 dark:text-blue-400"
+            className="text-accent"
             opacity="0.7"
           />
           
@@ -75,7 +75,7 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
             cy="150"
             r="8"
             fill="currentColor"
-            className="text-green-500"
+            className="text-primary"
           />
           
           {/* Destination marker */}
@@ -84,7 +84,7 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
             cy="150"
             r="8"
             fill="currentColor"
-            className="text-red-500"
+            className="text-destructive"
           />
 
           {/* Animated airplane */}
@@ -119,7 +119,7 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
                 fill="currentColor"
                 stroke="currentColor"
                 strokeWidth="1"
-                className="text-blue-600 dark:text-blue-400"
+                className="text-primary"
               />
               
               {/* Airplane details */}
@@ -128,7 +128,7 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
                 cy="8"
                 r="1"
                 fill="currentColor"
-                className="text-blue-800 dark:text-blue-200"
+                className="text-foreground"
               />
             </g>
           </motion.g>
@@ -141,9 +141,9 @@ export const FlightMap: React.FC<FlightMapProps> = ({ progress, origin, destinat
           <span>Flight Progress</span>
           <span>{Math.round(progress * 100)}%</span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-muted dark:bg-muted rounded-full h-2">
           <motion.div
-            className="bg-blue-500 h-2 rounded-full"
+            className="bg-primary h-2 rounded-full"
             initial={{ width: "0%" }}
             animate={{ width: `${progress * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}

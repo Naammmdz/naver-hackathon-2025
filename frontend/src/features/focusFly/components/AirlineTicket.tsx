@@ -104,7 +104,7 @@ export const AirlineTicket: React.FC<AirlineTicketProps> = ({
       }`}
     >
       {/* Ticket Head */}
-      <div className="relative h-35 bg-gradient-to-br from-green-600 via-green-700 to-green-800 text-white flex items-center justify-center rounded-t-lg">
+      <div className="relative h-35 bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-primary-foreground flex items-center justify-center rounded-t-lg">
         <div className="absolute inset-0 bg-black bg-opacity-10 rounded-t-lg"></div>
         <div className="relative z-10 text-2xl font-semibold flex items-center gap-5">
           <span>NYC</span>
@@ -166,7 +166,7 @@ export const AirlineTicket: React.FC<AirlineTicketProps> = ({
       >
         {/* Tear line indicator */}
         {tearOffset > 0 && (
-          <div className="absolute top-0 left-0 bottom-0 w-px bg-red-400 opacity-50"></div>
+          <div className="absolute top-0 left-0 bottom-0 w-px bg-primary opacity-50"></div>
         )}
         
         <div className="text-gray-500 dark:text-gray-400 text-sm italic leading-relaxed normal-case">

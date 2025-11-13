@@ -1,10 +1,10 @@
 ﻿export function BenefitsSection() {
   return (
-  <section className="tw-relative tw-flex tw-max-w-[100vw] tw-flex-col tw-place-content-center tw-place-items-center tw-overflow-hidden">   
+  <section id="benefits" className="tw-relative tw-flex tw-max-w-[100vw] tw-flex-col tw-place-content-center tw-place-items-center tw-overflow-hidden">   
     <div className="tw-mt-8 tw-flex tw-flex-col tw-w-full tw-h-full tw-place-items-center tw-gap-5">
       <div className="reveal-up tw-mt-5 tw-flex tw-flex-col tw-gap-3 tw-text-center">
-        <h2 className="tw-text-6xl tw-font-medium max-md:tw-text-3xl tw-p-2">
-          Experience all the benefits of DevFlow
+        <h2 className="tw-text-6xl tw-font-medium max-md:tw-text-3xl tw-leading-tight">
+          Experience the <span className="tw-text-black dark:tw-text-white">benefits</span> of realtime collaboration
         </h2>
       </div>
       <div className="tw-mt-6 tw-flex tw-flex-col tw-max-w-[1150px] max-lg:tw-max-w-full tw-h-full 
@@ -21,9 +21,9 @@
               </div>
               <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Unified Workspace</h2>
               <p className="tw-text-base tw-leading-normal tw-text-gray-800 dark:tw-text-gray-200">
-                DevFlow merges tasks, documentation, and Git activity into a single workspace. No more switching between tools — everything you need to stay productive is right here.
+                DevFlow brings Tasks, Documents, and Boards together with realtime sync (Yjs). No more switching tools — stay focused in one place.
               </p>
-              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto">
+              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-right tw-transform tw-transition-transform tw-duration-300 group-hover/card:tw-translate-x-2" />
               </div>
@@ -37,11 +37,11 @@
                 <img src="/assets/images/home/api.png" alt="API" className="tw-w-full tw-h-auto tw-object-contain" />
                 {/* <i class="bi bi-grid-1x2-fill"></i> */}
               </div>
-              <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Inline Markdown</h2>
+              <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Collaborative Docs</h2>
               <p className="tw-leading-normal tw-text-gray-800 dark:tw-text-gray-200">
-                Write Markdown inline with rich text editing capabilities. Create documentation, notes, and project details seamlessly within your workflow without leaving the app.
+                BlockNote-based rich text editor with live collaboration. Write docs together with headings, checklists, code blocks and more.
               </p>
-              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto">
+              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-right tw-transform tw-transition-transform tw-duration-300 group-hover/card:tw-translate-x-2" />
               </div>
@@ -56,9 +56,9 @@
               </div>
               <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Kanban Task Tracking</h2>
               <p className="tw-leading-normal tw-text-gray-800 dark:tw-text-gray-200">
-                Track progress with intuitive Kanban boards. Organize your tasks, set priorities, and monitor project status with drag-and-drop simplicity.
+                Track progress with Kanban, list, and calendar views. Organize tasks, set priorities, and monitor status with ease.
               </p>
-              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto">
+              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-right tw-transform tw-transition-transform tw-duration-300 group-hover/card:tw-translate-x-2" />
               </div>
@@ -74,11 +74,11 @@
               {/* <i class="bi bi-grid-1x2-fill"></i> */}
             </div>
             <div className="tw-flex tw-flex-col tw-gap-4">
-              <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Git Branch Visualization</h2>
+              <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Realtime Whiteboard</h2>
               <p className="tw-leading-normal tw-text-gray-800 dark:tw-text-gray-200">
-                Visualize Git branches and commit history directly in your workspace. Understand project evolution and collaborate effectively with clear branch management.
+                Excalidraw-based boards with live cursors. Sketch ideas collaboratively while each user keeps their own toolbar state.
               </p>
-              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto">
+              <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>
                 <i className="bi bi-arrow-right tw-transform tw-transition-transform tw-duration-300 group-hover/card:tw-translate-x-2" />
               </div>
