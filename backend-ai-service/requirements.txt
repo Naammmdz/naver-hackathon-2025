@@ -1,0 +1,32 @@
+# Core dependencies
+langchain-core
+pydantic>=2.0
+PyYAML
+python-dotenv
+
+# Database
+psycopg2-binary
+sqlalchemy>=2.0
+pgvector
+
+# LLM Providers
+langchain-naver
+langchain-openai
+langchain-cerebras
+langchain-google-genai
+
+# Vector Store
+chromadb
+
+# Document Parsing (Phase 2)
+docling>=1.0.0              # Universal document parser (PDF, DOCX, PPTX, images, HTML)
+docling-core>=1.0.0         # Docling core components
+markdown>=3.5.0             # Markdown parsing
+python-frontmatter>=1.0.0   # YAML frontmatter extraction
+underthesea>=6.6.0          # Vietnamese NLP and tokenization
+
+# Text Chunking & Embedding (Phase 2)
+numpy>=1.24.0               # Numerical operations for embeddings
+sentence-transformers>=2.2.0  # HuggingFace embedding models
+torch>=2.0.0                # PyTorch for neural networks (required by sentence-transformers)
+transformers>=4.30.0        # HuggingFace transformers library
