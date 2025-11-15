@@ -35,11 +35,11 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home', gradient: 'from-[#60a5fa] to-[#38bdf8]' },
-    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-[#c084fc] to-[#a78bfa]' },
-    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-[#fb923c] to-[#fdba74]' },
-    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-[#f472b6] to-[#fb7185]' },
-    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-[#34d399] to-[#4ade80]' },
+    { id: 'home', icon: Home, label: 'Home', gradient: 'from-primary to-primary/80' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-primary to-accent' },
+    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-accent to-accent-foreground' },
+    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-primary/80 to-accent' },
+    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-success to-success/80' },
   ];
 
   const spaces = [
@@ -59,18 +59,18 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'pm', name: 'Project management', count: 4 },
     { id: 'doc', name: 'IT Doc' },
   ];
-  const gradientClass = 'bg-gradient-to-br from-[#38bdf8] via-[#a855f7] to-[#f97316]';
+  const gradientClass = 'bg-primary';
   const monochromeGradientClass = 'bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50';
 
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
       <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar-primary text-sidebar-primary-foreground border border-sidebar-border/60 shadow-sm">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer" onClick={() => window.location.href = '/'}>
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-primary/10 hover:bg-primary/20 p-1.5" onClick={() => window.location.href = '/'}>
           <img
             src="/devflow-demo.png"
             alt="DevFlow Logo"
-            className="w-8 h-8 object-contain"
+            className="w-full h-full object-contain"
           />
         </div>
 

@@ -435,5 +435,74 @@ def main():
             ingestion.cleanup()
 
 
+def ingest_single_document(
+    file_path: str,
+    workspace_id: str,
+    title: str = None,
+    user_id: str = "system",
+    db=None
+) -> Dict[str, Any]:
+    """
+    Ingest a single document file.
+    
+    This is a convenience function for API usage.
+    
+    Args:
+        file_path: Path to the document file
+        workspace_id: Target workspace ID
+        title: Document title (optional, uses filename if not provided)
+        user_id: User ID performing the ingestion
+        db: Database session (optional, creates new if not provided)
+        
+    Returns:
+        Dict with document_id, title, and chunks_created
+    """
+    from pathlib import Path
+    from database.connection import get_db_session
+    
+    file_path_obj = Path(file_path)
+    if not file_path_obj.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    
+    # Use provided db session or create new one
+    if db is None:
+        db_session = get_db_session()
+        should_close = True
+    else:
+        db_session = db
+        should_close = False
+    
+    try:
+        # Create ingestion instance
+        ingestion = DocumentIngestion(
+            workspace_id=workspace_id,
+            user_id=user_id,
+            chunker_method="paragraph",
+            embedding_provider="naver",  # Use naver as default from config
+            dry_run=False
+        )
+        
+        # Replace db session with provided one
+        if db is not None:
+            ingestion.db_session = db
+            ingestion.doc_repo = DocumentRepository(db)
+            ingestion.chunk_repo = DocumentChunkRepository(db)
+        
+        # Ingest the file
+        result = ingestion.ingest_file(file_path_obj)
+        
+        if not result['success']:
+            raise Exception(f"Ingestion failed: {result.get('error', 'Unknown error')}")
+        
+        return {
+            'document_id': result['document_id'],
+            'title': title or file_path_obj.stem,
+            'chunks_created': result['chunks_created']
+        }
+    finally:
+        if should_close and 'db_session' in locals():
+            db_session.close()
+
+
 if __name__ == '__main__':
     main()
