@@ -88,6 +88,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        serif: ['Libre Baskerville', 'serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
+      },
       colors: {
         border: "var(--border)",
         "border-strong": "var(--border-strong)",
