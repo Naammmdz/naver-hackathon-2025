@@ -93,10 +93,10 @@ async def create_workspace(
             owner_id=workspace_data.owner_id
         )
         
-        logger.info(f"Created workspace: {workspace.workspace_id} by {workspace_data.owner_id}")
+        logger.info(f"Created workspace: {workspace.id} by {workspace_data.owner_id}")
         
         return WorkspaceResponse(
-            workspace_id=workspace.workspace_id,
+            workspace_id=workspace.id,
             name=workspace.name,
             description=workspace.description,
             owner_id=workspace.owner_id,
@@ -144,10 +144,10 @@ async def get_workspace(
         # Get document count
         from database.repositories import DocumentRepository
         doc_repo = DocumentRepository(db)
-        document_count = len(doc_repo.get_by_workspace(workspace_id))
+        document_count = len(doc_repo.get_by_workspace(workspace.id))
         
         return WorkspaceResponse(
-            workspace_id=workspace.workspace_id,
+            workspace_id=workspace.id,
             name=workspace.name,
             description=workspace.description,
             owner_id=workspace.owner_id,
@@ -194,7 +194,9 @@ async def list_workspaces(
         if owner_id:
             workspaces = repo.get_by_owner(owner_id, limit=limit, offset=skip)
         else:
-            workspaces = repo.get_all(limit=limit, offset=skip)
+            # get_all doesn't support offset, so we slice manually
+            all_workspaces = repo.get_all(limit=limit + skip)
+            workspaces = all_workspaces[skip:skip+limit] if all_workspaces else []
         
         # Get document counts
         from database.repositories import DocumentRepository
@@ -202,9 +204,9 @@ async def list_workspaces(
         
         results = []
         for workspace in workspaces:
-            document_count = len(doc_repo.get_by_workspace(workspace.workspace_id))
+            document_count = len(doc_repo.get_by_workspace(workspace.id))
             results.append(WorkspaceResponse(
-                workspace_id=workspace.workspace_id,
+                workspace_id=workspace.id,
                 name=workspace.name,
                 description=workspace.description,
                 owner_id=workspace.owner_id,
@@ -266,7 +268,7 @@ async def update_workspace(
         document_count = len(doc_repo.get_by_workspace(workspace_id))
         
         return WorkspaceResponse(
-            workspace_id=workspace.workspace_id,
+            workspace_id=workspace.id,
             name=workspace.name,
             description=workspace.description,
             owner_id=workspace.owner_id,
