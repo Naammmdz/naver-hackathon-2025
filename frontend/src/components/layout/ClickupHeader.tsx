@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { NotificationBell } from './NotificationBell';
+import { OnlineUsers } from '@/components/board/OnlineUsers';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
@@ -147,9 +148,15 @@ export function ClickupHeader({
         </div>
 
         {/* Right Section - Actions */}
-        <div className="flex items-center gap-1">
-          {/* Notifications */}
-          <NotificationBell />
+        <div className="flex items-center gap-3">
+          {/* Online Users - global presence */}
+          <OnlineUsers maxVisible={3} size="md" showLabel={false} />
+          
+          <div className="h-6 w-px bg-border hidden sm:block" />
+          
+          <div className="flex items-center gap-1">
+            {/* Notifications */}
+            <NotificationBell />
 
           {/* Language Toggle */}
           <Button
