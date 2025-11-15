@@ -2,19 +2,20 @@ import { BoardView } from "@/components/board/BoardView";
 import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
+import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
+import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
+import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
+import { useUserIdentityAwareness } from "@/hooks/useUserIdentityAwareness";
+import { useWorkspaceYjs } from "@/hooks/useWorkspaceYjs";
+import { getColor } from "@/lib/userColors";
 import { useBoardStore } from "@/store/boardStore";
 import { useDocumentStore } from "@/store/documentStore";
 import { useTaskDocStore } from "@/store/taskDocStore";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useWorkspaceYjs } from "@/hooks/useWorkspaceYjs";
-import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
-import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
-import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
-import { useUserIdentityAwareness } from "@/hooks/useUserIdentityAwareness";
 import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
@@ -26,6 +27,7 @@ export default function AppWrapper() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { t } = useTranslation();
   const { isLoaded, isSignedIn, userId, getToken } = useAuth();
+  const { user } = useUser();
   const tokenTemplate = import.meta.env.VITE_CLERK_JWT_TEMPLATE;
   
   // Track if initial load is complete to prevent duplicate loading
@@ -68,6 +70,32 @@ export default function AppWrapper() {
   // Manage user identity in awareness (separate from view-specific awareness like boardCursor)
   // This ensures user info is always present for OnlineUsers display in header
   useUserIdentityAwareness();
+
+  // Force awareness reseed when switching to home/board/teams views
+  useEffect(() => {
+    if (isSignedIn && activeWorkspaceId && ['home', 'board', 'teams'].includes(currentView)) {
+      const timer = setTimeout(() => {
+        const provider = (window as any).__WORKSPACE_PROVIDER;
+        if (provider?.awareness) {
+          const awareness = provider.awareness;
+          // Force complete reseed of user identity
+          awareness.setLocalState({
+            userIdentity: {
+              userId: userId,
+              name: user?.fullName || user?.firstName || user?.username || userId,
+              email: user?.emailAddresses?.[0]?.emailAddress || `${userId}@example.com`,
+              avatarUrl: user?.imageUrl,
+              color: getColor(userId),
+            },
+            _viewSwitch: Date.now(),
+            _keepAlive: Date.now(),
+          });
+          console.log('[AppWrapper] Force reseeded user identity for view:', currentView);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentView, isSignedIn, activeWorkspaceId, userId, user]);
 
   // Sync tasks with Yjs
   useTaskYjsSync({

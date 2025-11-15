@@ -1,15 +1,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@clerk/clerk-react";
-import { Users } from "lucide-react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useOnlineUsers } from "@/hooks/useOnlineUsers";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@clerk/clerk-react";
+import { Users } from "lucide-react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 // Simple fallback avatar URL generator
 const getDefaultAvatar = (id: string) => {
@@ -36,6 +36,16 @@ export const OnlineUsers = memo(function OnlineUsers({
   const allowHideRef = useRef(false);
   const hasSeenUsersRef = useRef(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debug log for activeUsers changes
+  useEffect(() => {
+    console.log('[OnlineUsers] activeUsers changed:', {
+      length: activeUsers.length,
+      users: activeUsers.map(u => ({ id: u.id, name: u.name })),
+      hasSeenUsers: hasSeenUsersRef.current,
+      allowHide: allowHideRef.current
+    });
+  }, [activeUsers]);
 
   // Track if we've ever seen users - once we see users, don't hide immediately
   useEffect(() => {
