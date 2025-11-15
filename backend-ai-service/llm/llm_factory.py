@@ -69,6 +69,10 @@ class LLMFactory:
         providers_config = self.config.get("providers", {})
         return providers_config.get(provider, {})
     
+    def get_default_provider(self) -> str:
+        """Get default provider from config"""
+        return self.config.get("default_provider", "naver")
+    
     def create_provider(
         self,
         provider: ProviderType = "naver",

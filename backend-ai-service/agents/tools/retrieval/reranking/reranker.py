@@ -7,13 +7,20 @@ Implements simple scoring-based reranking (can be extended with cross-encoder mo
 
 from typing import List, Dict, Any, Union
 from dataclasses import dataclass
-import logging
+import sys
+from pathlib import Path
 
+# Add project root to path for utils import
+project_root = Path(__file__).resolve().parents[4]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from utils.logger import get_logger
 from agents.tools.retrieval.vector_similarity import SearchResult
 from agents.tools.retrieval.bm25 import BM25Result
 from agents.tools.retrieval.hybrid import HybridResult
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

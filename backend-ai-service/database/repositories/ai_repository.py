@@ -42,15 +42,17 @@ class DocumentChunkRepository(BaseRepository[DocumentChunk]):
     
     def similarity_search(self, workspace_id: str, query_embedding: List[float], top_k: int = 5) -> List[DocumentChunk]:
         """
-        Find similar chunks using vector similarity
-        Note: Requires pgvector extension and proper indexing
+        Find similar chunks using vector similarity.
+        Joins with Document table to include document title in chunk metadata.
+        Note: Requires pgvector extension and proper indexing.
         """
-        # This will use pgvector's <-> operator for L2 distance
-        # In production, you might want to use <#> for negative inner product or <=> for cosine distance
         from sqlalchemy import func
+        from database.models import Document
         
-        return (
-            self.db.query(DocumentChunk)
+        # Query with JOIN to get document title
+        results = (
+            self.db.query(DocumentChunk, Document.title)
+            .join(Document, DocumentChunk.document_id == Document.id)
             .filter(
                 DocumentChunk.workspace_id == workspace_id,
                 DocumentChunk.embedding.isnot(None)
@@ -59,6 +61,19 @@ class DocumentChunkRepository(BaseRepository[DocumentChunk]):
             .limit(top_k)
             .all()
         )
+        
+        # Attach document title to chunk metadata
+        chunks = []
+        for chunk, doc_title in results:
+            # Ensure chunk_metadata is a dict
+            if chunk.chunk_metadata is None:
+                chunk.chunk_metadata = {}
+            
+            # Add document title to metadata
+            chunk.chunk_metadata['document_name'] = doc_title
+            chunks.append(chunk)
+        
+        return chunks
     
     def delete_by_document(self, document_id: str) -> int:
         """Delete all chunks for a document"""

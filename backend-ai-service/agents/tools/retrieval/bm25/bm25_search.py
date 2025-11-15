@@ -8,14 +8,21 @@ BM25 is a ranking function used by search engines to estimate relevance of docum
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 import re
-import logging
+import sys
+from pathlib import Path
 from collections import Counter
 import math
 
+# Add project root to path for utils import
+project_root = Path(__file__).resolve().parents[4]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from utils.logger import get_logger
 from database.connection import get_db
 from sqlalchemy import text
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -156,12 +163,20 @@ class BM25SearchTool:
             
             logger.info(f"BM25 search for query: '{query}' (tokens: {query_tokens})")
             
-            # Fetch all chunks from workspace
+            # Fetch all chunks from workspace with document titles
             with get_db() as db:
                 result = db.execute(text("""
-                    SELECT id, chunk_text, chunk_index, document_id, workspace_id, metadata
-                    FROM document_chunks
-                    WHERE workspace_id = :workspace_id
+                    SELECT 
+                        dc.id, 
+                        dc.chunk_text, 
+                        dc.chunk_index, 
+                        dc.document_id, 
+                        dc.workspace_id, 
+                        dc.metadata,
+                        d.title as document_name
+                    FROM document_chunks dc
+                    JOIN documents d ON dc.document_id = d.id
+                    WHERE dc.workspace_id = :workspace_id
                 """), {"workspace_id": workspace_id}).fetchall()
                 
                 if not result:
@@ -174,13 +189,20 @@ class BM25SearchTool:
                 # Tokenize all documents and collect stats
                 for row in result:
                     tokens = self.tokenize(row[1])  # chunk_text
+                    
+                    # Ensure metadata is a dict and add document name
+                    metadata = row[5] or {}
+                    if not isinstance(metadata, dict):
+                        metadata = {}
+                    metadata['document_name'] = row[6]  # document_name from JOIN
+                    
                     chunks.append({
                         'id': row[0],
                         'text': row[1],
                         'index': row[2],
                         'document_id': row[3],
                         'workspace_id': row[4],
-                        'metadata': row[5] or {},
+                        'metadata': metadata,
                         'tokens': tokens,
                         'length': len(tokens)
                     })

@@ -10,7 +10,15 @@ Supports:
 - Headings
 """
 
-import logging
+import sys
+from pathlib import Path as PathLib
+
+# Add project root to path for utils import
+project_root = PathLib(__file__).resolve().parents[2]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from utils.logger import get_logger
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Union
@@ -18,7 +26,7 @@ from typing import Any, Dict, List, Union
 from .base_parser import BaseParser, ParsingResult
 
 # Set up logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class MarkdownParser(BaseParser):
