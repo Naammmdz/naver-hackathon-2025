@@ -326,9 +326,9 @@ export function WorkspaceSettingsDialog({
                             className="h-8 w-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold">
                             {initials}
-                          </div>
+                        </div>
                         )}
                         <div>
                           <div className="font-medium">

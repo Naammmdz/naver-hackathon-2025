@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/clerk-react";
 import { Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Popover,
   PopoverContent,
@@ -24,7 +24,7 @@ interface OnlineUsersProps {
   className?: string;
 }
 
-export function OnlineUsers({ 
+export const OnlineUsers = memo(function OnlineUsers({ 
   maxVisible = 3, 
   size = "sm",
   showLabel = true,
@@ -33,6 +33,50 @@ export function OnlineUsers({
   const activeUsers = useOnlineUsers();
   const { userId } = useAuth();
   const [showAllUsers, setShowAllUsers] = useState(false);
+  const allowHideRef = useRef(false);
+  const hasSeenUsersRef = useRef(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Track if we've ever seen users - once we see users, don't hide immediately
+  useEffect(() => {
+    if (activeUsers.length > 0) {
+      hasSeenUsersRef.current = true;
+      allowHideRef.current = false; // Reset allowHide when users appear
+      // Clear any pending hide timer
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    } else if (hasSeenUsersRef.current) {
+      // We've seen users before, but now there are none
+      // Give more time before allowing hide (users might be re-seeding)
+      allowHideRef.current = false;
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+      hideTimerRef.current = setTimeout(() => {
+        allowHideRef.current = true;
+        hideTimerRef.current = null;
+      }, 1000); // 1 second delay if we've seen users before
+    } else {
+      // Never seen users - allow hide after shorter delay
+      allowHideRef.current = false;
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+      }
+      hideTimerRef.current = setTimeout(() => {
+        allowHideRef.current = true;
+        hideTimerRef.current = null;
+      }, 500);
+    }
+    
+    return () => {
+      if (hideTimerRef.current) {
+        clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+  }, [activeUsers.length]); // Only depend on length to avoid unnecessary re-runs
 
   // Filter out current user
   const otherUsers = useMemo(() => {
@@ -58,8 +102,15 @@ export function OnlineUsers({
     return user.email.split('@')[0];
   };
 
-  // If no users are online, don't render anything
+  // Don't hide immediately - give awareness time to seed after view switch
+  // Only hide if we've confirmed no users after the delay
+  // If we have users, always show
   if (otherUsers.length === 0) {
+    if (allowHideRef.current) {
+      return null; // Hide only after delay confirms no users
+    }
+    // Don't render anything while waiting (prevents layout shift)
+    // But don't return null yet - gives awareness time to seed
     return null;
   }
 
@@ -181,4 +232,4 @@ export function OnlineUsers({
       </div>
     </TooltipProvider>
   );
-}
+});

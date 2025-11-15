@@ -180,13 +180,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       useDocumentStore.getState().setActiveDocument(doc.id);
                       onViewChange('docs');
                     }}
-                    className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors"
+                    className="w-full text-left p-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-lg">{doc.icon || '📄'}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{doc.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground hover:text-muted-foreground/70">
                           Updated {new Date(doc.updatedAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -222,13 +222,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       useBoardStore.getState().setActiveBoard(board.id);
                       onViewChange('board');
                     }}
-                    className="w-full text-left p-3 rounded-md hover:bg-accent transition-colors"
+                    className="w-full text-left p-3 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-lg">📋</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{board.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground hover:text-muted-foreground/70">
                           Updated {new Date(board.updatedAt).getTime() > 0 ? new Date(board.updatedAt).toLocaleDateString() : 'Never'}
                         </p>
                       </div>

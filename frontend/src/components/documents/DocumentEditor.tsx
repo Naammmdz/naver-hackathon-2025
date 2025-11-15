@@ -11,6 +11,7 @@ import { useDocumentStore } from '@/store/documentStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { useWorkspaceYjs } from '@/hooks/useWorkspaceYjs';
+import { getColor } from '@/lib/userColors';
 
 interface DocumentEditorProps {
   document: Document;
@@ -401,13 +402,16 @@ export function DocumentEditor({
         user?.primaryEmailAddress?.emailAddress ||
         userId ||
         'Anonymous';
+      // Use consistent color based on userId (same as useUserIdentityAwareness)
+      // This prevents conflicts with user online display in header
+      const userColor = getColor(userId || 'anonymous');
       const config = {
         collaboration: {
           provider: provider as any,
           fragment: fragment,
           user: {
             name: displayName,
-            color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
+            color: userColor, // Use consistent color instead of random
           },
         },
       };

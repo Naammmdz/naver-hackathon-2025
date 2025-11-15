@@ -148,6 +148,12 @@ export function useWorkspaceYjs({
           // expose provider for consumers that cannot easily receive via props
           try {
             (window as any).__WORKSPACE_PROVIDER = hocuspocusProvider;
+            // Dispatch event to notify that provider is ready
+            // Use setTimeout to defer event dispatch to next event loop
+            // This prevents "Cannot update a component while rendering" warnings
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('workspace-provider-ready'));
+            }, 0);
           } catch {}
           setYdoc(doc);
 
@@ -179,7 +185,6 @@ export function useWorkspaceYjs({
               try {
                 const newToken = await getStableToken();
                 if (newToken && providerRef.current) {
-                  // @ts-expect-error setToken exists in provider runtime
                   if (typeof (providerRef.current as any).setToken === 'function') {
                     (providerRef.current as any).setToken(newToken);
                     // eslint-disable-next-line no-console

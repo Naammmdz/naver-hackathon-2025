@@ -76,11 +76,11 @@ export function SmartTaskParser({
     } catch (error: any) {
       console.warn('Server AI parsing failed, falling back to local parser:', error);
       
-      toast({
-        title: "AI Parser Unavailable", 
-        description: "Using local natural language parser instead.",
-        variant: "default",
-      });
+        toast({
+          title: "AI Parser Unavailable", 
+          description: "Using local natural language parser instead.",
+          variant: "default",
+        });
     }
 
     // Fallback to local parser
@@ -219,7 +219,7 @@ export function SmartTaskParser({
         <div className="flex items-center gap-2">
           <Badge variant={parseMethod === 'server' ? 'outline' : 'secondary'} className="text-xs">
             {parseMethod === 'server' ? 'AI Ready' : 'Local Only'}
-          </Badge>
+            </Badge>
         </div>
       </div>
 

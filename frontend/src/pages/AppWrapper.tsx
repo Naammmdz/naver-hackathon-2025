@@ -14,6 +14,7 @@ import { useWorkspaceYjs } from "@/hooks/useWorkspaceYjs";
 import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
 import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
 import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
+import { useUserIdentityAwareness } from "@/hooks/useUserIdentityAwareness";
 import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
@@ -63,6 +64,10 @@ export default function AppWrapper() {
     workspaceId: activeWorkspaceId,
     enabled: !!activeWorkspaceId && isSignedIn,
   });
+
+  // Manage user identity in awareness (separate from view-specific awareness like boardCursor)
+  // This ensures user info is always present for OnlineUsers display in header
+  useUserIdentityAwareness();
 
   // Sync tasks with Yjs
   useTaskYjsSync({

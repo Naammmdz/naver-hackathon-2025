@@ -4,7 +4,7 @@ import { useBoardStore } from '@/store/boardStore';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { NotificationBell } from './NotificationBell';
@@ -15,7 +15,7 @@ interface ClickupHeaderProps {
   currentView: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
 }
 
-export function ClickupHeader({
+export const ClickupHeader = memo(function ClickupHeader({
   onMenuClick,
   currentView,
 }: ClickupHeaderProps) {
@@ -85,18 +85,18 @@ export function ClickupHeader({
       data-app-header
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
-      <div className="flex h-10 items-center justify-between px-4 gap-4 mx-2 my-2">
-        {/* Left Section - Workspace & Search */}
-        <div className="flex items-center gap-3 flex-1">
+      <div className="flex h-10 items-center justify-between px-4 gap-4 mx-2 my-2 min-w-0">
+        {/* Left Section - Workspace & Breadcrumb */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Workspace Selector */}
-          <div className="hidden sm:block min-w-[200px]">
+          <div className="hidden sm:block min-w-[200px] flex-shrink-0">
             <WorkspaceSwitcher />
           </div>
 
-          <div className="hidden sm:block h-6 w-px bg-border" />
+          <div className="hidden sm:block h-6 w-px bg-border flex-shrink-0" />
 
-          {/* Breadcrumb */}
-          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+          {/* Breadcrumb - with truncation */}
+          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground min-w-0 flex-1">
             {(() => {
               const viewLabels: Record<string, string> = {
                 home: 'Home',
@@ -119,12 +119,14 @@ export function ClickupHeader({
               }
               
               return (
-                <span>
+                <span className="truncate">
                   / {breadcrumbParts.map((part, index) => (
                     <span key={index}>
                       {index > 0 && <span className="mx-1">/</span>}
                       <span className={index === breadcrumbParts.length - 1 ? 'text-foreground font-medium' : ''}>
-                        {part}
+                        {index === breadcrumbParts.length - 1 && part.length > 30 
+                          ? `${part.substring(0, 30)}...` 
+                          : part}
                       </span>
                     </span>
                   ))}
@@ -135,7 +137,7 @@ export function ClickupHeader({
         </div>
 
         {/* Center Section - Search (ClickUp style) */}
-        <div className="flex-1 max-w-lg hidden sm:block">
+        <div className="flex-1 max-w-lg hidden lg:block flex-shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -148,15 +150,15 @@ export function ClickupHeader({
         </div>
 
         {/* Right Section - Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           {/* Online Users - global presence */}
           <OnlineUsers maxVisible={3} size="md" showLabel={false} />
           
           <div className="h-6 w-px bg-border hidden sm:block" />
           
-          <div className="flex items-center gap-1">
-            {/* Notifications */}
-            <NotificationBell />
+        <div className="flex items-center gap-1">
+          {/* Notifications */}
+          <NotificationBell />
 
           {/* Language Toggle */}
           <Button
@@ -196,8 +198,13 @@ export function ClickupHeader({
           >
             <Menu className="h-4 w-4" />
           </Button>
+          </div>
         </div>
       </div>
     </header>
   );
-}
+}, (prevProps, nextProps) => {
+  // Only re-render if currentView changes (for breadcrumb updates)
+  // This prevents unnecessary re-renders that could reset OnlineUsers state
+  return prevProps.currentView === nextProps.currentView;
+});

@@ -14,6 +14,8 @@ import type {
 import { parseMermaidToExcalidraw } from '@excalidraw/mermaid-to-excalidraw';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// User identity awareness is managed by useUserIdentityAwareness hook in AppWrapper
+// Canvas only manages boardCursor to avoid conflicts
 
 type StoredScene = BoardSnapshot | null;
 
@@ -249,7 +251,7 @@ export function Canvas() {
     setIsApiReady(true);
   }, []);
 
-  // Awareness (cursors)
+  // Awareness (cursors) - ONLY manage boardCursor, user identity is handled by useUserIdentityAwareness
   useEffect(() => {
     const provider: any = (window as any).__WORKSPACE_PROVIDER;
     if (!provider || !activeBoardId) {
@@ -259,14 +261,36 @@ export function Canvas() {
     if (!awareness) return;
     const selfIdRef = { current: awareness.clientID as number };
 
+    // Initialize boardCursor when mounting Canvas
+    const initBoardCursor = () => {
+      try {
+        const currentState = awareness.getLocalState() || {};
+        // ONLY set boardCursor - DO NOT touch user identity (userId, name, email, avatarUrl, color)
+        // User identity is managed separately by useUserIdentityAwareness hook
+        if (!currentState.boardCursor) {
+          awareness.setLocalState({
+            ...currentState, // Preserve ALL existing state (user identity, BlockNote cursor, etc.)
+            boardCursor: { x: 0, y: 0, boardId: activeBoardId },
+          });
+          console.log('[Canvas] Initialized boardCursor:', { boardId: activeBoardId });
+        }
+      } catch (err) {
+        console.warn('[Canvas] Failed to init boardCursor:', err);
+      }
+    };
+    
+    // Initialize boardCursor when mounting
+    initBoardCursor();
+
     const handleMouseMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const state = awareness.getLocalState() || {};
+      const currentState = awareness.getLocalState() || {};
+      // ONLY update boardCursor - preserve everything else (user identity, BlockNote cursor, etc.)
       awareness.setLocalState({
-        ...state,
+        ...currentState, // Preserve ALL existing state
         // IMPORTANT: use namespaced key to avoid colliding with BlockNote's collab cursor
         boardCursor: { x, y, boardId: activeBoardId },
       });
@@ -275,8 +299,26 @@ export function Canvas() {
     const onAwarenessUpdate = () => {
       const states = awareness.getStates(); // Map<clientId, state>
       const next: Record<number, RemoteCursor> = {};
+      
+      // ONLY ensure boardCursor is present - DO NOT touch user identity
+      // User identity is managed by useUserIdentityAwareness hook
+      const selfState = states.get(selfIdRef.current);
+      if (selfState && !selfState.boardCursor) {
+        // Only set boardCursor if missing - don't touch anything else
+        try {
+          const currentState = awareness.getLocalState() || {};
+          awareness.setLocalState({
+            ...currentState, // Preserve ALL existing state
+            boardCursor: { x: 0, y: 0, boardId: activeBoardId },
+          });
+          console.log('[Canvas] Ensured boardCursor after update');
+        } catch (err) {
+          console.warn('[Canvas] Failed to ensure boardCursor:', err);
+        }
+      }
+      
       states.forEach((st: any, clientId: number) => {
-        if (!st || !st.cursor) return;
+        if (!st) return;
         // Ignore own cursor using Awareness.clientID
         if (clientId === selfIdRef.current) return;
         // Use namespaced boardCursor; fallback to cursor for backward compatibility
@@ -297,25 +339,6 @@ export function Canvas() {
 
     window.addEventListener('mousemove', handleMouseMove);
     awareness.on('change', onAwarenessUpdate);
-    // seed identity
-    try {
-      const user = (window as any).Clerk?.user || null;
-      const name =
-        user?.fullName ||
-        user?.username ||
-        user?.primaryEmailAddress?.emailAddress ||
-        user?.id ||
-        'User';
-      const color = '#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
-      const state = awareness.getLocalState() || {};
-      awareness.setLocalState({
-        ...state,
-        name,
-        color,
-        // IMPORTANT: use namespaced key to avoid colliding with BlockNote's collab cursor
-        boardCursor: { x: 0, y: 0, boardId: activeBoardId },
-      });
-    } catch {}
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);

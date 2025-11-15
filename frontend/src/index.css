@@ -1,6 +1,5 @@
-/* Tldraw imports */
+/* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
-@import url('tldraw/tldraw.css');
 
 @tailwind base;
 @tailwind components;
