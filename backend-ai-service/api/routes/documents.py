@@ -197,14 +197,11 @@ async def list_documents(
         
         # Get documents with pagination
         offset = (page - 1) * page_size
-        documents = doc_repo.get_by_workspace(
-            workspace_id,
-            limit=page_size,
-            offset=offset
-        )
+        all_documents = doc_repo.get_by_workspace(workspace_id)
         
-        # Get total count
-        total = doc_repo.count_by_workspace(workspace_id)
+        # Manual pagination
+        documents = all_documents[offset:offset + page_size]
+        total = len(all_documents)
         
         # Get chunk counts
         from database.repositories import DocumentChunkRepository
@@ -240,6 +237,72 @@ async def list_documents(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list documents: {str(e)}"
+        )
+
+
+@router.get(
+    "/workspaces/{workspace_id}/documents/stats",
+    response_model=DocumentStats,
+    summary="Get Document Statistics",
+    description="Get statistics about documents in workspace"
+)
+async def get_document_stats(
+    workspace_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get document statistics
+    
+    Args:
+        workspace_id: Workspace identifier
+        
+    Returns:
+        Document statistics including counts and sizes
+    """
+    try:
+        # Verify workspace exists
+        workspace_repo = WorkspaceRepository(db)
+        workspace = workspace_repo.get_by_id(workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Workspace {workspace_id} not found"
+            )
+        
+        doc_repo = DocumentRepository(db)
+        documents = doc_repo.get_by_workspace(workspace_id)
+        
+        # Calculate stats
+        total_documents = len(documents)
+        total_size = sum(doc.file_size or 0 for doc in documents)
+        
+        # Count by type
+        docs_by_type = {}
+        for doc in documents:
+            doc_type = doc.source_type or "unknown"
+            docs_by_type[doc_type] = docs_by_type.get(doc_type, 0) + 1
+        
+        # Count total chunks
+        from database.repositories import DocumentChunkRepository
+        chunk_repo = DocumentChunkRepository(db)
+        total_chunks = sum(
+            chunk_repo.count_by_document(doc.document_id)
+            for doc in documents
+        )
+        
+        return DocumentStats(
+            total_documents=total_documents,
+            total_chunks=total_chunks,
+            total_size_bytes=total_size,
+            documents_by_type=docs_by_type
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting document stats: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get document stats: {str(e)}"
         )
 
 
@@ -343,70 +406,4 @@ async def delete_document(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete document: {str(e)}"
-        )
-
-
-@router.get(
-    "/workspaces/{workspace_id}/documents/stats",
-    response_model=DocumentStats,
-    summary="Get Document Statistics",
-    description="Get statistics about documents in workspace"
-)
-async def get_document_stats(
-    workspace_id: str,
-    db: Session = Depends(get_db)
-):
-    """
-    Get document statistics
-    
-    Args:
-        workspace_id: Workspace identifier
-        
-    Returns:
-        Document statistics including counts and sizes
-    """
-    try:
-        # Verify workspace exists
-        workspace_repo = WorkspaceRepository(db)
-        workspace = workspace_repo.get_by_id(workspace_id)
-        if not workspace:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Workspace {workspace_id} not found"
-            )
-        
-        doc_repo = DocumentRepository(db)
-        documents = doc_repo.get_by_workspace(workspace_id)
-        
-        # Calculate stats
-        total_documents = len(documents)
-        total_size = sum(doc.file_size or 0 for doc in documents)
-        
-        # Count by type
-        docs_by_type = {}
-        for doc in documents:
-            doc_type = doc.source_type or "unknown"
-            docs_by_type[doc_type] = docs_by_type.get(doc_type, 0) + 1
-        
-        # Count total chunks
-        from database.repositories import DocumentChunkRepository
-        chunk_repo = DocumentChunkRepository(db)
-        total_chunks = sum(
-            chunk_repo.count_by_document(doc.document_id)
-            for doc in documents
-        )
-        
-        return DocumentStats(
-            total_documents=total_documents,
-            total_chunks=total_chunks,
-            total_size_bytes=total_size,
-            documents_by_type=docs_by_type
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting document stats: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get document stats: {str(e)}"
         )

@@ -52,8 +52,9 @@ async def health_check():
     # Check database
     db_status = "healthy"
     try:
+        from sqlalchemy import text
         db = get_db_session()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
@@ -129,4 +130,4 @@ async def liveness_check():
     Returns:
         Simple OK response if service is alive
     """
-    return {"status": "alive"}
+    return {"alive": True, "status": "alive"}
