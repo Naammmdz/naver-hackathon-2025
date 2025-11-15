@@ -6,13 +6,20 @@ Uses pgvector for fast approximate nearest neighbor search.
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-import logging
+import sys
+from pathlib import Path
 
+# Add project root to path for utils import
+project_root = Path(__file__).resolve().parents[4]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from utils.logger import get_logger
 from database.connection import get_db
 from database.repositories.ai_repository import DocumentChunkRepository
 from data_preprocessing.embedding.embedding_factory import EmbeddingFactory
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

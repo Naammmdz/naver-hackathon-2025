@@ -7,16 +7,20 @@ Factory pattern for creating the appropriate parser based on:
 - Explicit parser type specification
 """
 
-import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
+import sys
+
+# Add parent directory to path for utils import
+if str(Path(__file__).parent.parent.parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from .base_parser import BaseParser
 from .docling_parser import DoclingParser
 from .markdown_parser import MarkdownParser
+from utils.logger import get_logger
 
-# Set up logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ParserFactory:
