@@ -13,6 +13,12 @@ export default defineConfig(({ mode }) => ({
         target: 'http://localhost:8989',
         changeOrigin: true,
       },
+      // AI Service proxy - proxy /ai-api to AI service
+      '/ai-api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ai-api/, ''),
+      },
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

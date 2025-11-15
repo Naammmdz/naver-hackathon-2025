@@ -7,6 +7,74 @@ const duplicateUtilitiesPlugin = plugin(function({ addUtilities, theme, e }) {
   // This will be automatically handled by Tailwind when we scan the content
 });
 
+// Plugin to support opacity with CSS variables (OKLCH)
+// This plugin adds support for opacity modifiers like bg-primary/10, text-muted/50, etc.
+const opacitySupportPlugin = plugin(function({ addUtilities, theme, matchUtilities }) {
+  const colors = theme('colors') || {};
+  
+  // Function to generate opacity utilities for a color
+  const generateOpacityUtilities = (colorName: string, cssVar: string, variants: string[] = []) => {
+    const utilities: Record<string, any> = {};
+    
+    // Generate utilities for opacity values 5, 10, 20, 30, 40, 50, 60, 70, 80, 90
+    [5, 10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(opacity => {
+      // Background - use bracket notation to handle special characters
+      utilities[`.bg-${colorName}\\/${opacity}`] = {
+        backgroundColor: `color-mix(in oklch, ${cssVar} ${opacity}%, transparent)`,
+      };
+      // Text
+      utilities[`.text-${colorName}\\/${opacity}`] = {
+        color: `color-mix(in oklch, ${cssVar} ${opacity}%, transparent)`,
+      };
+      // Border
+      utilities[`.border-${colorName}\\/${opacity}`] = {
+        borderColor: `color-mix(in oklch, ${cssVar} ${opacity}%, transparent)`,
+      };
+    });
+    
+    // Generate for variants
+    variants.forEach(variant => {
+      const variantName = `${colorName}-${variant}`;
+      const variantVar = `var(--${colorName}-${variant})`;
+      [5, 10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(opacity => {
+        utilities[`.bg-${variantName}\\/${opacity}`] = {
+          backgroundColor: `color-mix(in oklch, ${variantVar} ${opacity}%, transparent)`,
+        };
+        utilities[`.text-${variantName}\\/${opacity}`] = {
+          color: `color-mix(in oklch, ${variantVar} ${opacity}%, transparent)`,
+        };
+        utilities[`.border-${variantName}\\/${opacity}`] = {
+          borderColor: `color-mix(in oklch, ${variantVar} ${opacity}%, transparent)`,
+        };
+      });
+    });
+    
+    return utilities;
+  };
+  
+  // Generate utilities for main colors
+  const allUtilities: Record<string, any> = {};
+  
+  // Primary with variants
+  Object.assign(allUtilities, generateOpacityUtilities('primary', 'var(--primary)', ['foreground', 'dark']));
+  
+  // Secondary with variants
+  Object.assign(allUtilities, generateOpacityUtilities('secondary', 'var(--secondary)', ['foreground', 'hover']));
+  
+  // Muted with variants
+  Object.assign(allUtilities, generateOpacityUtilities('muted', 'var(--muted)', ['foreground']));
+  
+  // Accent with variants
+  Object.assign(allUtilities, generateOpacityUtilities('accent', 'var(--accent)', ['foreground']));
+  
+  // Other colors
+  ['destructive', 'success', 'warning', 'border', 'background', 'foreground'].forEach(color => {
+    Object.assign(allUtilities, generateOpacityUtilities(color, `var(--${color})`));
+  });
+  
+  addUtilities(allUtilities);
+});
+
 export default {
   darkMode: ["class", ".tw-dark"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
@@ -21,70 +89,70 @@ export default {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        "border-strong": "hsl(var(--border-strong))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: "var(--border)",
+        "border-strong": "var(--border-strong)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          dark: "hsl(var(--primary-dark))",
-          foreground: "hsl(var(--primary-foreground))",
-          glow: "hsl(var(--primary-glow))",
+          DEFAULT: "var(--primary)",
+          dark: "var(--primary-dark)",
+          foreground: "var(--primary-foreground)",
+          glow: "var(--primary-glow)",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-          hover: "hsl(var(--secondary-hover))",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+          hover: "var(--secondary-hover)",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-          light: "hsl(var(--destructive-light))",
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+          light: "var(--destructive-light)",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-          glow: "hsl(var(--accent-glow))",
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+          glow: "var(--accent-glow)",
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-          shadow: "hsl(var(--card-shadow))",
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+          shadow: "var(--card-shadow)",
         },
         success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-          light: "hsl(var(--success-light))",
+          DEFAULT: "var(--success)",
+          foreground: "var(--success-foreground)",
+          light: "var(--success-light)",
         },
         warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-          light: "hsl(var(--warning-light))",
+          DEFAULT: "var(--warning)",
+          foreground: "var(--warning-foreground)",
+          light: "var(--warning-light)",
         },
         priority: {
-          low: "hsl(var(--priority-low))",
-          medium: "hsl(var(--priority-medium))",
-          high: "hsl(var(--priority-high))",
+          low: "var(--priority-low)",
+          medium: "var(--priority-medium)",
+          high: "var(--priority-high)",
         },
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+          DEFAULT: "var(--sidebar-background)",
+          foreground: "var(--sidebar-foreground)",
+          primary: "var(--sidebar-primary)",
+          "primary-foreground": "var(--sidebar-primary-foreground)",
+          accent: "var(--sidebar-accent)",
+          "accent-foreground": "var(--sidebar-accent-foreground)",
+          border: "var(--sidebar-border)",
+          ring: "var(--sidebar-ring)",
         },
       },
       borderRadius: {
@@ -116,5 +184,5 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [tailwindcssAnimate, opacitySupportPlugin],
 } satisfies Config;

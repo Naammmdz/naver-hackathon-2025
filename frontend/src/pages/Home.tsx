@@ -966,13 +966,6 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   <Plus className="h-4 w-4 mr-2" />
                   {t('dashboard.addCard', 'Add Card')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  setEditingCard(null);
-                  setShowCustomizationDialog(true);
-                }}>
-                  <Settings2 className="h-4 w-4 mr-2" />
-                  {t('dashboard.customCard', 'Custom Card')}
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={resetToDefault}>
                   <RotateCcw className="h-4 w-4 mr-2" />
                   {t('dashboard.resetLayout', 'Reset Layout')}

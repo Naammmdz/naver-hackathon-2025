@@ -29,15 +29,21 @@ interface SimpleBarChartProps {
 function SimpleBarChart({ data, color, height = 120 }: SimpleBarChartProps) {
   const maxCount = Math.max(...data.map(d => d.count), 1);
   
+  // Check if color is a CSS color value (starts with hsl, rgb, #, etc.) or a className
+  const isCssColor = typeof color === 'string' && (color.startsWith('hsl') || color.startsWith('rgb') || color.startsWith('#') || color.startsWith('var('));
+  const style = isCssColor ? { backgroundColor: color } : {};
+  const className = isCssColor ? "w-full rounded-t-sm transition-opacity hover:opacity-80 cursor-pointer" : cn("w-full rounded-t-sm transition-opacity hover:opacity-80 cursor-pointer", color);
+  
   return (
     <div className="flex items-end justify-between gap-1" style={{ height }}>
       {data.slice(-14).map((item, index) => (
         <div key={item.date} className="flex flex-col items-center flex-1 group relative">
           <div
-            className={cn("w-full rounded-t-sm transition-opacity hover:opacity-80 cursor-pointer", color)}
+            className={className}
             style={{
               height: `${(item.count / maxCount) * (height - 30)}px`,
               minHeight: item.count > 0 ? "2px" : "0px",
+              ...style,
             }}
             title={`${formatDate(item.date, "MMM dd")}: ${item.count} task${item.count !== 1 ? 's' : ''}`}
           />
@@ -447,7 +453,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCreatedTasks} 
-              color="bg-gradient-to-t from-[#60a5fa] to-[#3b82f6]"
+              color="hsl(0deg 90.6% 70.78%)"
             />
           </CardContent>
         </Card>
@@ -459,7 +465,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCompletedTasks} 
-              color="bg-gradient-to-t from-[#34d399] to-[#10b981]"
+              color="hsl(0deg 90.6% 70.78%)"
             />
           </CardContent>
         </Card>

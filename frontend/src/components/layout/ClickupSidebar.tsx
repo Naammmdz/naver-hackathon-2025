@@ -102,7 +102,7 @@ export function ClickupSidebar({
         </div>
 
         {/* Create New Button */}
-        <Button className="w-full justify-start gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all">
+        <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all">
           <Plus className="h-4 w-4" />
           <span className="text-sm font-medium">New Project</span>
         </Button>
@@ -144,7 +144,7 @@ export function ClickupSidebar({
                   onClick={() => onViewChange('tasks')}
                 >
                   {currentView === 'tasks' && item.id === 'my-tasks' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#38bdf8]/10 via-[#a855f7]/10 to-[#f97316]/10 opacity-50" />
+                    <div className="absolute inset-0 bg-primary/10 opacity-50" />
                   )}
                   <item.icon className="h-4 w-4 flex-shrink-0 relative z-10" />
                   <span className="flex-1 text-left relative z-10">{item.label}</span>
@@ -152,7 +152,7 @@ export function ClickupSidebar({
                     <span className={cn(
                       "text-xs px-2 py-0.5 rounded relative z-10",
                       item.id === 'my-tasks' && item.count > 0
-                        ? "bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] text-white"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     )}>
                       {item.count}
@@ -197,9 +197,9 @@ export function ClickupSidebar({
                     <span className={cn(
                       "text-xs px-2 py-0.5 rounded transition-all",
                       item.id === 'in-progress' && item.count > 0
-                        ? "bg-gradient-to-r from-[#a855f7] to-[#f97316] text-white shadow-sm"
+                        ? "bg-accent text-accent-foreground shadow-sm"
                         : item.id === 'completed' && item.count > 0
-                        ? "bg-[#38bdf8] text-white"
+                        ? "bg-success text-success-foreground"
                         : "bg-muted"
                     )}>
                       {item.count}
@@ -237,7 +237,7 @@ export function ClickupSidebar({
                 onClick={() => onViewChange('tasks')}
               >
                 {currentView === 'tasks' && (
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#38bdf8] via-[#a855f7] to-[#f97316]" />
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />
                 )}
                 <CheckSquare className="h-4 w-4 flex-shrink-0" />
                 <span className="flex-1 text-left">Task Board</span>
@@ -249,7 +249,7 @@ export function ClickupSidebar({
                 onClick={() => onViewChange('docs')}
               >
                 {currentView === 'docs' && (
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#38bdf8] via-[#a855f7] to-[#f97316]" />
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary" />
                 )}
                 <FileText className="h-4 w-4 flex-shrink-0" />
                 <span className="flex-1 text-left">Documents</span>
