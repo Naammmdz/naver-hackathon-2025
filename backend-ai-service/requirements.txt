@@ -1,5 +1,6 @@
 # Core dependencies
 langchain-core
+langgraph>=0.2.0           # LangGraph for agent workflows
 pydantic>=2.0
 PyYAML
 python-dotenv

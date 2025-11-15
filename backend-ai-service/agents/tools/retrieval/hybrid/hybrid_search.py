@@ -7,13 +7,20 @@ RRF is a simple yet effective method for combining multiple ranked lists.
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-import logging
+import sys
+from pathlib import Path
 from collections import defaultdict
 
+# Add project root to path for utils import
+project_root = Path(__file__).resolve().parents[4]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from utils.logger import get_logger
 from agents.tools.retrieval.vector_similarity import VectorSearchTool
 from agents.tools.retrieval.bm25 import BM25SearchTool
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @dataclass

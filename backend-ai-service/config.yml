@@ -28,14 +28,14 @@ data_preprocessing:
   chunking:
     method: "paragraph"
     overlap: 50
-    chunk_size: 768
+    chunk_size: 2000
   embedding:
-    provider: huggingface # or naver
+    provider: naver  # Changed from huggingface to naver
     huggingface:
       model: "Qwen/Qwen3-Embedding-0.6B"
       batch_size: 16
     naver:
-      model: "clir-emb-dolphin"
+      model: "bge-m3"  # Naver CLOVA embedding model (1024 dim)
       batch_size: 16
 
 llm:

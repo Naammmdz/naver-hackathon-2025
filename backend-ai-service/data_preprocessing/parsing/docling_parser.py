@@ -9,14 +9,18 @@ Supports PDF, DOCX, PPTX, images, HTML, and more with advanced features like:
 - Metadata extraction
 """
 
-import logging
 from pathlib import Path
 from typing import Any, Dict, List, Union
+import sys
+
+# Add parent directory to path for utils import
+if str(Path(__file__).parent.parent.parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from .base_parser import BaseParser, DocumentType, ParsingResult
+from utils.logger import get_logger
 
-# Set up logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DoclingParser(BaseParser):
@@ -373,7 +377,8 @@ class DoclingParser(BaseParser):
                     # Try to export table data
                     if hasattr(table, 'export_to_dataframe'):
                         try:
-                            df = table.export_to_dataframe()
+                            # Pass doc argument to avoid deprecation warning
+                            df = table.export_to_dataframe(doc=document)
                             table_data['data'] = df.to_dict('records')
                         except Exception:
                             pass

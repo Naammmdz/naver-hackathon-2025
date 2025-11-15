@@ -36,7 +36,7 @@ class HuggingFaceEmbedder(BaseEmbedder):
     
     def __init__(self, model_name: str = "Qwen/Qwen3-Embedding-0.6B", 
                  batch_size: int = 16, 
-                 device: str = "cpu",
+                 device: str = None,
                  normalize: bool = True,
                  **kwargs):
         """
@@ -45,14 +45,50 @@ class HuggingFaceEmbedder(BaseEmbedder):
         Args:
             model_name: HuggingFace model name or local path
             batch_size: Batch size for encoding
-            device: Device to run on ("cpu", "cuda", "mps")
+            device: Device to run on ("cpu", "cuda", "mps"). If None, auto-detect GPU
             normalize: Whether to normalize embeddings to unit length
             **kwargs: Additional config
         """
         super().__init__(model_name, batch_size, **kwargs)
+        
+        # Auto-detect device if not specified
+        if device is None:
+            device = self._auto_detect_device()
+        
         self.device = device
         self.normalize = normalize
         self._model = None
+    
+    @staticmethod
+    def _auto_detect_device() -> str:
+        """
+        Auto-detect the best available device.
+        
+        Priority: CUDA (NVIDIA GPU) > MPS (Apple Silicon) > CPU
+        
+        Returns:
+            Device string: "cuda", "mps", or "cpu"
+        """
+        try:
+            import torch
+            
+            if torch.cuda.is_available():
+                device = "cuda"
+                gpu_name = torch.cuda.get_device_name(0)
+                print(f"🚀 GPU detected: {gpu_name}")
+                print(f"   Using CUDA device: {device}")
+                return device
+            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+                device = "mps"
+                print(f"🚀 Apple Silicon GPU detected")
+                print(f"   Using MPS device: {device}")
+                return device
+            else:
+                print(f"⚠️  No GPU detected, using CPU")
+                return "cpu"
+        except ImportError:
+            print(f"⚠️  PyTorch not available, using CPU")
+            return "cpu"
     
     @property
     def model(self):
