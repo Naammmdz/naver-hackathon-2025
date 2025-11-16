@@ -41,14 +41,11 @@ def get_db():
 class DocumentResponse(BaseModel):
     """Document response"""
     document_id: str
-    workspace_id: str
+    workspace_id: Optional[str]
     title: str
-    source_path: str
-    source_type: str
-    total_pages: Optional[int]
+    content: Optional[str] = None
     total_chunks: int
-    file_size: Optional[int]
-    status: str
+    trashed: bool
     created_at: datetime
     updated_at: datetime
 
@@ -209,17 +206,14 @@ async def list_documents(
         
         doc_responses = []
         for doc in documents:
-            chunk_count = chunk_repo.count_by_document(doc.document_id)
+            chunk_count = chunk_repo.count_by_document(doc.id)
             doc_responses.append(DocumentResponse(
-                document_id=doc.document_id,
+                document_id=doc.id,
                 workspace_id=doc.workspace_id,
                 title=doc.title,
-                source_path=doc.source_path,
-                source_type=doc.source_type,
-                total_pages=doc.total_pages,
+                content=doc.content[:100] if doc.content else None,  # First 100 chars
                 total_chunks=chunk_count,
-                file_size=doc.file_size,
-                status=doc.status,
+                trashed=doc.trashed,
                 created_at=doc.created_at,
                 updated_at=doc.updated_at
             ))
@@ -274,19 +268,19 @@ async def get_document_stats(
         
         # Calculate stats
         total_documents = len(documents)
-        total_size = sum(doc.file_size or 0 for doc in documents)
+        total_size = sum(len(doc.content or '') for doc in documents)  # Total content length
         
-        # Count by type
+        # Count by status (since we don't have source_type in current schema)
         docs_by_type = {}
         for doc in documents:
-            doc_type = doc.source_type or "unknown"
+            doc_type = "trashed" if doc.trashed else "active"
             docs_by_type[doc_type] = docs_by_type.get(doc_type, 0) + 1
         
         # Count total chunks
         from database.repositories import DocumentChunkRepository
         chunk_repo = DocumentChunkRepository(db)
         total_chunks = sum(
-            chunk_repo.count_by_document(doc.document_id)
+            chunk_repo.count_by_document(doc.id)
             for doc in documents
         )
         
@@ -343,15 +337,12 @@ async def get_document(
         chunk_count = chunk_repo.count_by_document(document_id)
         
         return DocumentResponse(
-            document_id=document.document_id,
+            document_id=document.id,
             workspace_id=document.workspace_id,
             title=document.title,
-            source_path=document.source_path,
-            source_type=document.source_type,
-            total_pages=document.total_pages,
+            content=document.content[:200] if document.content else None,
             total_chunks=chunk_count,
-            file_size=document.file_size,
-            status=document.status,
+            trashed=document.trashed,
             created_at=document.created_at,
             updated_at=document.updated_at
         )
