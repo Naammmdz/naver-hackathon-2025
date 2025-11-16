@@ -32,6 +32,14 @@ class DocumentChunkRepository(BaseRepository[DocumentChunk]):
             .all()
         )
     
+    def count_by_document(self, document_id: str) -> int:
+        """Count chunks for a document"""
+        return (
+            self.db.query(DocumentChunk)
+            .filter(DocumentChunk.document_id == document_id)
+            .count()
+        )
+    
     def get_by_workspace(self, workspace_id: str) -> List[DocumentChunk]:
         """Get all chunks in a workspace"""
         return (
