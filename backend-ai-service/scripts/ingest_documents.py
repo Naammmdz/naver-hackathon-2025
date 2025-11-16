@@ -435,5 +435,71 @@ def main():
             ingestion.cleanup()
 
 
+def ingest_single_document(
+    file_path: str,
+    workspace_id: str,
+    title: str = None,
+    user_id: str = "api-user",
+    db = None
+) -> Dict[str, Any]:
+    """
+    Ingest a single document file (helper function for API).
+    
+    Args:
+        file_path: Path to document file
+        workspace_id: Target workspace ID
+        title: Optional document title (uses filename if None)
+        user_id: User who uploaded the document
+        db: Database session (if None, creates new session)
+        
+    Returns:
+        Dict with ingestion results:
+        {
+            'document_id': str,
+            'chunks_created': int,
+            'success': bool,
+            'error': str or None
+        }
+    """
+    from pathlib import Path
+    
+    file_path = Path(file_path)
+    
+    # Use provided DB session or create new one
+    close_db = False
+    if db is None:
+        db = get_db_session()
+        close_db = True
+    
+    try:
+        # Initialize ingestion pipeline
+        ingestion = DocumentIngestion(
+            workspace_id=workspace_id,
+            user_id=user_id,
+            db_session=db,
+            dry_run=False
+        )
+        
+        # Ingest the file
+        result = ingestion.ingest_file(file_path)
+        
+        # Cleanup
+        ingestion.cleanup()
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error ingesting document: {e}", exc_info=True)
+        return {
+            'document_id': None,
+            'chunks_created': 0,
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        if close_db:
+            db.close()
+
+
 if __name__ == '__main__':
     main()
