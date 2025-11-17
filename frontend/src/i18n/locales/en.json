@@ -166,6 +166,16 @@
       "showSidebarHint": "Click handle to show",
       "showSidebarTitle": "Click to show sidebar"
     },
+    "Canvas": {
+      "aiDrawButton": "AI Draw",
+      "cancelButton": "Cancel",
+      "describeDiagramLabel": "Describe your diagram",
+      "examplePlaceholder": "e.g., Create a flowchart for user authentication process",
+      "generateButton": "Generate",
+      "generateDiagramDescription": "Describe the diagram you want to create and AI will generate it for you.",
+      "generateDiagramTitle": "Generate Diagram with AI",
+      "generatingText": "Generating..."
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",
