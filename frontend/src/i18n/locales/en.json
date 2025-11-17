@@ -142,6 +142,22 @@
     "inProgressDescription": "Tasks currently being worked on",
     "doneDescription": "Completed tasks"
   },
+  "components": {
+    "GlobalChatPanel": {
+      "aiAvatarAlt": "AI Assistant",
+      "attachButtonSr": "Add attachment",
+      "buttonText": "AI Chat",
+      "closeButtonAria": "Close chat panel",
+      "defaultResponse": "I have noted your request. Backend integration will help me respond more intelligently in the future.",
+      "headerSubtitle": "Support you anytime, anywhere",
+      "headerTitle": "AI Assistant",
+      "inputLabel": "Enter message to chat with AI assistant",
+      "panelAriaLabel": "Chat with AI assistant",
+      "placeholder": "Enter your question...",
+      "sendButtonSr": "Send",
+      "welcomeMessage": "Hello! I am the global AI assistant. How can I help you today?"
+    }
+  },
   "analytics": {
     "title": "Analytics Dashboard",
     "subtitle": "Task performance and productivity insights",
