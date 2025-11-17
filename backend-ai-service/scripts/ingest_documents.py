@@ -254,7 +254,7 @@ class DocumentIngestion:
             if not self.dry_run:
                 self.db_session.rollback()
         
-        return results
+        return result
     
     @log_execution_time(logger)
     def ingest_directory(self, directory_path: Path) -> List[Dict[str, Any]]:
