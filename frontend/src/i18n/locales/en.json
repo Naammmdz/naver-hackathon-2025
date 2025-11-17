@@ -143,6 +143,39 @@
     "doneDescription": "Completed tasks"
   },
   "components": {
+    "BoardSidebar": {
+      "boardPlural": "boards",
+      "boardSingular": "board",
+      "cancel": "Cancel",
+      "createFirstBoard": "Create your first board",
+      "delete": "Delete",
+      "deleteBoardDescription": "Are you sure you want to delete this board? This action cannot be undone.",
+      "deleteBoardTitle": "Delete Board",
+      "headerTitle": "Boards",
+      "loadingBoards": "Loading boards...",
+      "newBoardPlaceholder": "Board name...",
+      "noBoardsFound": "No boards found",
+      "noBoardsYet": "No boards yet",
+      "rename": "Rename",
+      "searchPlaceholder": "Search boards...",
+      "tryDifferentSearch": "Try a different search term"
+    },
+    "BoardView": {
+      "hideSidebarShortcut": "Ctrl+B to hide",
+      "hideSidebarTitle": "Click to hide sidebar",
+      "showSidebarHint": "Click handle to show",
+      "showSidebarTitle": "Click to show sidebar"
+    },
+    "Canvas": {
+      "aiDrawButton": "AI Draw",
+      "cancelButton": "Cancel",
+      "describeDiagramLabel": "Describe your diagram",
+      "examplePlaceholder": "e.g., Create a flowchart for user authentication process",
+      "generateButton": "Generate",
+      "generateDiagramDescription": "Describe the diagram you want to create and AI will generate it for you.",
+      "generateDiagramTitle": "Generate Diagram with AI",
+      "generatingText": "Generating..."
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",

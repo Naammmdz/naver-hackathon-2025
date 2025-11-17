@@ -143,6 +143,39 @@
     "doneDescription": "Các công việc đã hoàn thành"
   },
   "components": {
+    "BoardSidebar": {
+      "boardPlural": "bảng",
+      "boardSingular": "bảng",
+      "cancel": "Hủy",
+      "createFirstBoard": "Tạo bảng đầu tiên của bạn",
+      "delete": "Xóa",
+      "deleteBoardDescription": "Bạn có chắc chắn muốn xóa bảng này? Hành động này không thể hoàn tác.",
+      "deleteBoardTitle": "Xóa Bảng",
+      "headerTitle": "Bảng",
+      "loadingBoards": "Đang tải bảng...",
+      "newBoardPlaceholder": "Tên bảng...",
+      "noBoardsFound": "Không tìm thấy bảng nào",
+      "noBoardsYet": "Chưa có bảng nào",
+      "rename": "Đổi tên",
+      "searchPlaceholder": "Tìm kiếm bảng...",
+      "tryDifferentSearch": "Thử từ khóa tìm kiếm khác"
+    },
+    "BoardView": {
+      "hideSidebarShortcut": "Ctrl+B để ẩn",
+      "hideSidebarTitle": "Nhấp để ẩn thanh bên",
+      "showSidebarHint": "Nhấp tay nắm để hiển thị",
+      "showSidebarTitle": "Nhấp để hiển thị thanh bên"
+    },
+    "Canvas": {
+      "aiDrawButton": "Vẽ AI",
+      "cancelButton": "Hủy",
+      "describeDiagramLabel": "Mô tả sơ đồ của bạn",
+      "examplePlaceholder": "ví dụ: Tạo sơ đồ luồng cho quy trình xác thực người dùng",
+      "generateButton": "Tạo",
+      "generateDiagramDescription": "Mô tả sơ đồ bạn muốn tạo và AI sẽ tạo nó cho bạn.",
+      "generateDiagramTitle": "Tạo Sơ đồ với AI",
+      "generatingText": "Đang tạo..."
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Thêm tệp đính kèm",
