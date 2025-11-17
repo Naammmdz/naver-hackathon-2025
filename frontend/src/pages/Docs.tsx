@@ -1,17 +1,20 @@
 import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
+import { GraphView } from '@/components/GraphView';
 import { Button } from '@/components/ui/button';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
+import { useBoardStore } from '@/store/boardStore';
 import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
-import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles, Edit, Network } from 'lucide-react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
+import { cn } from '@/lib/utils';
 export default function Docs() {
   const {
     documents,
@@ -43,7 +46,7 @@ export default function Docs() {
   const pendingTitleRef = useRef<string | null>(null);
   
   // Debounced onChange handler to avoid too many updates
-  const onChangeRef = useRef<(content: any[]) => void>();
+  const onChangeRef = useRef<ReturnType<typeof debounce>>();
   useEffect(() => {
     // Backup current content
     if (activeDocumentId && activeDocument?.content) {
@@ -225,6 +228,12 @@ export default function Docs() {
   // Detect current theme
   const [isDark, setIsDark] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // View mode: 'editor' or 'graph'
+  const [viewMode, setViewMode] = useState<'editor' | 'graph'>('editor');
+  
+  // Board store for graph navigation
+  const setActiveBoard = useBoardStore((state) => state.setActiveBoard);
   
   useEffect(() => {
     const checkTheme = () => {
@@ -437,25 +446,85 @@ export default function Docs() {
                       {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <FileText className="h-4 w-4" />
-                      Share
-                    </Button>
+                  <div className="flex items-center gap-3">
+                    {/* View Switcher */}
+                    <div className="flex border rounded-lg p-1 bg-muted/50">
+                      <Button
+                        variant={viewMode === 'editor' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('editor')}
+                        className={cn(
+                          "flex items-center gap-1.5 h-7",
+                          viewMode === 'editor' 
+                            ? "shadow-sm bg-primary text-primary-foreground" 
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Editor</span>
+                      </Button>
+                      <Button
+                        variant={viewMode === 'graph' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('graph')}
+                        className={cn(
+                          "flex items-center gap-1.5 h-7",
+                          viewMode === 'graph' 
+                            ? "shadow-sm bg-primary text-primary-foreground" 
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Network className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Graph</span>
+                      </Button>
+                    </div>
+                    
+                    {viewMode === 'editor' && (
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Share
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Editor Container */}
-              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
-                <DocumentEditor
-                  key={activeDocument.id}
-                  document={activeDocument}
-                  isDark={isDark}
-                  canEditWorkspace={true}
-                  onTaskClick={setSelectedTask}
-                  onChange={handleDocumentChange}
-                />
+              {/* Content Container */}
+              <div className="flex-1 overflow-hidden">
+                {viewMode === 'editor' ? (
+                  <div className="h-full overflow-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <DocumentEditor
+                      key={activeDocument.id}
+                      document={activeDocument}
+                      isDark={isDark}
+                      canEditWorkspace={true}
+                      onTaskClick={setSelectedTask}
+                      onChange={handleDocumentChange}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-full">
+                    <GraphView 
+                      workspaceId={activeWorkspaceId || undefined}
+                      onNodeClick={(node) => {
+                        console.log("Node clicked:", node);
+                        const nodeId = node.id || '';
+                        
+                        // Handle document nodes
+                        if (node.type === "note" || nodeId.startsWith("doc_")) {
+                          const docId = nodeId.startsWith("doc_") 
+                            ? nodeId.replace("doc_", "") 
+                            : nodeId;
+                          setActiveDocument(docId);
+                          setViewMode('editor'); // Switch to editor when opening a document
+                        } else if (nodeId.startsWith("board_")) {
+                          const boardId = nodeId.replace("board_", "");
+                          setActiveBoard(boardId);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </>
           )

@@ -291,7 +291,7 @@ export default function AppWrapper() {
               }} /> :
                currentView === 'docs' ? <Docs /> :
                currentView === 'board' ? <BoardView /> :
-               currentView === 'graph' ? <GraphViewPage /> :
+               currentView === 'graph' ? <GraphViewPage onViewChange={setCurrentView} /> :
                currentView === 'teams' ? <Teams onViewChange={setCurrentView} /> :
                <Home onViewChange={setCurrentView} />}
             </main>
