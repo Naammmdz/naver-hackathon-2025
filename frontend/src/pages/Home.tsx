@@ -8,9 +8,10 @@ import { CardCustomizationDialog } from '@/components/dashboard/CardCustomizatio
 import { CardGallery, CardTemplate } from '@/components/dashboard/CardGallery';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckSquare, FileText, Layers, TrendingUp, Users, Plus, Settings2, RotateCcw, MessageSquare, Sparkles, BarChart3, Calendar, Clock, Link2, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckSquare, FileText, Layers, TrendingUp, Users, Plus, Settings2, RotateCcw, MessageSquare, Sparkles, BarChart3, Calendar, Clock, Link2, ExternalLink, ChevronLeft, ChevronRight, Target, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getCachedBoardPreview } from '@/utils/boardPreview';
 import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, format, addMonths, subMonths, isSameMonth } from 'date-fns';
 import {
   DndContext,
@@ -20,6 +21,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -38,11 +41,15 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { cn } from "@/lib/utils";
+import { QuickTodoList } from "@/components/dashboard/QuickTodoList";
+import { findOverlappingCards, adjustOverlappingCards, getCardBounds, gridUnitsToPixels } from "@/utils/cardLayout";
 
 export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { t } = useTranslation();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const members = useWorkspaceStore((state) => state.members);
 
@@ -100,12 +107,15 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
   const recentBoards = workspaceBoards
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5);
+  const recentTasks = workspaceTasks
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, 5);
 
-  // Drag and drop - Improved sensitivity
+  // Drag and drop - Optimized for performance
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Require 8px movement before activating drag
+        distance: 5, // Reduced from 8px for faster activation
       },
     }),
     useSensor(KeyboardSensor, {
@@ -113,14 +123,27 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
 
     if (over && active.id !== over.id) {
       const oldIndex = cards.findIndex((card) => card.id === active.id);
       const newIndex = cards.findIndex((card) => card.id === over.id);
       const newCards = arrayMove(cards, oldIndex, newIndex);
-      reorderCards(newCards);
+      
+      // Recalculate positions to avoid overlap
+      const updatedCards = newCards.map((card, index) => {
+        // Reset x, y to let grid auto-place
+        const { x, y, ...rest } = card;
+        return { ...rest, order: index };
+      });
+      
+      reorderCards(updatedCards);
     }
   };
 
@@ -537,13 +560,21 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   // Get shape count and types from board snapshot
                   const getBoardInfo = (snapshot: any): { count: number; types: string[] } => {
                     try {
-                      if (!snapshot?.store) return { count: 0, types: [] };
-                      const store = snapshot.store;
-                      const shapes = Object.values(store).filter((item: any) => 
-                        item?.typeName === 'shape'
-                      );
-                      const types = shapes.map((shape: any) => shape.type).slice(0, 5);
-                      return { count: shapes.length, types };
+                      if (!snapshot) return { count: 0, types: [] };
+                      // Handle both Yjs format and standard format
+                      if (snapshot.store) {
+                        const store = snapshot.store;
+                        const shapes = Object.values(store).filter((item: any) => 
+                          item?.typeName === 'shape'
+                        );
+                        const types = shapes.map((shape: any) => shape.type).slice(0, 5);
+                        return { count: shapes.length, types };
+                      } else if (snapshot.elements) {
+                        const elements = snapshot.elements || [];
+                        const types = elements.map((el: any) => el.type).slice(0, 5);
+                        return { count: elements.length, types };
+                      }
+                      return { count: 0, types: [] };
                     } catch (error) {
                       return { count: 0, types: [] };
                     }
@@ -551,74 +582,331 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
                   const boardInfo = getBoardInfo(board.snapshot);
                   
-                  // Generate visual preview based on shape types
-                  const getShapeIcon = (type: string) => {
-                    const iconMap: Record<string, string> = {
-                      'geo': '▭',
-                      'draw': '✏️',
-                      'text': 'T',
-                      'arrow': '→',
-                      'line': '—',
-                      'frame': '⬚',
-                      'image': '🖼',
-                      'note': '📝',
-                    };
-                    return iconMap[type] || '●';
+                  // Board preview component with state
+                  const BoardPreviewCard = () => {
+                    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+                    const [isLoading, setIsLoading] = useState(true);
+
+                    useEffect(() => {
+                      let cancelled = false;
+                      setIsLoading(true);
+                      
+                      console.log('[BoardPreviewCard] Generating preview for board', board.id, { 
+                        hasSnapshot: !!board.snapshot,
+                        snapshotType: board.snapshot ? ((board.snapshot as any).store ? 'yjs' : 'standard') : 'null'
+                      });
+                      
+                      getCachedBoardPreview(board.id, board.snapshot)
+                        .then((url) => {
+                          if (!cancelled) {
+                            console.log('[BoardPreviewCard] Preview URL received', board.id, { 
+                              hasUrl: !!url,
+                              urlLength: url?.length || 0,
+                              urlPreview: url ? url.substring(0, 50) + '...' : 'null'
+                            });
+                            setPreviewUrl(url);
+                            setIsLoading(false);
+                          }
+                        })
+                        .catch((error) => {
+                          console.error('[BoardPreviewCard] Error generating preview', board.id, error);
+                          if (!cancelled) {
+                            setPreviewUrl(null);
+                            setIsLoading(false);
+                          }
+                        });
+
+                      return () => {
+                        cancelled = true;
+                      };
+                    }, [board.id, board.snapshot]);
+
+                    return (
+                      <HoverCard key={board.id} openDelay={300}>
+                        <HoverCardTrigger asChild>
+                          <button
+                            onClick={() => {
+                              useBoardStore.getState().setActiveBoard(board.id);
+                              onViewChange('board');
+                            }}
+                            className="w-full text-left rounded border hover:border-primary/50 hover:bg-accent/50 transition-all group overflow-hidden"
+                          >
+                            {/* Preview Section - Compact (similar to docs cards) */}
+                            <div className="p-2 space-y-1">
+                              <p className="text-[11px] font-semibold truncate group-hover:text-primary transition-colors">
+                                {board.title}
+                              </p>
+                              {/* Preview Image - Larger */}
+                              <div className="relative h-32 rounded border overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
+                                {isLoading ? (
+                                  // Loading state
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <Layers className="h-8 w-8 text-pink-300 dark:text-pink-700 opacity-30 animate-pulse" />
+                                  </div>
+                                ) : previewUrl ? (
+                                  // Actual preview image - larger version
+                                  <img
+                                    src={previewUrl}
+                                    alt={board.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      console.error('[BoardPreviewCard] Image load error', board.id);
+                                      // Hide image on error, show fallback
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                    onLoad={() => {
+                                      console.log('[BoardPreviewCard] Image loaded successfully', board.id);
+                                    }}
+                                  />
+                                ) : (
+                                  // Fallback when no preview available
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <Layers className="h-8 w-8 text-pink-300 dark:text-pink-700 opacity-30" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                                  {boardInfo.count} shapes
+                                </span>
+                                <span>•</span>
+                                <span>Whiteboard</span>
+                              </div>
+                              <div className="text-[9px] text-muted-foreground/60">
+                                {new Date(board.updatedAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent 
+                          side="right" 
+                          align="start" 
+                          className="w-[500px] p-4"
+                          sideOffset={10}
+                        >
+                          <div className="space-y-3">
+                            {/* Header */}
+                            <div className="space-y-1">
+                              <div className="flex items-start justify-between gap-2">
+                                <h4 className="text-sm font-semibold leading-tight">{board.title}</h4>
+                                <Layers className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                <span>Updated {new Date(board.updatedAt).toLocaleDateString()}</span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                                  {boardInfo.count} shapes
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {/* Divider */}
+                            <div className="border-t" />
+                            
+                            {/* Full Preview */}
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-muted-foreground">Preview</p>
+                              <div className="rounded-md bg-muted/30 overflow-hidden border">
+                                {isLoading ? (
+                                  <div className="h-64 flex items-center justify-center">
+                                    <Layers className="h-12 w-12 text-muted-foreground opacity-30 animate-pulse" />
+                                  </div>
+                                ) : previewUrl ? (
+                                  <img
+                                    src={previewUrl}
+                                    alt={board.title}
+                                    className="w-full h-auto object-contain"
+                                  />
+                                ) : (
+                                  <div className="h-64 flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
+                                    <Layers className="h-12 w-12 text-pink-300 dark:text-pink-700 opacity-30" />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Footer */}
+                            <div className="pt-2 border-t">
+                              <p className="text-xs text-muted-foreground italic">
+                                Click to open board
+                              </p>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                    );
+                  };
+
+                  return <BoardPreviewCard key={board.id} />;
+                })}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'recent-tasks':
+        return (
+          <div className="space-y-1.5 h-full flex flex-col">
+            {recentTasks.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground text-center py-4">
+                {t('dashboard.noTasks', 'No tasks yet')}
+              </p>
+            ) : (
+              <div className="space-y-1.5 flex-1 overflow-y-auto">
+                {recentTasks.map((task) => {
+                  // Get preview text from task description
+                  const previewText = task.description 
+                    ? (task.description.length > 150 
+                        ? task.description.substring(0, 150) + '...' 
+                        : task.description)
+                    : 'No description';
+
+                  // Get status color
+                  const getStatusColor = (status: string) => {
+                    switch (status) {
+                      case 'Done':
+                        return 'bg-green-500';
+                      case 'In Progress':
+                        return 'bg-blue-500';
+                      default:
+                        return 'bg-gray-500';
+                    }
+                  };
+
+                  // Get priority color
+                  const getPriorityColor = (priority: string) => {
+                    switch (priority) {
+                      case 'High':
+                        return 'text-red-500';
+                      case 'Medium':
+                        return 'text-yellow-500';
+                      default:
+                        return 'text-gray-500';
+                    }
                   };
 
                   return (
-                    <button
-                      key={board.id}
-                      onClick={() => {
-                        useBoardStore.getState().setActiveBoard(board.id);
-                        onViewChange('board');
-                      }}
-                      className="w-full text-left rounded border hover:border-primary/50 hover:bg-accent/50 transition-all group overflow-hidden"
-                    >
-                      {/* Visual Preview Section */}
-                      <div className="relative h-20 bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border-b overflow-hidden">
-                        {/* Abstract shapes visualization */}
-                        <div className="absolute inset-0 flex items-center justify-center gap-1 p-2">
-                          {boardInfo.types.length > 0 ? (
-                            boardInfo.types.map((type, idx) => (
-                              <div
-                                key={idx}
-                                className="text-lg opacity-40 group-hover:opacity-60 transition-opacity"
-                                style={{
-                                  transform: `rotate(${idx * 15 - 30}deg) scale(${1 - idx * 0.1})`,
-                                  color: `hsl(${300 + idx * 20}, 70%, 50%)`
-                                }}
-                              >
-                                {getShapeIcon(type)}
+                    <HoverCard key={task.id} openDelay={300}>
+                      <HoverCardTrigger asChild>
+                        <button
+                          onClick={() => {
+                            onViewChange('tasks');
+                          }}
+                          className="w-full text-left rounded border hover:border-primary/50 hover:bg-accent/50 transition-all group overflow-hidden"
+                        >
+                          {/* Preview Section - Compact */}
+                          <div className="p-2 space-y-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-[11px] font-semibold truncate group-hover:text-primary transition-colors flex-1">
+                                {task.title}
+                              </p>
+                              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1 ${getStatusColor(task.status)}`} />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground line-clamp-3 leading-relaxed">
+                              {previewText}
+                            </p>
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                              <span className={`${getPriorityColor(task.priority)}`}>
+                                {task.priority}
+                              </span>
+                              <span>•</span>
+                              <span>{task.status}</span>
+                              {task.dueDate && (
+                                <>
+                                  <span>•</span>
+                                  <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                </>
+                              )}
+                            </div>
+                            <div className="text-[9px] text-muted-foreground/60">
+                              {new Date(task.updatedAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent 
+                        side="right" 
+                        align="start" 
+                        className="w-96 p-4"
+                        sideOffset={10}
+                      >
+                        <div className="space-y-3">
+                          {/* Header */}
+                          <div className="space-y-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="text-sm font-semibold leading-tight">{task.title}</h4>
+                              <CheckSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span>Updated {new Date(task.updatedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Divider */}
+                          <div className="border-t" />
+                          
+                          {/* Task Details */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-4 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground">Status:</span>
+                                <span className="font-medium">{task.status}</span>
                               </div>
-                            ))
-                          ) : (
-                            <Layers className="h-8 w-8 text-pink-300 dark:text-pink-700 opacity-30" />
-                          )}
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground">Priority:</span>
+                                <span className={`font-medium ${getPriorityColor(task.priority)}`}>
+                                  {task.priority}
+                                </span>
+                              </div>
+                            </div>
+                            {task.dueDate && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">Due:</span>
+                                <span className="ml-1 font-medium">
+                                  {new Date(task.dueDate).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                            {task.description && (
+                              <>
+                                <div className="border-t" />
+                                <div className="space-y-2">
+                                  <p className="text-xs font-medium text-muted-foreground">Description</p>
+                                  <div className="max-h-64 overflow-y-auto rounded-md bg-muted/30 p-3">
+                                    <p className="text-xs leading-relaxed whitespace-pre-wrap">
+                                      {task.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                            {task.tags && task.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {task.tags.map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Footer */}
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-muted-foreground italic">
+                              Click to open task
+                            </p>
+                          </div>
                         </div>
-                        
-                        {/* Overlay gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-                      </div>
-
-                      {/* Info Section */}
-                      <div className="p-2 space-y-0.5">
-                        <p className="text-[11px] font-semibold truncate group-hover:text-primary transition-colors">
-                          {board.title}
-                        </p>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                            {boardInfo.count} shapes
-                          </span>
-                          <span>•</span>
-                          <span>Whiteboard</span>
-                        </div>
-                        <div className="text-[9px] text-muted-foreground/60">
-                          {new Date(board.updatedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </button>
+                      </HoverCardContent>
+                    </HoverCard>
                   );
                 })}
               </div>
@@ -651,40 +939,116 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
           low: workspaceTasks.filter(t => t.priority === 'Low').length,
         };
 
+        const statusBreakdown = {
+          todo: todoTasks,
+          inProgress: inProgressTasks,
+          done: doneTasks,
+        };
+
         const completionRate = workspaceTasks.length > 0 
           ? Math.round((doneTasks / workspaceTasks.length) * 100) 
           : 0;
 
+        const maxCompleted = Math.max(...completionByDay.map(d => d.completed), 1);
+
         return (
-          <div className="space-y-3 h-full flex flex-col">
-            {/* Completion Rate */}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Completion Rate</p>
+          <div className="space-y-4 h-full flex flex-col overflow-y-auto">
+            {/* Key Metrics Row */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Completion Rate */}
+              <div className="rounded-lg border bg-card p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] text-muted-foreground">Completion</p>
+                  <BarChart3 className="h-4 w-4 text-blue-500" />
+                </div>
                 <p className="text-2xl font-bold">{completionRate}%</p>
+                <p className="text-[9px] text-muted-foreground mt-1">
+                  {doneTasks} of {workspaceTasks.length} tasks
+                </p>
               </div>
-              <div className="rounded-full bg-purple-500/10 p-2">
-                <BarChart3 className="h-5 w-5 text-purple-500" />
+
+              {/* Total Tasks */}
+              <div className="rounded-lg border bg-card p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] text-muted-foreground">Total Tasks</p>
+                  <CheckSquare className="h-4 w-4 text-purple-500" />
+                </div>
+                <p className="text-2xl font-bold">{workspaceTasks.length}</p>
+                <p className="text-[9px] text-muted-foreground mt-1">
+                  In workspace
+                </p>
               </div>
             </div>
 
-            {/* 7-Day Trend */}
-            <div className="flex-1">
-              <p className="text-xs font-medium text-muted-foreground mb-2">7-Day Completion Trend</p>
-              <div className="flex items-end justify-between gap-1 h-24">
+            {/* Status Breakdown */}
+            <div>
+              <p className="text-xs font-semibold text-foreground mb-2">Status Breakdown</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-500" />
+                    <span className="text-[11px] text-muted-foreground">Todo</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold">{statusBreakdown.todo}</span>
+                    <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gray-500 rounded-full"
+                        style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.todo / workspaceTasks.length) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="text-[11px] text-muted-foreground">In Progress</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold">{statusBreakdown.inProgress}</span>
+                    <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 rounded-full"
+                        style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.inProgress / workspaceTasks.length) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-[11px] text-muted-foreground">Done</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold">{statusBreakdown.done}</span>
+                    <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full"
+                        style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.done / workspaceTasks.length) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 7-Day Completion Trend */}
+            <div className="flex-1 min-h-0">
+              <p className="text-xs font-semibold text-foreground mb-3">7-Day Completion Trend</p>
+              <div className="flex items-end justify-between gap-1.5 h-32">
                 {completionByDay.map((day, idx) => {
-                  const maxCompleted = Math.max(...completionByDay.map(d => d.completed), 1);
-                  const height = (day.completed / maxCompleted) * 100;
+                  const height = maxCompleted > 0 ? (day.completed / maxCompleted) * 100 : 0;
                   return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                      <div className="w-full bg-muted rounded-t relative" style={{ height: '80px' }}>
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full">
+                      <div className="w-full h-full bg-muted rounded-t relative flex items-end" style={{ minHeight: '80px' }}>
                         <div 
-                          className="absolute bottom-0 w-full bg-gradient-to-t from-purple-500 to-purple-400 rounded-t transition-all"
-                          style={{ height: `${height}%` }}
+                          className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500"
+                          style={{ height: `${height}%`, minHeight: height > 0 ? '4px' : '0' }}
+                          title={`${day.completed} tasks completed`}
                         />
                       </div>
-                      <span className="text-[9px] text-muted-foreground">{day.day}</span>
-                      <span className="text-[10px] font-semibold">{day.completed}</span>
+                      <span className="text-[9px] text-muted-foreground font-medium">{day.day}</span>
+                      <span className="text-[10px] font-bold text-foreground">{day.completed}</span>
                     </div>
                   );
                 })}
@@ -693,21 +1057,365 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Priority Breakdown */}
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">By Priority</p>
-              <div className="flex gap-2">
-                <div className="flex-1 rounded bg-red-500/10 p-2 text-center">
-                  <p className="text-sm font-bold text-red-600 dark:text-red-400">{priorityBreakdown.high}</p>
-                  <p className="text-[9px] text-muted-foreground">High</p>
+              <p className="text-xs font-semibold text-foreground mb-2">By Priority</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="rounded-lg border bg-red-500/5 border-red-500/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{priorityBreakdown.high}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">High</p>
                 </div>
-                <div className="flex-1 rounded bg-yellow-500/10 p-2 text-center">
-                  <p className="text-sm font-bold text-yellow-600 dark:text-yellow-400">{priorityBreakdown.medium}</p>
-                  <p className="text-[9px] text-muted-foreground">Medium</p>
+                <div className="rounded-lg border bg-yellow-500/5 border-yellow-500/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{priorityBreakdown.medium}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Medium</p>
                 </div>
-                <div className="flex-1 rounded bg-gray-500/10 p-2 text-center">
-                  <p className="text-sm font-bold text-gray-600 dark:text-gray-400">{priorityBreakdown.low}</p>
-                  <p className="text-[9px] text-muted-foreground">Low</p>
+                <div className="rounded-lg border bg-gray-500/5 border-gray-500/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-gray-600 dark:text-gray-400">{priorityBreakdown.low}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Low</p>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+
+      case 'completion-rate':
+        const completionRateValue = workspaceTasks.length > 0 
+          ? Math.round((doneTasks / workspaceTasks.length) * 100) 
+          : 0;
+
+        return (
+          <div className="h-full flex flex-col items-center justify-center space-y-4 p-4">
+            {/* Circular Progress */}
+            <div className="relative w-32 h-32">
+              <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                {/* Background circle */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  className="text-muted"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  strokeDasharray={`${2 * Math.PI * 50}`}
+                  strokeDashoffset={`${2 * Math.PI * 50 * (1 - completionRateValue / 100)}`}
+                  strokeLinecap="round"
+                  className="text-purple-500 transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-3xl font-bold">{completionRateValue}%</p>
+                  <p className="text-[10px] text-muted-foreground">Complete</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="w-full space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Completed</span>
+                <span className="font-semibold">{doneTasks}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Total</span>
+                <span className="font-semibold">{workspaceTasks.length}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Remaining</span>
+                <span className="font-semibold">{workspaceTasks.length - doneTasks}</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'productivity-score':
+        // Calculate productivity score
+        const tasksCompletedThisWeek = workspaceTasks.filter(task => {
+          const taskDate = new Date(task.updatedAt);
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return task.status === 'Done' && taskDate >= weekAgo;
+        }).length;
+
+        const overdueTasksCount = workspaceTasks.filter(task => {
+          if (!task.dueDate || task.status === 'Done') return false;
+          return new Date(task.dueDate) < new Date();
+        }).length;
+
+        const completionRateForScore = workspaceTasks.length > 0 
+          ? (doneTasks / workspaceTasks.length) * 100
+          : 0;
+
+        const recentActivityScore = Math.min(tasksCompletedThisWeek * 10, 40);
+        const completionScore = Math.min(completionRateForScore * 0.4, 40);
+        const overduePenalty = Math.max(0, 20 - (overdueTasksCount * 5));
+        const productivityScore = Math.round(recentActivityScore + completionScore + overduePenalty);
+
+        // Get score color
+        const getScoreColor = (score: number) => {
+          if (score >= 80) return 'text-green-500';
+          if (score >= 60) return 'text-yellow-500';
+          if (score >= 40) return 'text-orange-500';
+          return 'text-red-500';
+        };
+
+        const getScoreBgColor = (score: number) => {
+          if (score >= 80) return 'bg-green-500/10 border-green-500/20';
+          if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/20';
+          if (score >= 40) return 'bg-orange-500/10 border-orange-500/20';
+          return 'bg-red-500/10 border-red-500/20';
+        };
+
+        return (
+          <div className="h-full flex flex-col items-center justify-center space-y-4 p-4">
+            {/* Score Display */}
+            <div className={`rounded-lg border p-6 ${getScoreBgColor(productivityScore)}`}>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-2">Productivity Score</p>
+                <p className={`text-5xl font-bold ${getScoreColor(productivityScore)}`}>
+                  {productivityScore}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">out of 100</p>
+              </div>
+            </div>
+
+            {/* Breakdown */}
+            <div className="w-full space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">This Week</span>
+                <span className="font-semibold">{tasksCompletedThisWeek} tasks</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Overdue</span>
+                <span className={`font-semibold ${overdueTasksCount > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                  {overdueTasksCount}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Completion</span>
+                <span className="font-semibold">{Math.round(completionRateForScore)}%</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'time-tracking':
+        // Calculate time metrics
+        const tasksWithDueDate = workspaceTasks.filter(t => t.dueDate);
+        const completedWithDueDate = tasksWithDueDate.filter(t => t.status === 'Done');
+        
+        // Estimate time based on task age and completion
+        const averageTaskAge = workspaceTasks.length > 0
+          ? Math.round(
+              workspaceTasks.reduce((sum, task) => {
+                const age = new Date().getTime() - new Date(task.createdAt).getTime();
+                return sum + (age / (1000 * 60 * 60)); // Convert to hours
+              }, 0) / workspaceTasks.length
+            )
+          : 0;
+
+        const totalEstimatedHours = Math.round(averageTaskAge * workspaceTasks.length / 24);
+
+        return (
+          <div className="h-full flex flex-col space-y-4 p-4">
+            {/* Time Metrics */}
+            <div className="space-y-3">
+              <div className="rounded-lg border bg-card p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] text-muted-foreground">Avg Task Age</p>
+                  <Clock className="h-4 w-4 text-orange-500" />
+                </div>
+                <p className="text-xl font-bold">{averageTaskAge}h</p>
+                <p className="text-[9px] text-muted-foreground">Average hours</p>
+              </div>
+
+              <div className="rounded-lg border bg-card p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] text-muted-foreground">Total Estimated</p>
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                </div>
+                <p className="text-xl font-bold">{totalEstimatedHours}h</p>
+                <p className="text-[9px] text-muted-foreground">All tasks</p>
+              </div>
+            </div>
+
+            {/* Task Status Timeline */}
+            <div>
+              <p className="text-xs font-semibold text-foreground mb-2">Task Timeline</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">With Due Dates</span>
+                  <span className="font-semibold">{tasksWithDueDate.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Completed on Time</span>
+                  <span className="font-semibold text-green-500">{completedWithDueDate.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Pending</span>
+                  <span className="font-semibold">{tasksWithDueDate.length - completedWithDueDate.length}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'ai-chat':
+        // Get recent chat messages from localStorage
+        const getRecentChatMessages = () => {
+          if (typeof window === 'undefined') return [];
+          
+          try {
+            const stored = localStorage.getItem('global-ai-chat-history');
+            if (!stored) return [];
+            
+            const messages = JSON.parse(stored);
+            // Filter out welcome message and get last 3 conversations (user + assistant pairs)
+            const filtered = messages.filter((msg: any) => msg.id !== 'assistant-welcome');
+            return filtered.slice(-6); // Last 3 conversations (6 messages)
+          } catch (error) {
+            return [];
+          }
+        };
+
+        const recentMessages = getRecentChatMessages();
+
+        return (
+          <div className="h-full flex flex-col space-y-2 overflow-y-auto">
+            {recentMessages.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
+                <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <p className="text-sm font-medium text-muted-foreground mb-1">
+                  No chat history
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Start a conversation with AI Chat
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => {
+                    // Trigger AI chat panel open
+                    const button = document.querySelector('[aria-controls="global-ai-chat-panel"]') as HTMLButtonElement;
+                    if (button) button.click();
+                  }}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Open AI Chat
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between px-2 pb-2 border-b">
+                  <p className="text-xs font-semibold text-foreground">Recent Conversations</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => {
+                      const button = document.querySelector('[aria-controls="global-ai-chat-panel"]') as HTMLButtonElement;
+                      if (button) button.click();
+                    }}
+                  >
+                    View All
+                  </Button>
+                </div>
+                <div className="space-y-2 flex-1 overflow-y-auto">
+                  {recentMessages.map((message: any) => (
+                    <div
+                      key={message.id}
+                      className={`flex gap-2 text-xs ${
+                        message.role === 'assistant' ? 'justify-start' : 'justify-end'
+                      }`}
+                    >
+                      {message.role === 'assistant' && (
+                        <Sparkles className="h-3 w-3 text-purple-500 flex-shrink-0 mt-1" />
+                      )}
+                      <div
+                        className={`max-w-[85%] rounded-lg px-2.5 py-1.5 ${
+                          message.role === 'assistant'
+                            ? 'bg-muted text-foreground'
+                            : 'bg-primary text-primary-foreground'
+                        }`}
+                      >
+                        <p className="leading-relaxed line-clamp-3">{message.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => {
+                      const button = document.querySelector('[aria-controls="global-ai-chat-panel"]') as HTMLButtonElement;
+                      if (button) button.click();
+                    }}
+                  >
+                    <MessageSquare className="h-3 w-3 mr-2" />
+                    Continue Chat
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        );
+
+      case 'todo-list':
+        return <QuickTodoList />;
+
+      case 'quick-actions':
+        return (
+          <div className="h-full flex flex-col space-y-2">
+            <div className="grid grid-cols-2 gap-2 flex-1">
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center justify-center gap-2 p-4 hover:bg-accent transition-colors"
+                onClick={() => onViewChange('tasks')}
+              >
+                <CheckSquare className="h-5 w-5 text-blue-500" />
+                <span className="text-xs font-medium">New Task</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center justify-center gap-2 p-4 hover:bg-accent transition-colors"
+                onClick={() => onViewChange('docs')}
+              >
+                <FileText className="h-5 w-5 text-orange-500" />
+                <span className="text-xs font-medium">New Doc</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center justify-center gap-2 p-4 hover:bg-accent transition-colors"
+                onClick={() => onViewChange('board')}
+              >
+                <Layers className="h-5 w-5 text-pink-500" />
+                <span className="text-xs font-medium">New Board</span>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto flex flex-col items-center justify-center gap-2 p-4 hover:bg-accent transition-colors"
+                onClick={() => {
+                  const button = document.querySelector('[aria-controls="global-ai-chat-panel"]') as HTMLButtonElement;
+                  if (button) button.click();
+                }}
+              >
+                <Sparkles className="h-5 w-5 text-purple-500" />
+                <span className="text-xs font-medium">AI Chat</span>
+              </Button>
             </div>
           </div>
         );
@@ -979,25 +1687,72 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
             items={visibleCards.map((card) => card.id)}
             strategy={rectSortingStrategy}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" style={{ gridAutoRows: '280px' }}>
+            <div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" 
+              style={{ 
+                gridAutoRows: '280px',
+                gridAutoFlow: 'row', // Changed from 'dense' to prevent overlap
+                willChange: activeId ? 'contents' : 'auto',
+              }}
+            >
               {visibleCards.map((card) => (
                 <DashboardCard
                   key={card.id}
                   config={card}
                   onRemove={removeCard}
                   onEdit={handleEditCard}
+                  onResize={(id, width, height) => {
+                    const card = cards.find(c => c.id === id);
+                    if (!card) return;
+
+                    // Update the resizing card - clear x, y to let grid auto-place
+                    updateCard(id, { width, height, x: undefined, y: undefined });
+
+                    // Find and adjust overlapping cards - clear their positions too
+                    const updatedCard = { ...card, width, height };
+                    const overlapping = findOverlappingCards(updatedCard, cards);
+                    
+                    if (overlapping.length > 0) {
+                      const adjustments = adjustOverlappingCards(updatedCard, cards);
+                      adjustments.forEach(adj => {
+                        if (adj.id) {
+                          // Clear x, y to let grid auto-place and avoid overlap
+                          updateCard(adj.id, { ...adj, x: undefined, y: undefined });
+                        }
+                      });
+                    }
+                  }}
                 >
                   {renderCardContent(card)}
                 </DashboardCard>
               ))}
             </div>
           </SortableContext>
+          <DragOverlay>
+            {activeId ? (() => {
+              const activeCard = visibleCards.find(card => card.id === activeId);
+              return activeCard ? (
+                <div className="w-[300px] opacity-90 rotate-2 shadow-2xl">
+                  <DashboardCard
+                    config={activeCard}
+                    onRemove={undefined}
+                    onEdit={undefined}
+                    onResize={undefined}
+                    isDragging={true}
+                  >
+                    {renderCardContent(activeCard)}
+                  </DashboardCard>
+                </div>
+              ) : null;
+            })() : null}
+          </DragOverlay>
         </DndContext>
 
         {/* Empty State */}

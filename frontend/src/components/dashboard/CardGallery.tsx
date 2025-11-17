@@ -88,6 +88,17 @@ export function CardGallery({ open, onOpenChange, onSelectCard }: CardGalleryPro
       size: 'medium',
       color: 'border-l-pink-500',
     },
+    {
+      id: 'recent-tasks',
+      name: t('dashboard.recentTasks', 'Recent Tasks'),
+      description: t('dashboard.recentTasksDesc', 'Show latest updated tasks with quick access'),
+      icon: <CheckSquare className="h-5 w-5 text-blue-500" />,
+      category: 'featured',
+      preview: '/home-assets/task-preview.jpg',
+      size: 'medium',
+      color: 'border-l-blue-500',
+      badge: 'Popular',
+    },
 
     // Overview Cards
     {

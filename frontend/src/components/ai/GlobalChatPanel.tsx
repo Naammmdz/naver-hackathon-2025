@@ -10,6 +10,7 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  timestamp?: number;
 };
 
 const defaultMessages: ChatMessage[] = [
@@ -25,7 +26,22 @@ const panelWidthClass = "w-full sm:w-[24rem] lg:w-[26rem]";
 export const GlobalChatPanel = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState(defaultMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // Load from localStorage on mount
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('global-ai-chat-history');
+        if (stored) {
+          const history = JSON.parse(stored);
+          // Include welcome message if history exists
+          return history.length > 0 ? [...defaultMessages, ...history] : defaultMessages;
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      }
+    }
+    return defaultMessages;
+  });
   const [headerOffset, setHeaderOffset] = useState(0);
 
   const closePanel = useCallback(() => setOpen(false), []);
@@ -102,16 +118,29 @@ export const GlobalChatPanel = () => {
 
       const trimmed = input.trim();
       const timestamp = Date.now().toString();
-      setMessages((prev) => [
-        ...prev,
-        { id: `user-${timestamp}`, role: "user", content: trimmed },
-        {
-          id: `assistant-${timestamp}`,
-          role: "assistant",
-          content:
-            "Tôi đã ghi nhận yêu cầu của bạn. Tích hợp backend sẽ giúp tôi phản hồi thông minh hơn trong tương lai.",
-        },
-      ]);
+      const userMessage = { id: `user-${timestamp}`, role: "user" as const, content: trimmed, timestamp: Date.now() };
+      const assistantMessage = {
+        id: `assistant-${timestamp}`,
+        role: "assistant" as const,
+        content:
+          "Tôi đã ghi nhận yêu cầu của bạn. Tích hợp backend sẽ giúp tôi phản hồi thông minh hơn trong tương lai.",
+        timestamp: Date.now(),
+      };
+      
+      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      
+      // Save to localStorage
+      try {
+        const stored = localStorage.getItem('global-ai-chat-history');
+        const history = stored ? JSON.parse(stored) : [];
+        const updated = [...history, userMessage, assistantMessage];
+        // Keep only last 50 messages
+        const trimmed = updated.slice(-50);
+        localStorage.setItem('global-ai-chat-history', JSON.stringify(trimmed));
+      } catch (error) {
+        console.error('Error saving chat history:', error);
+      }
+      
       setInput("");
     },
     [canSend, input],
