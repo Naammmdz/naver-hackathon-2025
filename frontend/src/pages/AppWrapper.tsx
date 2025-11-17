@@ -20,6 +20,7 @@ import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
 import Teams from "./Teams";
+import { startReminderScheduler } from "@/services/reminderScheduler";
 
 export default function AppWrapper() {
   const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
@@ -251,6 +252,30 @@ export default function AppWrapper() {
     const newWorkspace = useWorkspaceStore.getState().activeWorkspaceId;
     previousWorkspaceRef.current = newWorkspace;
   };
+
+  // Start reminder scheduler when user is signed in
+  useEffect(() => {
+    if (!isSignedIn || !user) {
+      return;
+    }
+
+    // Store user email and name in localStorage for reminder scheduler
+    const userEmail = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
+    const userName = user.fullName || user.firstName || user.username || 'User';
+    
+    if (userEmail) {
+      localStorage.setItem('userEmail', userEmail);
+      localStorage.setItem('userName', userName);
+    }
+
+    // Start reminder scheduler
+    const stopScheduler = startReminderScheduler();
+
+    // Cleanup on unmount
+    return () => {
+      stopScheduler();
+    };
+  }, [isSignedIn, user]);
 
   return (
     <>
