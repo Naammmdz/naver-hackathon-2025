@@ -160,6 +160,12 @@
       "searchPlaceholder": "Tìm kiếm bảng...",
       "tryDifferentSearch": "Thử từ khóa tìm kiếm khác"
     },
+    "BoardView": {
+      "hideSidebarShortcut": "Ctrl+B để ẩn",
+      "hideSidebarTitle": "Nhấp để ẩn thanh bên",
+      "showSidebarHint": "Nhấp tay nắm để hiển thị",
+      "showSidebarTitle": "Nhấp để hiển thị thanh bên"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Thêm tệp đính kèm",

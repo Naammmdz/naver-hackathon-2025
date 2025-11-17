@@ -160,6 +160,12 @@
       "searchPlaceholder": "Search boards...",
       "tryDifferentSearch": "Try a different search term"
     },
+    "BoardView": {
+      "hideSidebarShortcut": "Ctrl+B to hide",
+      "hideSidebarTitle": "Click to hide sidebar",
+      "showSidebarHint": "Click handle to show",
+      "showSidebarTitle": "Click to show sidebar"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",
