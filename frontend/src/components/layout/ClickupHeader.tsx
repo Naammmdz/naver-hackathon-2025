@@ -12,7 +12,7 @@ import { OnlineUsers } from '@/components/board/OnlineUsers';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
-  currentView: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
+  currentView: 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph';
 }
 
 export const ClickupHeader = memo(function ClickupHeader({
