@@ -156,6 +156,9 @@
       "placeholder": "Nhập câu hỏi của bạn...",
       "sendButtonSr": "Gửi",
       "welcomeMessage": "Xin chào! Tôi là trợ lý AI toàn cục. Tôi có thể giúp gì cho bạn hôm nay?"
+    },
+    "ProtectedRoute": {
+      "loadingUserInfo": "Đang tải thông tin người dùng..."
     }
   },
   "analytics": {
