@@ -143,6 +143,23 @@
     "doneDescription": "Completed tasks"
   },
   "components": {
+    "BoardSidebar": {
+      "boardPlural": "boards",
+      "boardSingular": "board",
+      "cancel": "Cancel",
+      "createFirstBoard": "Create your first board",
+      "delete": "Delete",
+      "deleteBoardDescription": "Are you sure you want to delete this board? This action cannot be undone.",
+      "deleteBoardTitle": "Delete Board",
+      "headerTitle": "Boards",
+      "loadingBoards": "Loading boards...",
+      "newBoardPlaceholder": "Board name...",
+      "noBoardsFound": "No boards found",
+      "noBoardsYet": "No boards yet",
+      "rename": "Rename",
+      "searchPlaceholder": "Search boards...",
+      "tryDifferentSearch": "Try a different search term"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",

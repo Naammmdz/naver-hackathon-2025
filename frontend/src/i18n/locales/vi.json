@@ -143,6 +143,23 @@
     "doneDescription": "Các công việc đã hoàn thành"
   },
   "components": {
+    "BoardSidebar": {
+      "boardPlural": "bảng",
+      "boardSingular": "bảng",
+      "cancel": "Hủy",
+      "createFirstBoard": "Tạo bảng đầu tiên của bạn",
+      "delete": "Xóa",
+      "deleteBoardDescription": "Bạn có chắc chắn muốn xóa bảng này? Hành động này không thể hoàn tác.",
+      "deleteBoardTitle": "Xóa Bảng",
+      "headerTitle": "Bảng",
+      "loadingBoards": "Đang tải bảng...",
+      "newBoardPlaceholder": "Tên bảng...",
+      "noBoardsFound": "Không tìm thấy bảng nào",
+      "noBoardsYet": "Chưa có bảng nào",
+      "rename": "Đổi tên",
+      "searchPlaceholder": "Tìm kiếm bảng...",
+      "tryDifferentSearch": "Thử từ khóa tìm kiếm khác"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Thêm tệp đính kèm",
