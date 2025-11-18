@@ -253,7 +253,6 @@ class DocumentIngestion:
             
             if not self.dry_run:
                 self.db_session.rollback()
-        
         return results
     
     @log_execution_time(logger)
@@ -439,7 +438,7 @@ def ingest_single_document(
     file_path: str,
     workspace_id: str,
     title: str = None,
-    user_id: str = "system",
+    user_id: str = "api-user",
     db=None
 ) -> Dict[str, Any]:
     """
@@ -455,14 +454,21 @@ def ingest_single_document(
         db: Database session (optional, creates new if not provided)
         
     Returns:
-        Dict with document_id, title, and chunks_created
+        Dict with document_id, title, chunks_created, success, and error fields
     """
     from pathlib import Path
     from database.connection import get_db_session
     
     file_path_obj = Path(file_path)
     if not file_path_obj.exists():
-        raise FileNotFoundError(f"File not found: {file_path}")
+        logger.error(f"File not found: {file_path}")
+        return {
+            'document_id': None,
+            'title': title or file_path_obj.stem,
+            'chunks_created': 0,
+            'success': False,
+            'error': f"File not found: {file_path}"
+        }
     
     # Use provided db session or create new one
     if db is None:
@@ -478,7 +484,7 @@ def ingest_single_document(
             workspace_id=workspace_id,
             user_id=user_id,
             chunker_method="paragraph",
-            embedding_provider="naver",  # Use naver as default from config
+            embedding_provider="huggingface",  # Use huggingface as default
             dry_run=False
         )
         
@@ -492,12 +498,31 @@ def ingest_single_document(
         result = ingestion.ingest_file(file_path_obj)
         
         if not result['success']:
-            raise Exception(f"Ingestion failed: {result.get('error', 'Unknown error')}")
+            error_msg = result.get('error', 'Unknown error')
+            logger.error(f"Ingestion failed: {error_msg}")
+            return {
+                'document_id': None,
+                'title': title or file_path_obj.stem,
+                'chunks_created': 0,
+                'success': False,
+                'error': error_msg
+            }
         
         return {
             'document_id': result['document_id'],
             'title': title or file_path_obj.stem,
-            'chunks_created': result['chunks_created']
+            'chunks_created': result['chunks_created'],
+            'success': True,
+            'error': None
+        }
+    except Exception as e:
+        logger.error(f"Error ingesting document: {e}", exc_info=True)
+        return {
+            'document_id': None,
+            'title': title or file_path_obj.stem,
+            'chunks_created': 0,
+            'success': False,
+            'error': str(e)
         }
     finally:
         if should_close and 'db_session' in locals():

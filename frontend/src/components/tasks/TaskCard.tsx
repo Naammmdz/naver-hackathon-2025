@@ -19,9 +19,10 @@ import { Task } from "@/types/task";
 import { DraggableAttributes } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Calendar, CheckSquare, Clock, MoreHorizontal, Plane } from "lucide-react";
+import { Calendar, CheckSquare, Clock, MoreHorizontal, Plane, Mail } from "lucide-react";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useUser } from "@clerk/clerk-react";
 
 interface TaskCardProps {
   task: Task;
@@ -46,6 +47,7 @@ export function TaskCard({
   const { toggleTaskSelection, deleteTask, moveTask, canMoveTaskToDone } = useTaskStore();
   const { startSession } = useFocusFly();
   const { toast } = useToast();
+  const { user } = useUser();
 
   // Make the card sortable/draggable
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: task.id });
@@ -150,6 +152,55 @@ export function TaskCard({
               }}>
                 <Plane className="mr-2 h-4 w-4" />
                 <span>Focus Fly</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  // Get user email from Clerk
+                  const userEmail = user?.primaryEmailAddress?.emailAddress || localStorage.getItem('userEmail') || '';
+                  const userName = user?.fullName || user?.firstName || localStorage.getItem('userName') || 'User';
+
+                  if (!userEmail) {
+                    toast({
+                      title: 'Email not found',
+                      description: 'Please set your email in settings to receive reminders',
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
+
+                  const { sendTaskReminder } = await import('@/services/emailService');
+                  const result = await sendTaskReminder({
+                    taskId: task.id,
+                    taskTitle: task.title,
+                    taskDescription: task.description,
+                    dueDate: task.dueDate ? (typeof task.dueDate === 'string' ? task.dueDate : task.dueDate.toISOString()) : undefined,
+                    recipientEmail: userEmail,
+                    recipientName: userName,
+                  });
+
+                  if (result.success) {
+                    toast({
+                      title: 'Reminder sent!',
+                      description: 'A reminder email has been sent to your inbox',
+                    });
+                  } else {
+                    toast({
+                      title: 'Failed to send reminder',
+                      description: result.error || 'Please try again later',
+                      variant: 'destructive',
+                    });
+                  }
+                } catch (error) {
+                  toast({
+                    title: 'Error',
+                    description: 'Failed to send reminder email',
+                    variant: 'destructive',
+                  });
+                }
+              }}>
+                <Mail className="mr-2 h-4 w-4" />
+                Send Reminder
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => {
                 e.stopPropagation();

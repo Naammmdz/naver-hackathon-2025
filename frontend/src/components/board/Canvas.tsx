@@ -14,6 +14,7 @@ import type {
 import { parseMermaidToExcalidraw } from '@excalidraw/mermaid-to-excalidraw';
 import { Loader2, Wand2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 // User identity awareness is managed by useUserIdentityAwareness hook in AppWrapper
 // Canvas only manages boardCursor to avoid conflicts
 
@@ -87,6 +88,7 @@ const prepareSceneForEditor = (snapshot: StoredScene): ExcalidrawInitialDataStat
 };
 
 export function Canvas() {
+  const { t } = useTranslation();
   const { activeBoardId, boards, updateBoardContent } = useBoardStore();
   const [isDark, setIsDark] = useState(false);
   const activeBoardIdRef = useRef<string | null>(activeBoardId ?? null);
@@ -432,24 +434,24 @@ export function Canvas() {
               className="rounded-full shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
               <Wand2 className="h-5 w-5" />
-              <span className="ml-2 hidden sm:inline">AI Draw</span>
+              <span className="ml-2 hidden sm:inline">{t('components.Canvas.aiDrawButton')}</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Generate Diagram with AI</DialogTitle>
+              <DialogTitle>{t('components.Canvas.generateDiagramTitle')}</DialogTitle>
               <DialogDescription>
-                Describe the diagram you want to create and AI will generate it for you.
+                {t('components.Canvas.generateDiagramDescription')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
                 <label htmlFor="prompt" className="text-sm font-medium">
-                  Describe your diagram
+                  {t('components.Canvas.describeDiagramLabel')}
                 </label>
                 <Input
                   id="prompt"
-                  placeholder="e.g., Create a flowchart for user authentication process"
+                  placeholder={t('components.Canvas.examplePlaceholder')}
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={(e) => {
@@ -466,7 +468,7 @@ export function Canvas() {
                   onClick={() => setIsDialogOpen(false)}
                   disabled={isGenerating}
                 >
-                  Cancel
+                  {t('components.Canvas.cancelButton')}
                 </Button>
                 <Button
                   onClick={generateDiagram}
@@ -476,12 +478,12 @@ export function Canvas() {
                   {isGenerating ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generating...
+                      {t('components.Canvas.generatingText')}
                     </>
                   ) : (
                     <>
                       <Wand2 className="h-4 w-4 mr-2" />
-                      Generate
+                      {t('components.Canvas.generateButton')}
                     </>
                   )}
                 </Button>

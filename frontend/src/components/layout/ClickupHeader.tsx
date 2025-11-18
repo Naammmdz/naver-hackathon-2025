@@ -151,8 +151,8 @@ export const ClickupHeader = memo(function ClickupHeader({
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Online Users - global presence */}
-          <OnlineUsers maxVisible={3} size="md" showLabel={false} />
+          {/* Online Users - global presence (Google Docs style) */}
+          <OnlineUsers maxVisible={4} size="sm" showLabel={false} />
           
           <div className="h-6 w-px bg-border hidden sm:block" />
           
