@@ -233,6 +233,11 @@
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Loading user information..."
+    },
+    "QuickTodoList": {
+      "addOneAbove": "Add one above to get started",
+      "addTodoPlaceholder": "Add a todo...",
+      "noTodosYet": "No todos yet"
     }
   },
   "analytics": {
