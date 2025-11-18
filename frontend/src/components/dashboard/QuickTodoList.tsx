@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function QuickTodoList() {
+  const { t } = useTranslation();
   const [todoItems, setTodoItems] = useState<Array<{ id: string; text: string; completed: boolean }>>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -52,7 +54,7 @@ export function QuickTodoList() {
       <div className="flex gap-2">
         <Input
           type="text"
-          placeholder="Add a todo..."
+          placeholder={t('components.QuickTodoList.addTodoPlaceholder')}
           value={newTodoText}
           onChange={(e) => setNewTodoText(e.target.value)}
           onKeyDown={(e) => {
@@ -76,8 +78,8 @@ export function QuickTodoList() {
       <div className="flex-1 overflow-y-auto space-y-1">
         {todoItems.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
-            <p className="text-xs">No todos yet</p>
-            <p className="text-[10px] mt-1">Add one above to get started</p>
+            <p className="text-xs">{t('components.QuickTodoList.noTodosYet')}</p>
+            <p className="text-[10px] mt-1">{t('components.QuickTodoList.addOneAbove')}</p>
           </div>
         ) : (
           todoItems.map((todo) => (

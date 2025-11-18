@@ -193,6 +193,11 @@
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Đang tải thông tin người dùng..."
+    },
+    "QuickTodoList": {
+      "addOneAbove": "Thêm một ở trên để bắt đầu",
+      "addTodoPlaceholder": "Thêm việc cần làm...",
+      "noTodosYet": "Chưa có việc cần làm"
     }
   },
   "analytics": {
