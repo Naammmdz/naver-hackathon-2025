@@ -12,6 +12,7 @@ import { useWorkspaceStore } from '@/store/workspaceStore';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { useWorkspaceYjs } from '@/hooks/useWorkspaceYjs';
 import { getColor } from '@/lib/userColors';
+import { useTranslation } from 'react-i18next';
 
 interface DocumentEditorProps {
   document: Document;
@@ -31,6 +32,7 @@ export function DocumentEditor({
   const { isSignedIn, userId } = useAuth();
   const { user } = useUser();
   const activeWorkspaceId = useWorkspaceStore(s => s.activeWorkspaceId);
+  const { t } = useTranslation();
   
   // Use workspace-level Yjs provider instead of creating separate provider
   const { provider, ydoc, isConnected } = useWorkspaceYjs({
@@ -43,7 +45,7 @@ export function DocumentEditor({
     if (!Array.isArray(blocks) || blocks.length === 0) {
       return [{
         type: 'heading',
-        content: [{ text: document?.title || 'Untitled' }],
+        content: [{ text: document?.title || t('components.DocumentEditor.untitled') }],
         props: { level: 1 },
       }];
     }
@@ -179,7 +181,7 @@ export function DocumentEditor({
       return [
         {
           type: 'heading',
-          content: [{ text: document.title || 'Untitled' }],
+          content: [{ text: document.title || t('components.DocumentEditor.untitled') }],
           props: { level: 1 },
         },
       ];
@@ -193,7 +195,7 @@ export function DocumentEditor({
       return [
         {
           type: 'heading',
-          content: [{ text: firstBlockText || document.title || 'Untitled' }],
+          content: [{ text: firstBlockText || document.title || t('components.DocumentEditor.untitled') }],
           props: { level: 1 },
         },
         ...content.slice(1),
@@ -205,7 +207,7 @@ export function DocumentEditor({
 
     if (!headingText.trim()) {
       // Ensure content is in correct format: array of inline content objects
-      firstBlock.content = [{ text: document.title || 'Untitled' }];
+      firstBlock.content = [{ text: document.title || t('components.DocumentEditor.untitled') }];
     } else {
       // Ensure content format is correct (array of inline content objects)
       if (!Array.isArray(firstBlock.content)) {
@@ -363,13 +365,13 @@ export function DocumentEditor({
   
   // Store document title in ref to prevent editor re-render when title changes
   // This prevents cursor loss when title is updated
-  const documentTitleRef = useRef(document?.title || 'Untitled');
+  const documentTitleRef = useRef(document?.title || t('components.DocumentEditor.untitled'));
   
   // Update title ref only when document.id changes (new document)
   // Not when title changes (to prevent editor re-render)
   useEffect(() => {
     if (document?.id) {
-      documentTitleRef.current = document.title || 'Untitled';
+      documentTitleRef.current = document.title || t('components.DocumentEditor.untitled');
     }
   }, [document?.id]); // Only depend on document.id, not document.title
   
@@ -580,7 +582,7 @@ export function DocumentEditor({
               }
               
               const headingText = extractInlineText((firstBlock as any)?.content || '');
-              const defaultTitle = documentTitleRef.current || 'Untitled';
+              const defaultTitle = documentTitleRef.current || t('components.DocumentEditor.untitled');
               const titleToUse = headingText.trim() || defaultTitle;
               
               // Insert heading 1 before first block
@@ -715,7 +717,7 @@ export function DocumentEditor({
               // Document is empty, insert heading 1 using BlockNote API
               try {
                 // Try different content formats that BlockNote might accept
-                const titleText = documentTitleRef.current || 'Untitled';
+                const titleText = documentTitleRef.current || t('components.DocumentEditor.untitled');
                 wrappedEditor.insertBlocks(
                   [{ 
                     type: 'heading', 
@@ -738,7 +740,7 @@ export function DocumentEditor({
               if (firstBlock.type !== 'heading' || (firstBlock as any).props?.level !== 1) {
                 // Insert heading 1 before first block, then remove first block
                 try {
-                  const titleText = documentTitleRef.current || 'Untitled';
+                  const titleText = documentTitleRef.current || t('components.DocumentEditor.untitled');
                   wrappedEditor.insertBlocks(
                     [{ type: 'heading', props: { level: 1 }, content: titleText }],
                     firstBlock,
@@ -816,7 +818,7 @@ export function DocumentEditor({
             
             if (!isFirstBlockHeading && content.length > 0) {
               // First block is not heading 1, restore it
-              const defaultTitle = documentTitleRef.current || 'Untitled';
+              const defaultTitle = documentTitleRef.current || t('components.DocumentEditor.untitled');
               
               // Use setTimeout to avoid conflicts with onChange
               setTimeout(() => {
@@ -836,7 +838,7 @@ export function DocumentEditor({
               // Document is empty, restore heading 1
               setTimeout(() => {
                 try {
-                  const defaultTitle = documentTitleRef.current || 'Untitled';
+                  const defaultTitle = documentTitleRef.current || t('components.DocumentEditor.untitled');
                   wrappedEditor.insertBlocks(
                     [{ type: 'heading', props: { level: 1 }, content: defaultTitle }],
                     undefined,

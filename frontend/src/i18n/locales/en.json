@@ -310,15 +310,8 @@
       "removeLink": "Remove link",
       "selectTask": "Select Task"
     },
-    "DashboardCard": {
-      "cardSettings": "Card settings",
-      "customize": "Customize",
-      "dragToReorder": "Drag to reorder",
-      "removeCard": "Remove card",
-      "removeThisCard": "Remove this card",
-      "resizeDiagonal": "Resize (diagonal)",
-      "resizeHorizontal": "Resize (horizontal)",
-      "resizeVertical": "Resize (vertical)"
+    "DocumentEditor": {
+      "untitled": "Untitled"
     },
     "DocumentEditorDialog": {
       "close": "Close",

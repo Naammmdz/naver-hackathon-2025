@@ -306,6 +306,9 @@
       "removeLink": "Xóa liên kết",
       "selectTask": "Chọn nhiệm vụ"
     },
+    "DocumentEditor": {
+      "untitled": "Chưa có tiêu đề"
+    },
     "DocumentEditorDialog": {
       "close": "Đóng",
       "documentIcon": "📄",
