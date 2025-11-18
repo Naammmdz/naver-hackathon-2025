@@ -260,6 +260,33 @@
       "close": "Close",
       "documentIcon": "📄",
       "editDocumentDescription": "Edit document content. Changes sync in realtime."
+    },
+    "DocumentSidebar": {
+      "backToDocuments": "Back to Documents",
+      "cancel": "Cancel",
+      "createFirstDocument": "Create your first document",
+      "createSubdocument": "Create Subdocument",
+      "delete": "Delete",
+      "deleteDocument": "Delete Document",
+      "deleteDocumentDescription": "Are you sure you want to delete this document? It will be moved to trash and can be restored later.",
+      "deletePermanently": "Delete Permanently",
+      "deletePermanentlyButton": "Delete Permanently",
+      "deletePermanentlyDescription": "Are you sure you want to permanently delete this document? This action cannot be undone.",
+      "document": "document",
+      "documents": "documents",
+      "documentsTitle": "Documents",
+      "item": "item",
+      "items": "items",
+      "noDocumentsFound": "No documents found",
+      "noDocumentsYet": "No documents yet",
+      "noSubdocuments": "No subdocuments",
+      "rename": "Rename",
+      "restore": "Restore",
+      "searchDocsPlaceholder": "Search docs...",
+      "trash": "Trash",
+      "trashTitle": "Trash",
+      "tryDifferentSearch": "Try a different search term",
+      "viewTrash": "View Trash"
     }
   },
   "analytics": {

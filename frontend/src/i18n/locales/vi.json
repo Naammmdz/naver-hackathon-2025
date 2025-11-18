@@ -260,6 +260,33 @@
       "close": "Đóng",
       "documentIcon": "📄",
       "editDocumentDescription": "Chỉnh sửa nội dung tài liệu. Thay đổi đồng bộ theo thời gian thực."
+    },
+    "DocumentSidebar": {
+      "backToDocuments": "Quay lại Tài liệu",
+      "cancel": "Hủy",
+      "createFirstDocument": "Tạo tài liệu đầu tiên của bạn",
+      "createSubdocument": "Tạo tài liệu con",
+      "delete": "Xóa",
+      "deleteDocument": "Xóa Tài liệu",
+      "deleteDocumentDescription": "Bạn có chắc chắn muốn xóa tài liệu này? Nó sẽ được chuyển vào thùng rác và có thể khôi phục sau.",
+      "deletePermanently": "Xóa Vĩnh viễn",
+      "deletePermanentlyButton": "Xóa Vĩnh viễn",
+      "deletePermanentlyDescription": "Bạn có chắc chắn muốn xóa vĩnh viễn tài liệu này? Hành động này không thể hoàn tác.",
+      "document": "tài liệu",
+      "documents": "tài liệu",
+      "documentsTitle": "Tài liệu",
+      "item": "mục",
+      "items": "mục",
+      "noDocumentsFound": "Không tìm thấy tài liệu nào",
+      "noDocumentsYet": "Chưa có tài liệu nào",
+      "noSubdocuments": "Không có tài liệu con",
+      "rename": "Đổi tên",
+      "restore": "Khôi phục",
+      "searchDocsPlaceholder": "Tìm kiếm tài liệu...",
+      "trash": "Thùng rác",
+      "trashTitle": "Thùng rác",
+      "tryDifferentSearch": "Thử từ khóa tìm kiếm khác",
+      "viewTrash": "Xem Thùng rác"
     }
   },
   "analytics": {
