@@ -771,6 +771,14 @@
     "FocusFlyProvider": {
       "confirmEndFlight": "Bạn có chắc chắn muốn kết thúc chuyến bay không? Tiến độ sẽ bị mất.",
       "hookError": "useFocusFly phải được sử dụng trong FocusFlyProvider"
+    },
+    "GraphView": {
+      "containerNotAvailable": "Container không khả dụng",
+      "dragScrollHoverClick": "Kéo · Cuộn · Di chuột · Nhấp",
+      "failedToLoadGraphData": "Không thể tải dữ liệu biểu đồ",
+      "loadingGraphView": "Đang tải chế độ xem biểu đồ...",
+      "vennModeOff": "Chế độ Venn: TẮT",
+      "vennModeOn": "Chế độ Venn: BẬT"
     }
   }
 }

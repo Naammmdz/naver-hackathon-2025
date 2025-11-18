@@ -759,6 +759,14 @@
       "flightInfo": "Flight Info",
       "loadingRoute": "Loading random route...",
       "status": "Status"
+    },
+    "GraphView": {
+      "containerNotAvailable": "Container not available",
+      "dragScrollHoverClick": "Drag · Scroll · Hover · Click",
+      "failedToLoadGraphData": "Failed to load graph data",
+      "loadingGraphView": "Loading graph view...",
+      "vennModeOff": "Venn mode: OFF",
+      "vennModeOn": "Venn mode: ON"
     }
   }
 }

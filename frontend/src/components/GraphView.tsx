@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { initGraph } from "@/lib/graph/initGraph";
 import { fetchGraphData, fetchDemoGraphData, type GraphData } from "@/lib/api/graphApi";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface GraphViewProps {
 }
 
 export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const graphApiRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
 
         if (!containerRef.current) {
           console.error("[GraphView] Container still not available after wait");
-          setError("Container not available");
+          setError(t('components.GraphView.containerNotAvailable'));
           setLoading(false);
           return;
         }
@@ -111,7 +113,7 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
       } catch (e) {
         console.error("Failed to load graph:", e);
         if (!cancelled) {
-          setError("Failed to load graph data");
+          setError(t('components.GraphView.failedToLoadGraphData'));
           setLoading(false);
         }
       }
@@ -145,7 +147,7 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
         }`}>
           <div className="flex flex-col items-center gap-3">
             <Loader2 className={`h-8 w-8 animate-spin ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <p className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Loading graph view...</p>
+            <p className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>{t('components.GraphView.loadingGraphView')}</p>
           </div>
         </div>
       )}
@@ -172,7 +174,7 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
                 ? "bg-slate-900/90 border border-slate-700/50 text-slate-300"
                 : "bg-white/90 border border-slate-200/50 text-slate-600 shadow-sm"
             }`}>
-              Drag · Scroll · Hover · Click
+              {t('components.GraphView.dragScrollHoverClick')}
             </div>
           </div>
 
@@ -191,7 +193,7 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
                     : "bg-white/80 border-slate-300 text-slate-600 hover:bg-slate-50"
               }`}
             >
-              Venn mode: {vennMode ? "ON" : "OFF"}
+              {vennMode ? t('components.GraphView.vennModeOn') : t('components.GraphView.vennModeOff')}
             </Button>
           </div>
         </>
