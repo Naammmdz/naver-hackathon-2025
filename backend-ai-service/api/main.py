@@ -1,4 +1,4 @@
-w"""
+"""
 Main FastAPI Application
 
 Provides REST API endpoints for:
