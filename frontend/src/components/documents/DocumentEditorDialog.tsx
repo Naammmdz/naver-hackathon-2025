@@ -12,6 +12,7 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useWorkspaceYjs } from "@/hooks/useWorkspaceYjs";
 import { DocumentEditor } from "@/components/documents/DocumentEditor";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface DocumentEditorDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ export function DocumentEditorDialog({
   onOpenChange,
   documentId,
 }: DocumentEditorDialogProps) {
+  const { t } = useTranslation();
   const { getDocument, updateDocument } = useDocumentStore();
   const document = documentId ? getDocument(documentId) : null;
 
@@ -66,10 +68,10 @@ export function DocumentEditorDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            <span>📄 {document.title}</span>
+            <span>{t('components.DocumentEditorDialog.documentIcon')} {document.title}</span>
           </DialogTitle>
           <DialogDescription>
-            Edit document content. Changes sync in realtime.
+            {t('components.DocumentEditorDialog.editDocumentDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -85,7 +87,7 @@ export function DocumentEditorDialog({
 
         <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t('components.DocumentEditorDialog.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

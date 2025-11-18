@@ -255,6 +255,11 @@
       "relationType": "Loại quan hệ",
       "removeLink": "Xóa liên kết",
       "selectTask": "Chọn nhiệm vụ"
+    },
+    "DocumentEditorDialog": {
+      "close": "Đóng",
+      "documentIcon": "📄",
+      "editDocumentDescription": "Chỉnh sửa nội dung tài liệu. Thay đổi đồng bộ theo thời gian thực."
     }
   },
   "analytics": {

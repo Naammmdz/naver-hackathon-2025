@@ -255,6 +255,11 @@
       "relationType": "Relation Type",
       "removeLink": "Remove link",
       "selectTask": "Select Task"
+    },
+    "DocumentEditorDialog": {
+      "close": "Close",
+      "documentIcon": "📄",
+      "editDocumentDescription": "Edit document content. Changes sync in realtime."
     }
   },
   "analytics": {
