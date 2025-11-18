@@ -384,6 +384,17 @@
       "tryDifferentSearchTerm": "Try a different search term",
       "viewPastConversations": "View your past conversations or start a new chat session",
       "yesterday": "Yesterday"
+    },
+    "TaskAnalysisDisplay": {
+      "aiInsights": "AI Insights",
+      "detectedRisks": "Detected Risks",
+      "noAnalysisDataAvailable": "No analysis data available.",
+      "noDataToDisplay": "No data to display",
+      "nullValue": "—",
+      "queryResults": "Query Results",
+      "showingResults": "Showing {{count}} results",
+      "taskAnalysis": "Task Analysis",
+      "tasksAffected": "tasks affected"
     }
   },
   "analytics": {

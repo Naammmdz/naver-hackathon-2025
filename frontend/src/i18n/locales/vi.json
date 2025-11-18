@@ -384,6 +384,14 @@
       "tryDifferentSearchTerm": "Thử từ khóa tìm kiếm khác",
       "viewPastConversations": "Xem các cuộc trò chuyện trước đây hoặc bắt đầu phiên trò chuyện mới",
       "yesterday": "Hôm qua"
+    },
+    "TaskAnalysisDisplay": {
+      "aiInsights": "Thông tin chi tiết từ AI",
+      "detectedRisks": "Rủi ro được phát hiện",
+      "noAnalysisDataAvailable": "Không có dữ liệu phân tích nào khả dụng.",
+      "noDataToDisplay": "Không có dữ liệu để hiển thị",
+      "queryResults": "Kết quả truy vấn",
+      "taskAnalysis": "Phân tích nhiệm vụ"
     }
   },
   "analytics": {
