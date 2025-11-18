@@ -6,6 +6,7 @@ import { AgentIcon, AgentIconType } from '../icons/AgentIcon'
 import { ChatHistoryGroup } from './ChatHistoryGroup'
 import { TldrawDiffViewer } from './TldrawDiffViewer'
 import { getActionInfo } from './getActionInfo'
+import { useTranslation } from 'react-i18next'
 
 export function ChatHistoryGroupWithDiff({
 	group,
@@ -17,6 +18,7 @@ export function ChatHistoryGroupWithDiff({
 	const { items } = group
 	const { editor } = agent
 	const diff = useMemo(() => squashRecordDiffs(items.map((item) => item.diff)), [items])
+	const { t } = useTranslation()
 
 	// Accept all changes from this group
 	const handleAccept = useCallback(() => {
@@ -85,10 +87,10 @@ export function ChatHistoryGroupWithDiff({
 		<div className="chat-history-change">
 			<div className="chat-history-change-acceptance">
 				<button onClick={handleReject} disabled={acceptance === 'rejected'}>
-					{acceptance === 'rejected' ? 'Rejected' : 'Reject'}
+					{acceptance === 'rejected' ? t('components.ChatHistoryGroupWithDiff.rejected') : t('components.ChatHistoryGroupWithDiff.reject')}
 				</button>
 				<button onClick={handleAccept} disabled={acceptance === 'accepted'}>
-					{acceptance === 'accepted' ? 'Accepted' : 'Accept'}
+					{acceptance === 'accepted' ? t('components.ChatHistoryGroupWithDiff.accepted') : t('components.ChatHistoryGroupWithDiff.accept')}
 				</button>
 			</div>
 			<DiffSteps steps={steps} />

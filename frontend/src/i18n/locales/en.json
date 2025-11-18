@@ -230,6 +230,12 @@
       "clearChatHistory": "Clear chat history",
       "errorLoadingChatHistory": "Error loading chat history"
     },
+    "ChatHistoryGroupWithDiff": {
+      "accept": "Accept",
+      "accepted": "Accepted",
+      "reject": "Reject",
+      "rejected": "Rejected"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",

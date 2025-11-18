@@ -230,6 +230,12 @@
       "clearChatHistory": "Xóa lịch sử trò chuyện",
       "errorLoadingChatHistory": "Lỗi tải lịch sử trò chuyện"
     },
+    "ChatHistoryGroupWithDiff": {
+      "accept": "Chấp nhận",
+      "accepted": "Đã chấp nhận",
+      "reject": "Từ chối",
+      "rejected": "Đã từ chối"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "Trợ lý AI",
       "attachButtonSr": "Thêm tệp đính kèm",
