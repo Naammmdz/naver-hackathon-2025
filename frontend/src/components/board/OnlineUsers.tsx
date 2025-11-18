@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/clerk-react";
 import { Users } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Simple fallback avatar URL generator
 const getDefaultAvatar = (id: string) => {
@@ -30,6 +31,7 @@ export const OnlineUsers = memo(function OnlineUsers({
   showLabel = true,
   className 
 }: OnlineUsersProps) {
+  const { t } = useTranslation()
   const activeUsers = useOnlineUsers();
   const { userId } = useAuth();
   const [showAllUsers, setShowAllUsers] = useState(false);
@@ -164,7 +166,7 @@ export const OnlineUsers = memo(function OnlineUsers({
               <TooltipContent side="bottom">
                 <div className="text-xs">
                   <p className="font-medium">{getDisplayName(collaborator)}</p>
-                  <p className="text-muted-foreground">Editing now</p>
+                  <p className="text-muted-foreground">{t('components.OnlineUsers.editingNow')}</p>
                 </div>
               </TooltipContent>
             </Tooltip>
@@ -187,7 +189,7 @@ export const OnlineUsers = memo(function OnlineUsers({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    <p className="text-xs">View all online users</p>
+                    <p className="text-xs">{t('components.OnlineUsers.viewAllOnlineUsers')}</p>
                   </TooltipContent>
                 </Tooltip>
               </PopoverTrigger>
@@ -195,7 +197,7 @@ export const OnlineUsers = memo(function OnlineUsers({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium mb-3">
                     <Users className="h-4 w-4" />
-                    <span>Online Users ({otherUsers.length})</span>
+                    <span>{t('components.OnlineUsers.onlineUsers')} ({otherUsers.length})</span>
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {otherUsers.map((collaborator) => (
@@ -236,7 +238,7 @@ export const OnlineUsers = memo(function OnlineUsers({
         {/* Label (hidden on small screens if needed) */}
         {showLabel && (
           <span className="text-xs text-muted-foreground hidden md:inline-block whitespace-nowrap">
-            {otherUsers.length} {otherUsers.length === 1 ? "user" : "users"} online
+            {otherUsers.length} {otherUsers.length === 1 ? t('components.OnlineUsers.userSingular') : t('components.OnlineUsers.userPlural')} {t('components.OnlineUsers.online')}
           </span>
         )}
       </div>

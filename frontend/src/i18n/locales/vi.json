@@ -210,9 +210,9 @@
       "errorLoadingChatHistory": "Lỗi tải lịch sử trò chuyện"
     },
     "GlobalChatPanel": {
-      "aiAvatarAlt": "AI Assistant",
+      "aiAvatarAlt": "Trợ lý AI",
       "attachButtonSr": "Thêm tệp đính kèm",
-      "buttonText": "AI Chat",
+      "buttonText": "Trò chuyện AI",
       "closeButtonAria": "Đóng panel trò chuyện",
       "defaultResponse": "Tôi đã ghi nhận yêu cầu của bạn. Tích hợp backend sẽ giúp tôi phản hồi thông minh hơn trong tương lai.",
       "headerSubtitle": "Hỗ trợ bạn mọi lúc mọi nơi",
@@ -222,6 +222,14 @@
       "placeholder": "Nhập câu hỏi của bạn...",
       "sendButtonSr": "Gửi",
       "welcomeMessage": "Xin chào! Tôi là trợ lý AI toàn cục. Tôi có thể giúp gì cho bạn hôm nay?"
+    },
+    "OnlineUsers": {
+      "editingNow": "Đang chỉnh sửa",
+      "online": "trực tuyến",
+      "onlineUsers": "Người dùng trực tuyến",
+      "userPlural": "người dùng",
+      "userSingular": "người dùng",
+      "viewAllOnlineUsers": "Xem tất cả người dùng trực tuyến"
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Đang tải thông tin người dùng..."

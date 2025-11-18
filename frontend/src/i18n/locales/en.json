@@ -214,14 +214,22 @@
       "attachButtonSr": "Add attachment",
       "buttonText": "AI Chat",
       "closeButtonAria": "Close chat panel",
-      "defaultResponse": "I have noted your request. Backend integration will help me respond more intelligently in the future.",
-      "headerSubtitle": "Support you anytime, anywhere",
+      "defaultResponse": "I've received your request. Backend integration will allow me to respond more intelligently in the future.",
+      "headerSubtitle": "Helping you anytime, anywhere",
       "headerTitle": "AI Assistant",
       "inputLabel": "Enter message to chat with AI assistant",
       "panelAriaLabel": "Chat with AI assistant",
       "placeholder": "Enter your question...",
       "sendButtonSr": "Send",
-      "welcomeMessage": "Hello! I am the global AI assistant. How can I help you today?"
+      "welcomeMessage": "Hello! I'm the global AI assistant. How can I help you today?"
+    },
+    "OnlineUsers": {
+      "editingNow": "Editing now",
+      "online": "online",
+      "onlineUsers": "Online Users",
+      "userPlural": "users",
+      "userSingular": "user",
+      "viewAllOnlineUsers": "View all online users"
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Loading user information..."
