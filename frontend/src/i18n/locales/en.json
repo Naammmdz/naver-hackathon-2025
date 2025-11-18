@@ -143,6 +143,27 @@
     "doneDescription": "Completed tasks"
   },
   "components": {
+    "AppSidebar": {
+      "allTasks": "All Tasks",
+      "byPriority": "By Priority",
+      "byStatus": "By Status",
+      "byTags": "By Tags",
+      "done": "Done",
+      "high": "High",
+      "inProgress": "In Progress",
+      "low": "Low",
+      "medium": "Medium",
+      "noTagsFound": "No tags found",
+      "overdue": "Overdue",
+      "planning": "Planning",
+      "quickFilters": "Quick Filters",
+      "searchPlaceholder": "Search tasks...",
+      "searchTagsPlaceholder": "Search tags...",
+      "smartCreate": "Smart Create",
+      "task": "Task",
+      "thisWeek": "This Week",
+      "today": "Today"
+    },
     "BoardSidebar": {
       "boardPlural": "boards",
       "boardSingular": "board",

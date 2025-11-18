@@ -143,6 +143,27 @@
     "doneDescription": "Các công việc đã hoàn thành"
   },
   "components": {
+    "AppSidebar": {
+      "allTasks": "Tất cả công việc",
+      "byPriority": "Theo độ ưu tiên",
+      "byStatus": "Theo tình trạng",
+      "byTags": "Theo thẻ",
+      "done": "Hoàn thành",
+      "high": "Cao",
+      "inProgress": "Đang thực hiện",
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "noTagsFound": "Không tìm thấy thẻ phù hợp.",
+      "overdue": "Quá hạn",
+      "planning": "Đang lên kế hoạch",
+      "quickFilters": "Trạng thái nhanh",
+      "searchPlaceholder": "Tìm kiếm task...",
+      "searchTagsPlaceholder": "Tìm thẻ...",
+      "smartCreate": "Smart Create",
+      "task": "Task",
+      "thisWeek": "7 ngày tới",
+      "today": "Hôm nay"
+    },
     "BoardSidebar": {
       "boardPlural": "bảng",
       "boardSingular": "bảng",
