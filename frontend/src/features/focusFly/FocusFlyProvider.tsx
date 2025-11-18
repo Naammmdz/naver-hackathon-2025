@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export type FocusSession = {
   taskId: string;
@@ -45,6 +46,7 @@ const initialState: FocusSession = {
 };
 
 export const FocusFlyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const [session, setSession] = useState<FocusSession | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -168,13 +170,13 @@ export const FocusFlyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const openModal = useCallback(() => setIsOpen(true), []);
   const closeModal = useCallback(() => {
     if (session?.step === 3) {
-        if (window.confirm("Are you sure you want to end the flight? Progress will be lost.")) {
+        if (window.confirm(t('components.FocusFlyProvider.confirmEndFlight'))) {
             reset();
         }
     } else {
         reset();
     }
-  }, [session, reset]);
+  }, [session, reset, t]);
 
   return (
     <FocusFlyContext.Provider
@@ -201,9 +203,10 @@ export const FocusFlyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 };
 
 export const useFocusFly = () => {
+  const { t } = useTranslation();
   const context = useContext(FocusFlyContext);
   if (context === undefined) {
-    throw new Error('useFocusFly must be used within a FocusFlyProvider');
+    throw new Error(t('components.FocusFlyProvider.hookError'));
   }
   return context;
 };

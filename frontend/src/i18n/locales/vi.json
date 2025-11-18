@@ -767,6 +767,10 @@
       "systems": "Hệ Thống",
       "termsOfService": "Điều Khoản Dịch Vụ",
       "twitter": "Twitter"
+    },
+    "FocusFlyProvider": {
+      "confirmEndFlight": "Bạn có chắc chắn muốn kết thúc chuyến bay không? Tiến độ sẽ bị mất.",
+      "hookError": "useFocusFly phải được sử dụng trong FocusFlyProvider"
     }
   }
 }

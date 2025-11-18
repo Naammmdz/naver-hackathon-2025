@@ -528,6 +528,10 @@
       "systems": "Systems",
       "termsOfService": "Terms of service",
       "twitter": "Twitter"
+    },
+    "FocusFlyProvider": {
+      "confirmEndFlight": "Are you sure you want to end the flight? Progress will be lost.",
+      "hookError": "useFocusFly must be used within a FocusFlyProvider"
     }
   },
   "analytics": {
