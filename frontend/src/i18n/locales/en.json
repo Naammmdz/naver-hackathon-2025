@@ -507,25 +507,10 @@
       "workspaceIsNowPublic": "Workspace is now public",
       "workspaceSettings": "Workspace Settings"
     },
-    "TaskReminderSettings": {
-      "beforeDueDate": "before due date",
-      "days": "Days",
-      "emailReminder": "Email Reminder",
-      "failedToUpdateReminder": "Failed to update reminder",
-      "hours": "Hours",
-      "minutes": "Minutes",
-      "noDueDate": "No due date",
-      "pleaseSetDueDateFirst": "Please set a due date for the task first",
-      "pleaseTryAgain": "Please try again",
-      "remindMe": "Remind me",
-      "reminderDisabled": "Reminder disabled",
-      "reminderEnabled": "Reminder enabled",
-      "reminderHasBeenDisabled": "Reminder has been disabled",
-      "reminderWillBeSentOn": "Reminder will be sent on:",
-      "saveReminderSettings": "Save Reminder Settings",
-      "sendReminderEmailBeforeDueDate": "Send reminder email before due date",
-      "setDueDateToEnableReminders": "Set a due date to enable reminders",
-      "youWillReceiveEmail": "You'll receive an email"
+    "Carousel": {
+      "nextSlide": "Next slide",
+      "previousSlide": "Previous slide",
+      "useCarouselError": "useCarousel must be used within a <Carousel />"
     }
   },
   "analytics": {
