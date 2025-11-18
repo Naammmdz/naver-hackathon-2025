@@ -316,6 +316,22 @@
       "removeLink": "Xóa liên kết",
       "selectTask": "Chọn nhiệm vụ"
     },
+    "TaskDocLinker": {
+      "addNotePlaceholder": "Thêm ghi chú về mối quan hệ này...",
+      "aiSuggested": "AI gợi ý",
+      "cancel": "Hủy",
+      "chooseDocumentPlaceholder": "Chọn một tài liệu...",
+      "connectDocumentTo": "Kết nối tài liệu với",
+      "linkDocument": "Liên kết tài liệu",
+      "linkDocumentToTask": "Liên kết tài liệu với công việc",
+      "linkedDocuments": "Tài liệu đã liên kết",
+      "noDocumentsAvailable": "Không có tài liệu nào khả dụng",
+      "noDocumentsLinkedYet": "Chưa có tài liệu nào được liên kết",
+      "noteOptional": "Ghi chú (Tùy chọn)",
+      "removeLink": "Xóa liên kết",
+      "selectDocument": "Chọn tài liệu",
+      "userAdded": "Người dùng thêm"
+    },
     "DocumentEditor": {
       "untitled": "Chưa có tiêu đề"
     },

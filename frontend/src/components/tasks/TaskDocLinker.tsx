@@ -22,6 +22,7 @@ import { useTaskDocStore } from "@/store/taskDocStore";
 import { RELATION_TYPE_LABELS, TaskDocRelationType } from "@/types/taskDoc";
 import { BookOpen, FileText, Link as LinkIcon, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface TaskDocLinkerProps {
   taskId: string;
@@ -30,6 +31,7 @@ interface TaskDocLinkerProps {
 }
 
 export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLinkerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string>("");
   const [relationType, setRelationType] = useState<TaskDocRelationType>("resource"); // Default to resource for task->doc
@@ -92,35 +94,35 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-muted-foreground">Linked Documents</h3>
+        <h3 className="text-sm font-semibold text-muted-foreground">{t("components.TaskDocLinker.linkedDocuments")}</h3>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              Link Document
+              {t("components.TaskDocLinker.linkDocument")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Link Document to Task</DialogTitle>
+              <DialogTitle>{t("components.TaskDocLinker.linkDocumentToTask")}</DialogTitle>
               <DialogDescription>
-                Connect a document to <strong>{taskTitle}</strong>
+                {t("components.TaskDocLinker.connectDocumentTo")} <strong>{taskTitle}</strong>
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               {/* Document Selection */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Select Document</label>
+                <label className="text-sm font-medium">{t("components.TaskDocLinker.selectDocument")}</label>
                 <Select value={selectedDocId} onValueChange={setSelectedDocId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a document..." />
+                    <SelectValue placeholder={t("components.TaskDocLinker.chooseDocumentPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     <ScrollArea className="max-h-[200px]">
                       {availableDocs.length === 0 ? (
                         <div className="p-4 text-sm text-muted-foreground text-center">
-                          No documents available
+                          {t("components.TaskDocLinker.noDocumentsAvailable")}
                         </div>
                       ) : (
                         availableDocs.map((doc) => (
@@ -139,9 +141,9 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
 
               {/* Optional Note */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Note (Optional)</label>
+                <label className="text-sm font-medium">{t("components.TaskDocLinker.noteOptional")}</label>
                 <Textarea
-                  placeholder="Add a note about this relation..."
+                  placeholder={t("components.TaskDocLinker.addNotePlaceholder")}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={3}
@@ -151,10 +153,10 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                {t("components.TaskDocLinker.cancel")}
               </Button>
               <Button onClick={handleLink} disabled={!selectedDocId}>
-                Link Document
+                {t("components.TaskDocLinker.linkDocument")}
               </Button>
             </div>
           </DialogContent>
@@ -164,7 +166,7 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
       {/* Linked Documents List */}
       {linkedDocs.length === 0 ? (
         <div className="text-sm text-muted-foreground text-center py-6 border border-dashed rounded-lg">
-          No documents linked yet
+          {t("components.TaskDocLinker.noDocumentsLinkedYet")}
         </div>
       ) : (
         <div className="space-y-2">
@@ -209,7 +211,7 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
                     {taskDoc.createdBy && (
                       <>
                         <span>•</span>
-                        <span>{taskDoc.createdBy === "ai" ? "AI suggested" : "User added"}</span>
+                        <span>{taskDoc.createdBy === "ai" ? t("components.TaskDocLinker.aiSuggested") : t("components.TaskDocLinker.userAdded")}</span>
                       </>
                     )}
                   </div>
@@ -225,7 +227,7 @@ export function TaskDocLinker({ taskId, taskTitle, onDocumentClick }: TaskDocLin
                     }}
                   >
                     <X className="h-4 w-4" />
-                    <span className="sr-only">Remove link</span>
+                    <span className="sr-only">{t("components.TaskDocLinker.removeLink")}</span>
                   </Button>
                 </div>
               </div>

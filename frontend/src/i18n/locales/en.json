@@ -320,6 +320,22 @@
       "removeLink": "Remove link",
       "selectTask": "Select Task"
     },
+    "TaskDocLinker": {
+      "addNotePlaceholder": "Add a note about this relation...",
+      "aiSuggested": "AI suggested",
+      "cancel": "Cancel",
+      "chooseDocumentPlaceholder": "Choose a document...",
+      "connectDocumentTo": "Connect a document to",
+      "linkDocument": "Link Document",
+      "linkDocumentToTask": "Link Document to Task",
+      "linkedDocuments": "Linked Documents",
+      "noDocumentsAvailable": "No documents available",
+      "noDocumentsLinkedYet": "No documents linked yet",
+      "noteOptional": "Note (Optional)",
+      "removeLink": "Remove link",
+      "selectDocument": "Select Document",
+      "userAdded": "User added"
+    },
     "DocumentEditor": {
       "untitled": "Untitled"
     },
