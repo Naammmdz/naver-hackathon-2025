@@ -245,6 +245,20 @@
       "sendButtonSr": "Send",
       "welcomeMessage": "Hello! I'm the global AI assistant. How can I help you today?"
     },
+    "HITLConfirmationDialog": {
+      "additionalCommentsLabel": "Additional Comments (Optional)",
+      "aiAgentConfirmationRequired": "AI Agent Confirmation Required",
+      "cancel": "Cancel",
+      "chooseYourResponse": "Choose Your Response",
+      "confirm": "Confirm",
+      "estimatedImpact": "Estimated Impact",
+      "processing": "Processing...",
+      "proposedAction": "Proposed Action",
+      "provideAdditionalContext": "Provide any additional context or reasoning for your decision...",
+      "reversible": "Reversible",
+      "timeRemaining": "Time remaining: ",
+      "userApprovalDescription": "The AI agent has detected a risky operation and needs your approval before proceeding."
+    },
     "OnlineUsers": {
       "editingNow": "Editing now",
       "online": "online",

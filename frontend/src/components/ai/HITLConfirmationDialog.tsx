@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 export interface ActionOption {
   action_key: string
@@ -63,6 +64,7 @@ export function HITLConfirmationDialog({
   onSubmit,
   isSubmitting = false,
 }: HITLConfirmationDialogProps) {
+  const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState<string>("")
   const [comment, setComment] = useState("")
   const [timeRemaining, setTimeRemaining] = useState(0)
@@ -145,9 +147,9 @@ export function HITLConfirmationDialog({
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <DialogTitle className="text-xl">AI Agent Confirmation Required</DialogTitle>
+              <DialogTitle className="text-xl">{t("components.HITLConfirmationDialog.aiAgentConfirmationRequired")}</DialogTitle>
               <DialogDescription className="mt-2">
-                The AI agent has detected a risky operation and needs your approval before proceeding.
+                {t("components.HITLConfirmationDialog.userApprovalDescription")}
               </DialogDescription>
             </div>
             <Badge variant="outline" className={cn("flex items-center gap-1", getSeverityColor(request.severity))}>
@@ -163,14 +165,14 @@ export function HITLConfirmationDialog({
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
               <span>
-                Time remaining: <span className="font-mono font-semibold">{formatTime(timeRemaining)}</span>
+                {t("components.HITLConfirmationDialog.timeRemaining")} <span className="font-mono font-semibold">{formatTime(timeRemaining)}</span>
               </span>
             </div>
 
             {/* Action Description */}
             <div className="space-y-2">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Proposed Action
+                {t("components.HITLConfirmationDialog.proposedAction")}
               </h3>
               <p className="text-base">{request.description}</p>
             </div>
@@ -179,7 +181,7 @@ export function HITLConfirmationDialog({
             <div className="rounded-lg bg-muted/50 p-4 space-y-2">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                Estimated Impact
+                {t("components.HITLConfirmationDialog.estimatedImpact")}
               </h3>
               <p className="text-sm text-muted-foreground">{request.estimated_impact}</p>
             </div>
@@ -187,7 +189,7 @@ export function HITLConfirmationDialog({
             {/* Options */}
             <div className="space-y-3">
               <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Choose Your Response
+                {t("components.HITLConfirmationDialog.chooseYourResponse")}
               </Label>
               <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
                 {request.options.map((option) => (
@@ -213,7 +215,7 @@ export function HITLConfirmationDialog({
                         {option.reversible && (
                           <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Reversible
+                            {t("components.HITLConfirmationDialog.reversible")}
                           </Badge>
                         )}
                       </div>
@@ -227,11 +229,11 @@ export function HITLConfirmationDialog({
             {/* Optional Comment */}
             <div className="space-y-2">
               <Label htmlFor="comment" className="text-sm">
-                Additional Comments (Optional)
+                {t("components.HITLConfirmationDialog.additionalCommentsLabel")}
               </Label>
               <Textarea
                 id="comment"
-                placeholder="Provide any additional context or reasoning for your decision..."
+                placeholder={t("components.HITLConfirmationDialog.provideAdditionalContext")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
@@ -244,7 +246,7 @@ export function HITLConfirmationDialog({
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             <X className="h-4 w-4 mr-2" />
-            Cancel
+            {t("components.HITLConfirmationDialog.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -253,12 +255,12 @@ export function HITLConfirmationDialog({
           >
             {isSubmitting ? (
               <>
-                <span className="animate-pulse">Processing...</span>
+                <span className="animate-pulse">{t("components.HITLConfirmationDialog.processing")}</span>
               </>
             ) : (
               <>
                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                Confirm
+                {t("components.HITLConfirmationDialog.confirm")}
               </>
             )}
           </Button>

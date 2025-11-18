@@ -55,3 +55,8 @@ test/
 backend-ai-service/docs
 backend-ai-service/data_sample
 backend-ai-service/docling
+
+
+markdownconverter.tsx
+reminderstoreage.tsx
+wrap.md

@@ -322,6 +322,20 @@
       "noteOptional": "Ghi chú (Tùy chọn)",
       "selectTask": "Chọn nhiệm vụ",
       "selectTaskPlaceholder": "Chọn nhiệm vụ..."
+    },
+    "HITLConfirmationDialog": {
+      "aiAgentConfirmationRequired": "Yêu cầu xác nhận từ AI Agent",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận",
+      "confirmationDescription": "AI agent yêu cầu xác nhận của bạn để tiếp tục hành động này. Vui lòng xem xét chi tiết bên dưới và xác nhận hoặc hủy.",
+      "confirmationTitle": "Yêu cầu xác nhận",
+      "continue": "Tiếp tục",
+      "detailsLabel": "Chi tiết",
+      "reasonLabel": "Lý do",
+      "reasonPlaceholder": "Nhập lý do cho quyết định của bạn...",
+      "reviewAction": "Xem xét hành động",
+      "reviewDetails": "Xem xét chi tiết của hành động yêu cầu xác nhận.",
+      "reviewTitle": "Xem xét hành động yêu cầu"
     }
   },
   "analytics": {
