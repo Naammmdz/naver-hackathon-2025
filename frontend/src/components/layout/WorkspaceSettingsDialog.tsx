@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { workspaceApi } from "@/lib/api/workspaceApi";
 import { useAuth } from "@clerk/clerk-react";
@@ -43,6 +44,7 @@ export function WorkspaceSettingsDialog({
   open,
   onOpenChange,
 }: WorkspaceSettingsDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user: currentUser, isLoaded: isAuthLoaded } = useAuth();
   const { activeWorkspaceId, workspaces, updateWorkspace, loadMembers, inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
@@ -89,8 +91,8 @@ export function WorkspaceSettingsDialog({
     } catch (error) {
       console.error("Failed to load workspace data:", error);
       toast({
-        title: "Error",
-        description: "Failed to load workspace settings",
+        title: t("components.WorkSpaceSettingDialog.error"),
+        description: t("components.WorkSpaceSettingDialog.failedToLoadWorkspaceSettings"),
         variant: "destructive",
       });
     } finally {
@@ -104,13 +106,13 @@ export function WorkspaceSettingsDialog({
     try {
       await updateWorkspace(activeWorkspaceId, { isPublic: checked });
       toast({
-        title: "Success",
-        description: `Workspace is now ${checked ? "public" : "private"}`,
+        title: t("components.WorkSpaceSettingDialog.success"),
+        description: checked ? t("components.WorkSpaceSettingDialog.workspaceIsNowPublic") : t("components.WorkSpaceSettingDialog.workspaceIsNowPrivate"),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update workspace",
+        title: t("components.WorkSpaceSettingDialog.error"),
+        description: t("components.WorkSpaceSettingDialog.failedToUpdateWorkspace"),
         variant: "destructive",
       });
     }
@@ -122,13 +124,13 @@ export function WorkspaceSettingsDialog({
     try {
       await updateWorkspace(activeWorkspaceId, { allowInvites: checked });
       toast({
-        title: "Success",
-        description: `Invites ${checked ? "enabled" : "disabled"}`,
+        title: t("components.WorkSpaceSettingDialog.success"),
+        description: checked ? t("components.WorkSpaceSettingDialog.invitesEnabled") : t("components.WorkSpaceSettingDialog.invitesDisabled"),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update workspace",
+        title: t("components.WorkSpaceSettingDialog.error"),
+        description: t("components.WorkSpaceSettingDialog.failedToUpdateWorkspace"),
         variant: "destructive",
       });
     }
@@ -141,14 +143,14 @@ export function WorkspaceSettingsDialog({
       await inviteMember(activeWorkspaceId, inviteEmail.trim(), inviteRole);
       setInviteEmail("");
       toast({
-        title: "Success",
-        description: "Invite sent successfully",
+        title: t("components.WorkSpaceSettingDialog.success"),
+        description: t("components.WorkSpaceSettingDialog.inviteSentSuccessfully"),
       });
       await loadData();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to send invite",
+        title: t("components.WorkSpaceSettingDialog.error"),
+        description: error.message || t("components.WorkSpaceSettingDialog.failedToSendInvite"),
         variant: "destructive",
       });
     }
@@ -160,14 +162,14 @@ export function WorkspaceSettingsDialog({
     try {
       await removeMember(activeWorkspaceId, memberId);
       toast({
-        title: "Success",
-        description: "Member removed",
+        title: t("components.WorkSpaceSettingDialog.success"),
+        description: t("components.WorkSpaceSettingDialog.memberRemoved"),
       });
       await loadData();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to remove member",
+        title: t("components.WorkSpaceSettingDialog.error"),
+        description: error.message || t("components.WorkSpaceSettingDialog.failedToRemoveMember"),
         variant: "destructive",
       });
     }
@@ -179,14 +181,14 @@ export function WorkspaceSettingsDialog({
     try {
       await updateMemberRole(activeWorkspaceId, memberId, role);
       toast({
-        title: "Success",
-        description: "Member role updated",
+        title: t("components.WorkSpaceSettingDialog.success"),
+        description: t("components.WorkSpaceSettingDialog.memberRoleUpdated"),
       });
       await loadData();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update role",
+        title: t("components.WorkSpaceSettingDialog.error"),
+        description: error.message || t("components.WorkSpaceSettingDialog.failedToUpdateRole"),
         variant: "destructive",
       });
     }
@@ -198,22 +200,22 @@ export function WorkspaceSettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Workspace Settings</DialogTitle>
+          <DialogTitle>{t("components.WorkSpaceSettingDialog.workspaceSettings")}</DialogTitle>
           <DialogDescription>
-            Manage your workspace settings and members
+            {t("components.WorkSpaceSettingDialog.manageWorkspaceSettingsAndMembers")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* General Settings */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">General Settings</h3>
+            <h3 className="text-lg font-semibold">{t("components.WorkSpaceSettingDialog.generalSettings")}</h3>
             
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="public">Public Workspace</Label>
+                <Label htmlFor="public">{t("components.WorkSpaceSettingDialog.publicWorkspace")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Allow anyone to join this workspace
+                  {t("components.WorkSpaceSettingDialog.allowAnyoneToJoin")}
                 </p>
               </div>
               <Switch
@@ -225,9 +227,9 @@ export function WorkspaceSettingsDialog({
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="invites">Allow Invites</Label>
+                <Label htmlFor="invites">{t("components.WorkSpaceSettingDialog.allowInvites")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Allow members to invite others
+                  {t("components.WorkSpaceSettingDialog.allowMembersToInvite")}
                 </p>
               </div>
               <Switch
@@ -241,19 +243,19 @@ export function WorkspaceSettingsDialog({
           {/* Members */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Members</h3>
+              <h3 className="text-lg font-semibold">{t("components.WorkSpaceSettingDialog.members")}</h3>
               {isOwner && (
-                <Badge variant="secondary">{members.length} members</Badge>
+                <Badge variant="secondary">{members.length} {t("components.WorkSpaceSettingDialog.members")}</Badge>
               )}
             </div>
 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("components.WorkSpaceSettingDialog.user")}</TableHead>
+                  <TableHead>{t("components.WorkSpaceSettingDialog.role")}</TableHead>
+                  <TableHead>{t("components.WorkSpaceSettingDialog.joined")}</TableHead>
+                  <TableHead className="text-right">{t("components.WorkSpaceSettingDialog.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -334,7 +336,7 @@ export function WorkspaceSettingsDialog({
                           <div className="font-medium">
                             {displayName}
                             {member.userId === activeWorkspace.ownerId && (
-                              <Badge variant="outline" className="ml-2">Owner</Badge>
+                              <Badge variant="outline" className="ml-2">{t("components.WorkSpaceSettingDialog.owner")}</Badge>
                             )}
                           </div>
                           {displayEmail && displayEmail !== displayName && (
@@ -355,15 +357,15 @@ export function WorkspaceSettingsDialog({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="MEMBER">Member</SelectItem>
+                            <SelectItem value="ADMIN">{t("components.WorkSpaceSettingDialog.admin")}</SelectItem>
+                            <SelectItem value="MEMBER">{t("components.WorkSpaceSettingDialog.member")}</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
                         <Badge variant="secondary">
-                          {member.role === "OWNER" ? "Owner" : 
-                           member.role === "ADMIN" ? "Admin" : 
-                           member.role === "MEMBER" ? "Member" : "Viewer"}
+                          {member.role === "OWNER" ? t("components.WorkSpaceSettingDialog.owner") : 
+                           member.role === "ADMIN" ? t("components.WorkSpaceSettingDialog.admin") : 
+                           member.role === "MEMBER" ? t("components.WorkSpaceSettingDialog.member") : t("components.WorkSpaceSettingDialog.viewer")}
                         </Badge>
                       )}
                     </TableCell>
@@ -393,12 +395,12 @@ export function WorkspaceSettingsDialog({
           {/* Invite Members */}
           {
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Invite Members</h3>
+              <h3 className="text-lg font-semibold">{t("components.WorkSpaceSettingDialog.inviteMembers")}</h3>
               
               <div className="flex gap-2">
                 <Input
                   type="email"
-                  placeholder="Email address"
+                  placeholder={t("components.WorkSpaceSettingDialog.emailAddress")}
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   onKeyDown={(e) => {
@@ -412,20 +414,20 @@ export function WorkspaceSettingsDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MEMBER">Member</SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
+                    <SelectItem value="MEMBER">{t("components.WorkSpaceSettingDialog.member")}</SelectItem>
+                    <SelectItem value="ADMIN">{t("components.WorkSpaceSettingDialog.admin")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={handleInvite} disabled={!inviteEmail.trim()}>
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Invite
+                  {t("components.WorkSpaceSettingDialog.invite")}
                 </Button>
               </div>
 
               {/* Pending Invites */}
               {invites.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Pending Invites</h4>
+                  <h4 className="text-sm font-medium">{t("components.WorkSpaceSettingDialog.pendingInvites")}</h4>
                   <div className="space-y-2">
                     {invites.map((invite) => (
                       <div
@@ -436,12 +438,12 @@ export function WorkspaceSettingsDialog({
                           <Mail className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">{invite.email}</span>
                           <Badge variant="outline">
-                            {invite.role === "ADMIN" ? "Admin" : 
-                             invite.role === "MEMBER" ? "Member" : "Viewer"}
+                            {invite.role === "ADMIN" ? t("components.WorkSpaceSettingDialog.admin") : 
+                             invite.role === "MEMBER" ? t("components.WorkSpaceSettingDialog.member") : t("components.WorkSpaceSettingDialog.viewer")}
                           </Badge>
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          Expires {new Date(invite.expiresAt).toLocaleDateString()}
+                          {t("components.WorkSpaceSettingDialog.expires")} {new Date(invite.expiresAt).toLocaleDateString()}
                         </span>
                       </div>
                     ))}
