@@ -49,8 +49,16 @@ class SQLExecutionTool:
         """
         logger.info("Validating SQL query")
         
+        # Strip comments (both -- and /* */)
+        cleaned_query = query
+        # Remove -- comments
+        cleaned_query = re.sub(r'--[^\n]*\n', '\n', cleaned_query)
+        # Remove /* */ comments
+        cleaned_query = re.sub(r'/\*.*?\*/', '', cleaned_query, flags=re.DOTALL)
+        cleaned_query = cleaned_query.strip()
+        
         # Check for forbidden keywords
-        query_upper = query.upper()
+        query_upper = cleaned_query.upper()
         for keyword in self.FORBIDDEN_KEYWORDS:
             if re.search(r'\b' + keyword + r'\b', query_upper):
                 error_msg = f"Forbidden SQL keyword detected: {keyword}"
@@ -58,13 +66,13 @@ class SQLExecutionTool:
                 return False, error_msg
         
         # Check for required filters (workspace_id)
-        if 'workspace_id' not in query.lower():
+        if 'workspace_id' not in cleaned_query.lower():
             error_msg = "Query must filter by workspace_id for security"
             logger.warning(error_msg)
             return False, error_msg
         
         # Check if query is SELECT only
-        if not query_upper.strip().startswith('SELECT'):
+        if not query_upper.startswith('SELECT'):
             error_msg = "Only SELECT queries are allowed"
             logger.warning(error_msg)
             return False, error_msg
