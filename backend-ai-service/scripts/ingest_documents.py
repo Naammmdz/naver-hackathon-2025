@@ -253,7 +253,6 @@ class DocumentIngestion:
             
             if not self.dry_run:
                 self.db_session.rollback()
-        
         return results
     
     @log_execution_time(logger)

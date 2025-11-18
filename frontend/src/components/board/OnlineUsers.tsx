@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/clerk-react";
 import { Users } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Simple fallback avatar URL generator
 const getDefaultAvatar = (id: string) => {
@@ -32,6 +33,7 @@ export const OnlineUsers = memo(function OnlineUsers({
 }: OnlineUsersProps) {
   const activeUsers = useOnlineUsers();
   const { userId } = useAuth();
+  const { t } = useTranslation();
   const [showAllUsers, setShowAllUsers] = useState(false);
   const allowHideRef = useRef(false);
   const hasSeenUsersRef = useRef(false);
@@ -97,8 +99,8 @@ export const OnlineUsers = memo(function OnlineUsers({
   const hasHiddenUsers = hiddenUsers.length > 0;
   
   const sizeClasses = {
-    sm: "h-7 w-7 text-xs",
-    md: "h-8 w-8 text-sm",
+    sm: "h-8 w-8 text-xs",
+    md: "h-9 w-9 text-sm",
     lg: "h-10 w-10 text-base",
   };
   
@@ -127,50 +129,50 @@ export const OnlineUsers = memo(function OnlineUsers({
   return (
     <TooltipProvider>
       <div className={cn("flex items-center gap-2", className)}>
-        {/* Avatar Stack */}
-        <div className="flex items-center -space-x-2">
+        {/* Avatar Stack - Google Docs style */}
+        <div className="flex items-center -space-x-2.5">
           {visibleUsers.map((collaborator) => (
             <Tooltip key={collaborator.id}>
               <TooltipTrigger asChild>
-                <div className="relative">
+                <div className="relative group">
                   <Avatar
                     className={cn(
                       sizeClasses[size],
-                      "border-2 border-background transition-all hover:scale-110 hover:z-10 cursor-pointer"
+                      "border-2 border-background transition-all hover:scale-110 hover:z-10 cursor-pointer ring-2 ring-transparent hover:ring-primary/20"
                     )}
-                    style={{ borderColor: collaborator.color }}
+                    style={{ borderColor: 'hsl(var(--background))' }}
                   >
                     <AvatarImage 
                       src={collaborator.avatarUrl || getDefaultAvatar(collaborator.id)} 
                       alt={collaborator.name || collaborator.email} 
                     />
                     <AvatarFallback
-                      className="text-xs font-medium"
+                      className="text-xs font-semibold"
                       style={{ 
-                        backgroundColor: collaborator.color + '20', 
-                        color: collaborator.color 
+                        backgroundColor: collaborator.color, 
+                        color: '#ffffff'
                       }}
                     >
                       {getUserInitial(collaborator)}
                     </AvatarFallback>
                   </Avatar>
-                  {/* Online indicator dot */}
+                  {/* Online indicator dot - bottom right */}
                   <div
-                    className="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background ring-1 ring-background"
-                    style={{ backgroundColor: collaborator.color }}
+                    className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+                    style={{ backgroundColor: '#10b981' }}
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <div className="text-xs">
+              <TooltipContent side="bottom" className="text-xs">
+                <div className="flex flex-col gap-0.5">
                   <p className="font-medium">{getDisplayName(collaborator)}</p>
-                  <p className="text-muted-foreground">Editing now</p>
+                  <p className="text-muted-foreground text-[10px]">{t('onlineUsers.activeNow')}</p>
                 </div>
               </TooltipContent>
             </Tooltip>
           ))}
           
-          {/* Overflow indicator with popover */}
+          {/* Overflow indicator with popover - Google Docs style */}
           {hasHiddenUsers && (
             <Popover open={showAllUsers} onOpenChange={setShowAllUsers}>
               <PopoverTrigger asChild>
@@ -180,50 +182,55 @@ export const OnlineUsers = memo(function OnlineUsers({
                       className={cn(
                         sizeClasses[size],
                         "relative flex items-center justify-center rounded-full border-2 border-background",
-                        "bg-muted text-muted-foreground font-medium hover:bg-muted/80 transition-colors cursor-pointer hover:scale-110"
+                        "bg-muted text-foreground font-semibold hover:bg-muted/80 transition-all cursor-pointer hover:scale-110 hover:ring-2 hover:ring-primary/20"
                       )}
                     >
                       +{hiddenUsers.length}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p className="text-xs">View all online users</p>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p>{t('onlineUsers.viewAll', { count: otherUsers.length })}</p>
                   </TooltipContent>
                 </Tooltip>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-3" align="end">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium mb-3">
-                    <Users className="h-4 w-4" />
-                    <span>Online Users ({otherUsers.length})</span>
+              <PopoverContent className="w-72 p-4" align="end">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold border-b pb-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span>{t('onlineUsers.activeUsers')} ({otherUsers.length})</span>
                   </div>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                  <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
                     {otherUsers.map((collaborator) => (
-                      <div key={collaborator.id} className="flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/50">
-                        <Avatar className="h-6 w-6" style={{ borderColor: collaborator.color, borderWidth: '2px' }}>
-                          <AvatarImage 
-                            src={collaborator.avatarUrl || getDefaultAvatar(collaborator.id)} 
-                            alt={collaborator.name || collaborator.email} 
+                      <div key={collaborator.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="relative">
+                          <Avatar className="h-8 w-8 border-2" style={{ borderColor: 'hsl(var(--background))' }}>
+                            <AvatarImage 
+                              src={collaborator.avatarUrl || getDefaultAvatar(collaborator.id)} 
+                              alt={collaborator.name || collaborator.email} 
+                            />
+                            <AvatarFallback
+                              className="text-xs font-semibold"
+                              style={{ 
+                                backgroundColor: collaborator.color, 
+                                color: '#ffffff'
+                              }}
+                            >
+                              {getUserInitial(collaborator)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div
+                            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
+                            style={{ backgroundColor: '#10b981' }}
                           />
-                          <AvatarFallback
-                            className="text-xs font-medium"
-                            style={{ 
-                              backgroundColor: collaborator.color + '20', 
-                              color: collaborator.color 
-                            }}
-                          >
-                            {getUserInitial(collaborator)}
-                          </AvatarFallback>
-                        </Avatar>
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
                             {getDisplayName(collaborator)}
                           </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {collaborator.email}
+                          </p>
                         </div>
-                        <div
-                          className="h-2 w-2 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: collaborator.color }}
-                        />
                       </div>
                     ))}
                   </div>
@@ -236,7 +243,7 @@ export const OnlineUsers = memo(function OnlineUsers({
         {/* Label (hidden on small screens if needed) */}
         {showLabel && (
           <span className="text-xs text-muted-foreground hidden md:inline-block whitespace-nowrap">
-            {otherUsers.length} {otherUsers.length === 1 ? "user" : "users"} online
+            {t('onlineUsers.usersOnline', { count: otherUsers.length })}
           </span>
         )}
       </div>

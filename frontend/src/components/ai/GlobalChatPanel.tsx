@@ -11,6 +11,7 @@ type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  timestamp?: number;
 };
 
 const panelWidthClass = "w-full sm:w-[24rem] lg:w-[26rem]";
@@ -28,7 +29,22 @@ export const GlobalChatPanel = () => {
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState(defaultMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // Load from localStorage on mount
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('global-ai-chat-history');
+        if (stored) {
+          const history = JSON.parse(stored);
+          // Include welcome message if history exists
+          return history.length > 0 ? [...defaultMessages, ...history] : defaultMessages;
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      }
+    }
+    return defaultMessages;
+  });
   const [headerOffset, setHeaderOffset] = useState(0);
 
   const closePanel = useCallback(() => setOpen(false), []);

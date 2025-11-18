@@ -35,11 +35,14 @@ import { useTaskStore } from "@/store/taskStore";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { CalendarIcon, Plus, X, Bell, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { reminderStorage } from "@/utils/reminderStorage";
 
 interface TaskFormDialogProps {
   open: boolean;
@@ -59,6 +62,10 @@ export function TaskFormDialog({
   const { addTask, updateTask } = useTaskStore();
   const { t } = useTranslation();
   const [newTag, setNewTag] = useState("");
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTimeValue, setReminderTimeValue] = useState<number>(1);
+  const [reminderTimeUnit, setReminderTimeUnit] = useState<"minutes" | "hours" | "days">("hours");
+  const [dueTime, setDueTime] = useState<string>("09:00");
 
   const taskSchema = z.object({
     title: z.string().min(1, t('form.required')),
@@ -67,6 +74,8 @@ export function TaskFormDialog({
     priority: z.enum(["Low", "Medium", "High"] as const),
     dueDate: z.date().optional(),
     tags: z.array(z.string()),
+    reminderEnabled: z.boolean().optional(),
+    reminderTimeBefore: z.number().optional(),
   });
 
   type TaskFormData = z.infer<typeof taskSchema>;
@@ -79,11 +88,14 @@ export function TaskFormDialog({
       status: defaultStatus,
       priority: "Medium",
       tags: [],
+      reminderEnabled: false,
+      reminderTimeBefore: undefined,
     },
   });
 
   useEffect(() => {
     if (task) {
+      const reminderSettings = reminderStorage.get(task.id);
       form.reset({
         title: task.title,
         description: task.description || "",
@@ -91,7 +103,30 @@ export function TaskFormDialog({
         priority: task.priority,
         dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         tags: task.tags,
+        reminderEnabled: reminderSettings?.enabled ?? false,
+        reminderTimeBefore: reminderSettings?.timeBefore,
       });
+      setReminderEnabled(reminderSettings?.enabled ?? false);
+      if (reminderSettings?.timeBefore) {
+        const minutes = reminderSettings.timeBefore;
+        if (minutes >= 1440) {
+          setReminderTimeValue(Math.floor(minutes / 1440));
+          setReminderTimeUnit("days");
+        } else if (minutes >= 60) {
+          setReminderTimeValue(Math.floor(minutes / 60));
+          setReminderTimeUnit("hours");
+        } else {
+          setReminderTimeValue(minutes);
+          setReminderTimeUnit("minutes");
+        }
+      }
+      // Set time from task dueDate
+      if (task.dueDate) {
+        const date = new Date(task.dueDate);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        setDueTime(`${hours}:${minutes}`);
+      }
     } else {
       form.reset({
         title: "",
@@ -100,23 +135,69 @@ export function TaskFormDialog({
         priority: "Medium",
         dueDate: defaultDate,
         tags: [],
+        reminderEnabled: false,
+        reminderTimeBefore: undefined,
       });
+      setReminderEnabled(false);
+      setReminderTimeValue(1);
+      setReminderTimeUnit("hours");
+      setDueTime("09:00");
     }
   }, [task, defaultStatus, defaultDate, form]);
 
   const onSubmit = async (data: TaskFormData) => {
+    // Calculate reminder time in minutes
+    let reminderTimeBefore: number | undefined = undefined;
+    if (reminderEnabled && data.dueDate) {
+      switch (reminderTimeUnit) {
+        case "days":
+          reminderTimeBefore = reminderTimeValue * 24 * 60;
+          break;
+        case "hours":
+          reminderTimeBefore = reminderTimeValue * 60;
+          break;
+        case "minutes":
+          reminderTimeBefore = reminderTimeValue;
+          break;
+      }
+    }
+
     if (task) {
-      await updateTask({
+      const updated = await updateTask({
         id: task.id,
         ...data,
         dueDate: data.dueDate,
+        reminderEnabled: reminderEnabled && !!data.dueDate,
+        reminderTimeBefore,
+        reminderSent: false,
       });
+      
+      // Save reminder settings to localStorage
+      if (updated && data.dueDate) {
+        reminderStorage.set(updated.id, {
+          enabled: reminderEnabled && !!data.dueDate,
+          timeBefore: reminderTimeBefore,
+          sent: false,
+        });
+      }
     } else {
       const created = await addTask({
         ...data,
         dueDate: data.dueDate,
         subtasks: [],
+        reminderEnabled: reminderEnabled && !!data.dueDate,
+        reminderTimeBefore,
+        reminderSent: false,
       });
+      
+      // Save reminder settings to localStorage
+      if (created && data.dueDate) {
+        reminderStorage.set(created.id, {
+          enabled: reminderEnabled && !!data.dueDate,
+          timeBefore: reminderTimeBefore,
+          sent: false,
+        });
+      }
     }
     onOpenChange(false);
   };
@@ -242,42 +323,83 @@ export function TaskFormDialog({
             <FormField
               control={form.control}
               name="dueDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>{t('form.dueDate')}</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
+              render={({ field }) => {
+                const handleDateChange = (date: Date | undefined) => {
+                  if (date) {
+                    // Set time from time input
+                    const [hours, minutes] = dueTime.split(':').map(Number);
+                    const newDate = new Date(date);
+                    newDate.setHours(hours || 9, minutes || 0, 0, 0);
+                    field.onChange(newDate);
+                  } else {
+                    field.onChange(undefined);
+                  }
+                };
+
+                const handleTimeChange = (time: string) => {
+                  setDueTime(time);
+                  if (field.value) {
+                    const [hours, minutes] = time.split(':').map(Number);
+                    const newDate = new Date(field.value);
+                    newDate.setHours(hours || 9, minutes || 0, 0, 0);
+                    field.onChange(newDate);
+                  }
+                };
+
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>{t('form.dueDate')}</FormLabel>
+                    <div className="flex gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className={cn(
+                                "flex-1 pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>{t('form.selectDate')}</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={handleDateChange}
+                            disabled={(date) => date < new Date("1900-01-01")}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>{t('form.selectDate')}</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                        <Input
+                          type="time"
+                          value={dueTime}
+                          onChange={(e) => handleTimeChange(e.target.value)}
+                          className="w-32"
+                          placeholder="09:00"
+                        />
                       </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date < new Date("1900-01-01")}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
+                    </div>
+                    {field.value && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {format(field.value, "PPP 'at' p")}
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
@@ -317,6 +439,77 @@ export function TaskFormDialog({
                 </FormItem>
               )}
             />
+
+            {/* Reminder Settings */}
+            {form.watch("dueDate") && (
+              <div className="space-y-3 rounded-lg border bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-semibold">Email Reminder</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="form-reminder-enabled"
+                    checked={reminderEnabled}
+                    onCheckedChange={(checked) => setReminderEnabled(checked === true)}
+                  />
+                  <Label htmlFor="form-reminder-enabled" className="text-sm font-normal cursor-pointer">
+                    Send reminder email before due date
+                  </Label>
+                </div>
+
+                {reminderEnabled && (
+                  <div className="space-y-2 pl-6">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="form-time-value" className="text-sm text-muted-foreground whitespace-nowrap">
+                        Remind me
+                      </Label>
+                      <Input
+                        id="form-time-value"
+                        type="number"
+                        min="1"
+                        value={reminderTimeValue}
+                        onChange={(e) => setReminderTimeValue(parseInt(e.target.value) || 1)}
+                        className="w-20"
+                      />
+                      <Select 
+                        value={reminderTimeUnit} 
+                        onValueChange={(value: "minutes" | "hours" | "days") => setReminderTimeUnit(value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="minutes">Minutes</SelectItem>
+                          <SelectItem value="hours">Hours</SelectItem>
+                          <SelectItem value="days">Days</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Label className="text-sm text-muted-foreground whitespace-nowrap">before due date</Label>
+                    </div>
+
+                    {form.watch("dueDate") && (
+                      <div className="text-xs text-muted-foreground">
+                        Reminder will be sent on:{" "}
+                        <span className="font-medium">
+                          {(() => {
+                            const dueDate = form.watch("dueDate")!;
+                            const minutes = reminderTimeUnit === "days" 
+                              ? reminderTimeValue * 24 * 60 
+                              : reminderTimeUnit === "hours" 
+                              ? reminderTimeValue * 60 
+                              : reminderTimeValue;
+                            const reminderDate = new Date(dueDate.getTime() - minutes * 60 * 1000);
+                            return reminderDate.toLocaleString();
+                          })()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-4">
               <Button
