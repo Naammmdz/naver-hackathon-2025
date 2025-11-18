@@ -17,10 +17,14 @@ import { formatRelativeDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
 import { Task } from "@/types/task";
-import { Calendar, CheckSquare, Clock, Edit, Tag, X } from "lucide-react";
+import { Calendar, CheckSquare, Clock, Edit, Tag, X, Mail } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TaskDocLinker } from "./TaskDocLinker";
+import { TaskReminderSettings } from "./TaskReminderSettings";
+import { sendTaskReminder } from "@/services/emailService";
+import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@clerk/clerk-react";
 
 interface TaskDetailsDrawerProps {
   open: boolean;
@@ -40,6 +44,9 @@ export function TaskDetailsDrawer({
   const { t } = useTranslation();
   const { updateTask, addSubtask, updateSubtask, deleteSubtask } = useTaskStore();
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const { toast } = useToast();
+  const { user } = useUser();
 
   if (!task) return null;
 
@@ -100,7 +107,7 @@ export function TaskDetailsDrawer({
               </DrawerDescription>
             </div>
             <div className="flex gap-2 ml-4">
-                            <Button onClick={onEdit} variant="outline" size="sm">
+              <Button onClick={onEdit} variant="outline" size="sm">
                 <Edit className="h-4 w-4 mr-1" />
                 {t('taskDetails.edit')}
               </Button>
@@ -114,6 +121,9 @@ export function TaskDetailsDrawer({
         </DrawerHeader>
 
         <div className="px-4 space-y-6 overflow-y-auto flex-1">
+          {/* Reminder Settings - Moved to top for visibility */}
+          <TaskReminderSettings task={task} />
+
           {/* Task Meta Information */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">

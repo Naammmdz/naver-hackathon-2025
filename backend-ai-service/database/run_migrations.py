@@ -27,6 +27,7 @@ MIGRATION_FILES = [
     "006_create_long_term_memory.sql",
     "007_create_agent_actions.sql",
     "008_create_hitl_feedback.sql",
+    "009_extend_hitl_feedback.sql",
 ]
 
 def connect_to_db():

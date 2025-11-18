@@ -1,22 +1,42 @@
-import { Send, Sparkles, X } from "lucide-react";
+import { Send, Sparkles, X, Loader2, ExternalLink, Brain, History } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { ragApi } from "@/lib/api/ragApi";
+import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useDocumentStore } from "@/store/documentStore";
+import type { Citation } from "@/types/rag";
+import { MermaidCodeBlock } from "@/components/ai/MermaidRenderer";
+import { TaskAnalysisDisplay } from "@/components/ai/TaskAnalysisDisplay";
+import { MemorySidebar } from "@/components/ai/MemorySidebar";
+import { SessionManager } from "@/components/ai/SessionManager";
 
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  timestamp?: number;
+  citations?: Citation[];
+  visualization?: string;
+  taskAnalysis?: Record<string, unknown>[] | Record<string, unknown>;
+  metadata?: Record<string, any>;
+  error?: boolean;
 };
 
 const panelWidthClass = "w-full sm:w-[24rem] lg:w-[26rem]";
 
 export const GlobalChatPanel = () => {
   const { t } = useTranslation();
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const { documents, setActiveDocument } = useDocumentStore();
 
   const defaultMessages: ChatMessage[] = [
     {
@@ -28,7 +48,26 @@ export const GlobalChatPanel = () => {
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState(defaultMessages);
+  const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [memorySidebarOpen, setMemorySidebarOpen] = useState(false);
+  const [sessionManagerOpen, setSessionManagerOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // Load from localStorage on mount
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('global-ai-chat-history');
+        if (stored) {
+          const history = JSON.parse(stored);
+          // Include welcome message if history exists
+          return history.length > 0 ? [...defaultMessages, ...history] : defaultMessages;
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      }
+    }
+    return defaultMessages;
+  });
   const [headerOffset, setHeaderOffset] = useState(0);
 
   const closePanel = useCallback(() => setOpen(false), []);
@@ -94,29 +133,85 @@ export const GlobalChatPanel = () => {
     }
   }, [open, updateOffsets]);
 
-  const canSend = useMemo(() => input.trim().length > 0, [input]);
+  const canSend = useMemo(() => input.trim().length > 0 && !isLoading && !!activeWorkspaceId, [input, isLoading, activeWorkspaceId]);
 
   const handleSend = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
+    async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (!canSend) {
+      if (!canSend || !activeWorkspaceId || !user?.id) {
         return;
       }
 
       const trimmed = input.trim();
-      const timestamp = Date.now().toString();
-      setMessages((prev) => [
-        ...prev,
-        { id: `user-${timestamp}`, role: "user", content: trimmed },
-        {
+      const timestamp = Date.now();
+      
+      // Add user message immediately
+      const userMessage: ChatMessage = {
+        id: `user-${timestamp}`,
+        role: "user",
+        content: trimmed,
+        timestamp,
+      };
+      
+      setMessages((prev) => [...prev, userMessage]);
+      setInput("");
+      setIsLoading(true);
+
+      try {
+        // Call Orchestrator API
+        const response = await ragApi.queryDocuments(activeWorkspaceId, {
+          query: trimmed,
+          user_id: user.id,
+          session_id: sessionId,
+          include_memory: true,
+        });
+
+        // Save session ID if this is the first message
+        if (!sessionId && response.session_id) {
+          setSessionId(response.session_id);
+          localStorage.setItem('global-ai-session-id', response.session_id);
+        }
+
+        // Add AI response
+        const assistantMessage: ChatMessage = {
           id: `assistant-${timestamp}`,
           role: "assistant",
-          content: t('components.GlobalChatPanel.defaultResponse'),
-        },
-      ]);
-      setInput("");
+          content: response.answer,
+          timestamp: Date.now(),
+          citations: response.citations,
+          metadata: response.metadata,
+          // Extract visualization from metadata (Board Agent)
+          visualization: response.metadata?.mermaid_code || response.metadata?.markdown_output,
+          // Extract task analysis from metadata (Task Agent)
+          taskAnalysis: response.metadata?.query_result || response.metadata?.analysis_data,
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+
+        // Save to localStorage (excluding welcome message)
+        const chatHistory = [...messages.slice(1), userMessage, assistantMessage];
+        localStorage.setItem('global-ai-chat-history', JSON.stringify(chatHistory));
+
+      } catch (error) {
+        console.error('AI query error:', error);
+        
+        // Add error message
+        const errorMessage: ChatMessage = {
+          id: `error-${timestamp}`,
+          role: "assistant",
+          content: error instanceof Error 
+            ? `⚠️ ${t('components.GlobalChatPanel.errorMessage')}: ${error.message}`
+            : t('components.GlobalChatPanel.errorMessage'),
+          timestamp: Date.now(),
+          error: true,
+        };
+
+        setMessages((prev) => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     },
-    [canSend, input],
+    [canSend, input, activeWorkspaceId, user, sessionId, messages, t],
   );
 
   const overlayStyle = useMemo(() => {
@@ -186,14 +281,32 @@ export const GlobalChatPanel = () => {
               <p className="text-sm text-muted-foreground">{t('components.GlobalChatPanel.headerSubtitle')}</p>
             </div>
           </div>
-          <Button
-            aria-label={t('components.GlobalChatPanel.closeButtonAria')}
-            onClick={closePanel}
-            size="icon"
-            variant="ghost"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              onClick={() => setSessionManagerOpen(true)}
+              size="icon"
+              variant="ghost"
+              title="Manage Sessions"
+            >
+              <History className="h-4 w-4" />
+            </Button>
+            <Button
+              onClick={() => setMemorySidebarOpen(!memorySidebarOpen)}
+              size="icon"
+              variant="ghost"
+              title="View AI Memory"
+            >
+              <Brain className="h-4 w-4" />
+            </Button>
+            <Button
+              aria-label={t('components.GlobalChatPanel.closeButtonAria')}
+              onClick={closePanel}
+              size="icon"
+              variant="ghost"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </header>
 
         <ScrollArea className="flex-1 px-5 py-4">
@@ -213,18 +326,113 @@ export const GlobalChatPanel = () => {
                     className="mt-1 h-10 w-10 flex-shrink-0 rounded-full object-cover"
                   />
                 )}
-                <p
-                  className={cn(
-                    "max-w-[80%] rounded-xl px-4 py-2",
-                    message.role === "assistant"
-                      ? "bg-muted text-foreground"
-                      : "bg-primary text-primary-foreground",
+                <div className="flex flex-col max-w-[80%]">
+                  <p
+                    className={cn(
+                      "rounded-xl px-4 py-2",
+                      message.role === "assistant"
+                        ? message.error 
+                          ? "bg-red-50 text-red-900 border border-red-200"
+                          : "bg-muted text-foreground"
+                        : "bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {message.content}
+                  </p>
+                  
+                  {/* Mermaid Visualization (Board Agent) */}
+                  {message.visualization && message.role === "assistant" && (
+                    <div className="mt-3">
+                      <MermaidCodeBlock
+                        markdown={message.visualization}
+                        title={message.metadata?.chart_type ? `${message.metadata.chart_type} Chart` : undefined}
+                        chartType={message.metadata?.chart_type}
+                      />
+                    </div>
                   )}
-                >
-                  {message.content}
-                </p>
+                  
+                  {/* Task Analysis Data (Task Agent) */}
+                  {message.taskAnalysis && message.role === "assistant" && (
+                    <div className="mt-3">
+                      <TaskAnalysisDisplay
+                        data={message.taskAnalysis}
+                        title="Task Analysis Results"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Citations Display */}
+                  {message.citations && message.citations.length > 0 && (
+                    <details className="mt-2 text-xs border rounded-lg p-2 bg-muted/50">
+                      <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground flex items-center gap-1">
+                        📚 {message.citations.length} {message.citations.length === 1 ? 'Source' : 'Sources'}
+                      </summary>
+                      <ul className="mt-2 space-y-2">
+                        {message.citations.map((citation, idx) => {
+                          // Find document by ID or name
+                          const document = documents.find(
+                            (doc) => doc.id === citation.document_id || doc.title === citation.document_name
+                          );
+                          
+                          return (
+                            <li key={citation.chunk_id || idx} className="border-l-2 border-primary/30 pl-2 py-1">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <div className="font-medium text-foreground">
+                                    {citation.document_name}
+                                    {citation.page_number && (
+                                      <span className="text-muted-foreground ml-1">(p. {citation.page_number})</span>
+                                    )}
+                                  </div>
+                                  <div className="text-muted-foreground text-[11px] mt-0.5">
+                                    Relevance: {(citation.score * 100).toFixed(1)}%
+                                  </div>
+                                  {citation.chunk_text && (
+                                    <p className="text-muted-foreground mt-1 text-[11px] line-clamp-2">
+                                      "{citation.chunk_text.substring(0, 100)}..."
+                                    </p>
+                                  )}
+                                </div>
+                                {document && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-[11px]"
+                                    onClick={() => {
+                                      setActiveDocument(document.id);
+                                      navigate('/app/docs');
+                                      setOpen(false);
+                                    }}
+                                    title="Open document"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </details>
+                  )}
+                </div>
               </div>
             ))}
+            
+            {/* Loading Indicator */}
+            {isLoading && (
+              <div className="flex gap-3 text-sm justify-start">
+                <img 
+                  src="/assets/images/ai-avatar.png" 
+                  alt="AI" 
+                  className="mt-1 h-10 w-10 flex-shrink-0 rounded-full object-cover"
+                />
+                <div className="rounded-xl px-4 py-2 bg-muted text-foreground flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>AI đang suy nghĩ...</span>
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
 
@@ -244,23 +452,75 @@ export const GlobalChatPanel = () => {
             </Button>
             <Textarea
               id="global-ai-chat-input"
-              placeholder={t('components.GlobalChatPanel.placeholder')}
+              placeholder={activeWorkspaceId ? t('components.GlobalChatPanel.placeholder') : "Please select a workspace first..."}
               value={input}
               onChange={(event) => setInput(event.target.value)}
+              disabled={isLoading || !activeWorkspaceId}
               className="flex-1 h-10 min-h-0 resize-none rounded-full border-0 bg-transparent px-3 py-2 text-sm leading-[1.4] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (canSend) {
+                    const form = e.currentTarget.form;
+                    if (form) {
+                      form.requestSubmit();
+                    }
+                  }
+                }
+              }}
             />
             <Button
               disabled={!canSend}
               type="submit"
               size="icon"
-              className="h-10 w-10 flex-shrink-0 rounded-full shadow-md transition hover:shadow-lg"
+              className="h-10 w-10 flex-shrink-0 rounded-full shadow-md transition hover:shadow-lg disabled:opacity-50"
             >
-              <Send className="h-4 w-4" />
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
               <span className="sr-only">{t('components.GlobalChatPanel.sendButtonSr')}</span>
             </Button>
           </div>
         </form>
       </aside>
+
+      {/* Memory Sidebar */}
+      <MemorySidebar
+        sessionId={sessionId}
+        isOpen={memorySidebarOpen && open}
+        onClose={() => setMemorySidebarOpen(false)}
+      />
+
+      {/* Session Manager */}
+      <SessionManager
+        currentSessionId={sessionId}
+        onSessionSelect={(newSessionId) => {
+          if (newSessionId === null) {
+            // New session - clear everything
+            setSessionId(null);
+            setMessages(defaultMessages);
+            localStorage.removeItem('global-ai-session-id');
+            localStorage.removeItem('global-ai-chat-history');
+          } else {
+            // Load existing session
+            setSessionId(newSessionId);
+            // In production, load messages from API here
+            const stored = localStorage.getItem('global-ai-chat-history');
+            if (stored) {
+              try {
+                const history = JSON.parse(stored);
+                setMessages([...defaultMessages, ...history]);
+              } catch (e) {
+                console.error('Failed to load chat history:', e);
+              }
+            }
+          }
+        }}
+        open={sessionManagerOpen}
+        onClose={() => setSessionManagerOpen(false)}
+      />
     </>
   );
 };

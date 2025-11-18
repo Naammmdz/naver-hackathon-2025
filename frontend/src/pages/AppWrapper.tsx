@@ -20,9 +20,11 @@ import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
 import Teams from "./Teams";
+import GraphViewPage from "./GraphViewPage";
+import { startReminderScheduler } from "@/services/reminderScheduler";
 
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
+  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams" | "graph">("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { t } = useTranslation();
@@ -252,6 +254,30 @@ export default function AppWrapper() {
     previousWorkspaceRef.current = newWorkspace;
   };
 
+  // Start reminder scheduler when user is signed in
+  useEffect(() => {
+    if (!isSignedIn || !user) {
+      return;
+    }
+
+    // Store user email and name in localStorage for reminder scheduler
+    const userEmail = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
+    const userName = user.fullName || user.firstName || user.username || 'User';
+    
+    if (userEmail) {
+      localStorage.setItem('userEmail', userEmail);
+      localStorage.setItem('userName', userName);
+    }
+
+    // Start reminder scheduler
+    const stopScheduler = startReminderScheduler();
+
+    // Cleanup on unmount
+    return () => {
+      stopScheduler();
+    };
+  }, [isSignedIn, user]);
+
   return (
     <>
       {/* Workspace Onboarding Modal */}
@@ -290,6 +316,7 @@ export default function AppWrapper() {
               }} /> :
                currentView === 'docs' ? <Docs /> :
                currentView === 'board' ? <BoardView /> :
+               currentView === 'graph' ? <GraphViewPage onViewChange={setCurrentView} /> :
                currentView === 'teams' ? <Teams onViewChange={setCurrentView} /> :
                <Home onViewChange={setCurrentView} />}
             </main>

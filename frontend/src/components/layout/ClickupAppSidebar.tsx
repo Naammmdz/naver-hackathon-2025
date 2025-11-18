@@ -6,6 +6,7 @@ import {
   FileText,
   Home,
   Kanban,
+  Network,
   Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -13,12 +14,12 @@ import { useEffect, useState } from 'react';
 interface ClickupAppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void;
-  currentView?: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
+  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph') => void;
+  currentView?: 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph';
 }
 
 export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'home' }: ClickupAppSidebarProps) {
-  const [activeNav, setActiveNav] = useState(currentView || 'home');
+  const [activeNav, setActiveNav] = useState<'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph'>(currentView || 'home');
   const [expandedSpaces, setExpandedSpaces] = useState<string[]>(['workspace-1']);
 
   // Update activeNav when currentView changes
@@ -39,6 +40,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-primary to-accent' },
     { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-accent to-accent-foreground' },
     { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-primary/80 to-accent' },
+    { id: 'graph', icon: Network, label: 'Graph', view: 'graph' as const, gradient: 'from-blue-500 to-cyan-500' },
     { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-success to-success/80' },
   ];
 
@@ -119,7 +121,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
                   }
                 }}
                 onClick={() => {
-                  setActiveNav(item.id);
+                  setActiveNav(item.id as 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph');
                   if (item.id === 'home' && onViewChange) {
                     onViewChange('home');
                   } else if (item.view && onViewChange) {

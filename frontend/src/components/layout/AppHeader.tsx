@@ -4,6 +4,7 @@ import { useTaskStore } from "@/store/taskStore";
 import { Languages, Moon, Search, Settings, Sun, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { HITLNotificationBell } from "@/components/ai/HITLNotificationBell";
 
 interface AppHeaderProps {
   onSmartCreate?: () => void;
@@ -113,6 +114,9 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
               <span className="sm:hidden">AI</span>
             </Button>
           )}
+          
+          {/* HITL Notification Bell */}
+          <HITLNotificationBell />
           
           <Button
             variant="ghost"

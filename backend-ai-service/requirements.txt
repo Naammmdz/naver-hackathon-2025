@@ -33,5 +33,5 @@ torch>=2.0.0                # PyTorch for neural networks (required by sentence-
 transformers>=4.30.0        # HuggingFace transformers library
 
 fastapi
-"uvicorn[standard]"
+uvicorn[standard]
 python-multipart

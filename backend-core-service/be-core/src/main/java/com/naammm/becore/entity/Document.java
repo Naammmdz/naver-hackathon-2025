@@ -31,7 +31,7 @@ public class Document {
     private String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content; // JSON string for BlockNote content
+    private String content; // Markdown/Plain text content (NOT JSON)
 
     @Column(name = "user_id", nullable = false, length = 160)
     private String userId;
