@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   core-postgres:
@@ -18,22 +18,15 @@ services:
       timeout: 3s
       retries: 20
 
-volumes:
-  core_pg_data:
-    driver: local
-
-version: '3.8'
-
-services:
   postgres:
     image: postgres:16-alpine
-    container_name: naver-hackathon-postgres
+    container_name: nvhkt-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: yjs
     ports:
-      - "5432:5432"
+      - "5439:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -44,9 +37,9 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: naver-hackathon-redis
+    container_name: nvhkt-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -59,7 +52,7 @@ services:
     build:
       context: ./backend-core-service/be-core
       dockerfile: Dockerfile
-    container_name: naver-hackathon-backend-core
+    container_name: nvhkt-backend-core
     ports:
       - "8989:8989"
     environment:
@@ -83,7 +76,7 @@ services:
     build:
       context: ./hocuspocus-server
       dockerfile: Dockerfile
-    container_name: naver-hackathon-hocuspocus
+    container_name: nvhkt-hocuspocus
     ports:
       - "1234:1234"
     environment:
@@ -105,7 +98,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: naver-hackathon-frontend
+    container_name: nvhkt-frontend
     ports:
       - "8080:8080"
     environment:
@@ -118,6 +111,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  core_pg_data:
+    driver: local
   postgres_data:
   redis_data:
-

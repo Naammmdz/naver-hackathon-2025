@@ -4,6 +4,11 @@ import type {
     UpdateDocumentInput,
 } from "@/types/document";
 import { apiAuthContext } from "./authContext";
+import { 
+  parseDocumentContent, 
+  blockNoteToMarkdown, 
+  detectContentFormat 
+} from "@/lib/utils/markdownConverter";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8989";
@@ -44,19 +49,24 @@ const parseContent = (value?: string | null): any[] => {
   if (!value) {
     return [];
   }
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  
+  // Use the smart parser that handles both Markdown and BlockNote JSON
+  return parseDocumentContent(value);
 };
 
 const serializeContent = (value?: any[]): string => {
+  if (!value || value.length === 0) {
+    return "";
+  }
+  
   try {
-    return JSON.stringify(value ?? []);
-  } catch {
-    return "[]";
+    // Convert BlockNote blocks to Markdown for storage
+    const markdown = blockNoteToMarkdown(value);
+    return markdown;
+  } catch (error) {
+    console.error("[documentApi] Failed to convert BlockNote to Markdown:", error);
+    // Fallback: try to preserve as-is
+    return JSON.stringify(value);
   }
 };
 
