@@ -490,6 +490,16 @@
       "workspaceIsNowPrivate": "Workspace is now private",
       "workspaceIsNowPublic": "Workspace is now public",
       "workspaceSettings": "Workspace Settings"
+    },
+    "WorkspaceSwitcher": {
+      "cancel": "Cancel",
+      "confirmDelete": "Delete workspace",
+      "confirmDeleteDescription": "Are you sure you want to delete this workspace? All tasks, documents, and boards in the workspace will be permanently deleted. This action cannot be undone.",
+      "confirmDeleteTitle": "Delete workspace?",
+      "createWorkspace": "Create Workspace",
+      "selectWorkspace": "Select Workspace",
+      "workspaceSettings": "Workspace Settings",
+      "workspaces": "Workspaces"
     }
   },
   "analytics": {

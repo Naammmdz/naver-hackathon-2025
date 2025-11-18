@@ -497,6 +497,16 @@
       "workspaceIsNowPrivate": "Workspace hiện là riêng tư",
       "workspaceIsNowPublic": "Workspace hiện là công khai",
       "workspaceSettings": "Cài đặt Workspace"
+    },
+    "WorkspaceSwitcher": {
+      "cancel": "Hủy",
+      "confirmDelete": "Xóa workspace",
+      "confirmDeleteDescription": "Bạn có chắc chắn muốn xóa workspace này? Tất cả tasks, documents và boards trong workspace sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.",
+      "confirmDeleteTitle": "Xóa workspace?",
+      "createWorkspace": "Tạo Workspace",
+      "selectWorkspace": "Chọn Workspace",
+      "workspaceSettings": "Cài đặt Workspace",
+      "workspaces": "Workspaces"
     }
   },
   "analytics": {
