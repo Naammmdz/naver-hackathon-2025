@@ -287,6 +287,19 @@
       "trashTitle": "Trash",
       "tryDifferentSearch": "Try a different search term",
       "viewTrash": "View Trash"
+    },
+    "LinkTaskSlashItem": {
+      "addNotePlaceholder": "Add a note about this link...",
+      "cancel": "Cancel",
+      "linkTask": "Link Task",
+      "linkTaskSubtext": "Link to task in workspace",
+      "linkTaskToDocument": "Link Task to Document",
+      "linkTaskToDocumentDescription": "Link task to document",
+      "linkedTaskPrefix": "🔗 Linked task: ",
+      "noTasksAvailable": "No tasks available",
+      "noteOptional": "Note (Optional)",
+      "selectTask": "Select Task",
+      "selectTaskPlaceholder": "Select task..."
     }
   },
   "analytics": {

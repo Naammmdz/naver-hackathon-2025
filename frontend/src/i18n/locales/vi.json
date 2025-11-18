@@ -287,6 +287,19 @@
       "trashTitle": "Thùng rác",
       "tryDifferentSearch": "Thử từ khóa tìm kiếm khác",
       "viewTrash": "Xem Thùng rác"
+    },
+    "LinkTaskSlashItem": {
+      "addNotePlaceholder": "Thêm ghi chú về liên kết này...",
+      "cancel": "Hủy",
+      "linkTask": "Liên kết nhiệm vụ",
+      "linkTaskSubtext": "Liên kết với nhiệm vụ trong workspace",
+      "linkTaskToDocument": "Liên kết nhiệm vụ với tài liệu",
+      "linkTaskToDocumentDescription": "Liên kết nhiệm vụ với tài liệu",
+      "linkedTaskPrefix": "🔗 Nhiệm vụ đã liên kết: ",
+      "noTasksAvailable": "Không có nhiệm vụ nào khả dụng",
+      "noteOptional": "Ghi chú (Tùy chọn)",
+      "selectTask": "Chọn nhiệm vụ",
+      "selectTaskPlaceholder": "Chọn nhiệm vụ..."
     }
   },
   "analytics": {

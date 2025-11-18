@@ -24,6 +24,7 @@ import { BlockNoteEditor, filterSuggestionItems } from "@blocknote/core";
 import { SuggestionMenuController, getDefaultReactSlashMenuItems } from "@blocknote/react";
 import { CheckCircle2, Circle, Clock, Link } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface LinkTaskDialogProps {
   open: boolean;
@@ -38,6 +39,8 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [relationType, setRelationType] = useState<TaskDocRelationType>("reflection");
   const [note, setNote] = useState("");
+
+  const { t } = useTranslation();
 
   const { tasks } = useTaskStore();
   const { addTaskDoc, getTaskDocsByDoc } = useTaskDocStore();
@@ -74,7 +77,7 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
           content: [
             {
               type: "text",
-              text: `🔗 Linked task: `,
+              text: t("components.LinkTaskSlashItem.linkedTaskPrefix"),
               styles: { textColor: "gray" },
             },
             {
@@ -111,25 +114,25 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Link Task to Document</DialogTitle>
+          <DialogTitle>{t("components.LinkTaskSlashItem.linkTaskToDocument")}</DialogTitle>
           <DialogDescription>
-            Liên kết task với document <strong>{docTitle}</strong>
+            {t("components.LinkTaskSlashItem.linkTaskToDocumentDescription")} <strong>{docTitle}</strong>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Task Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Select Task</label>
+            <label className="text-sm font-medium">{t("components.LinkTaskSlashItem.selectTask")}</label>
             <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
               <SelectTrigger>
-                <SelectValue placeholder="Chọn task..." />
+                <SelectValue placeholder={t("components.LinkTaskSlashItem.selectTaskPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 <ScrollArea className="max-h-[200px]">
                   {availableTasks.length === 0 ? (
                     <div className="p-4 text-sm text-muted-foreground text-center">
-                      Không có task khả dụng
+                      {t("components.LinkTaskSlashItem.noTasksAvailable")}
                     </div>
                   ) : (
                     availableTasks.map((task) => (
@@ -151,9 +154,9 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
 
           {/* Optional Note */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Ghi chú (Tùy chọn)</label>
+            <label className="text-sm font-medium">{t("components.LinkTaskSlashItem.noteOptional")}</label>
             <Textarea
-              placeholder="Thêm ghi chú về liên kết này..."
+              placeholder={t("components.LinkTaskSlashItem.addNotePlaceholder")}
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
@@ -163,10 +166,10 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t("components.LinkTaskSlashItem.cancel")}
           </Button>
           <Button onClick={handleLink} disabled={!selectedTaskId}>
-            Link Task
+            {t("components.LinkTaskSlashItem.linkTask")}
           </Button>
         </div>
       </DialogContent>
@@ -175,13 +178,13 @@ function LinkTaskDialog({ open, onOpenChange, docId, docTitle, editor, onTaskCli
 }
 
 // Custom slash menu item factory
-export function createLinkTaskSlashItem(docId: string, docTitle: string) {
+export function createLinkTaskSlashItem(docId: string, docTitle: string, t: (key: string) => string) {
   let dialogOpen = false;
   let setDialogOpen: ((open: boolean) => void) | null = null;
   let currentEditor: BlockNoteEditor | null = null;
 
   return {
-    title: "Link Task",
+    title: t("components.LinkTaskSlashItem.linkTask"),
     onItemClick: (editor: BlockNoteEditor) => {
       currentEditor = editor;
       if (setDialogOpen) {
@@ -191,7 +194,7 @@ export function createLinkTaskSlashItem(docId: string, docTitle: string) {
     aliases: ["task", "link", "liên kết", "nhiệm vụ"],
     group: "Other",
     icon: <Link size={18} />,
-    subtext: "Liên kết với task trong workspace",
+    subtext: t("components.LinkTaskSlashItem.linkTaskSubtext"),
     // Store dialog state management function
     setDialogHandler: (handler: (open: boolean) => void) => {
       setDialogOpen = handler;
@@ -211,9 +214,9 @@ export function createLinkTaskSlashItem(docId: string, docTitle: string) {
 }
 
 // Export enhanced slash menu items
-export function getCustomSlashMenuItems(editor: BlockNoteEditor, docId: string, docTitle: string) {
+export function getCustomSlashMenuItems(editor: BlockNoteEditor, docId: string, docTitle: string, t: (key: string) => string) {
   const defaultItems = getDefaultReactSlashMenuItems(editor);
-  const linkTaskItem = createLinkTaskSlashItem(docId, docTitle);
+  const linkTaskItem = createLinkTaskSlashItem(docId, docTitle, t);
 
   return [...defaultItems, linkTaskItem];
 }
@@ -229,15 +232,17 @@ interface CustomSlashMenuProps {
 export function CustomSlashMenu({ editor, docId, docTitle, onTaskClick }: CustomSlashMenuProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const { t } = useTranslation();
+
   const linkTaskItem = {
-    title: "Link Task",
+    title: t("components.LinkTaskSlashItem.linkTask"),
     onItemClick: () => {
       setDialogOpen(true);
     },
     aliases: ["task", "link", "liên kết", "nhiệm vụ"],
     group: "Other",
     icon: <Link size={18} />,
-    subtext: "Liên kết với task trong workspace",
+    subtext: t("components.LinkTaskSlashItem.linkTaskSubtext"),
   };
 
   const items = [...getDefaultReactSlashMenuItems(editor), linkTaskItem];
