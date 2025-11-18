@@ -386,6 +386,20 @@
       "source": "Source",
       "uses": "uses"
     },
+    "NotificationBell": {
+      "accept": "Accept",
+      "ariaLabel": "Notifications",
+      "decline": "Decline",
+      "error": "Error",
+      "failedToAcceptInvite": "Failed to accept invite",
+      "failedToDeclineInvite": "Failed to decline invite",
+      "inviteAccepted": "Invite accepted successfully",
+      "inviteDeclined": "Invite declined",
+      "invitedToJoinWorkspace": "You were invited to join a workspace",
+      "joinedWorkspace": "Joined workspace",
+      "noNewNotifications": "No new notifications",
+      "notifications": "Notifications"
+    },
     "MermaidRenderer": {
       "diagram": "Diagram",
       "downloadSvg": "Download SVG",

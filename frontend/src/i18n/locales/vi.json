@@ -396,6 +396,20 @@
       "source": "Nguồn",
       "uses": "lần sử dụng"
     },
+    "NotificationBell": {
+      "accept": "Chấp nhận",
+      "ariaLabel": "Thông báo",
+      "decline": "Từ chối",
+      "error": "Lỗi",
+      "failedToAcceptInvite": "Không thể chấp nhận lời mời",
+      "failedToDeclineInvite": "Không thể từ chối lời mời",
+      "inviteAccepted": "Đã chấp nhận lời mời thành công",
+      "inviteDeclined": "Đã từ chối lời mời",
+      "invitedToJoinWorkspace": "Bạn đã được mời tham gia workspace",
+      "joinedWorkspace": "Đã tham gia workspace",
+      "noNewNotifications": "Không có thông báo mới",
+      "notifications": "Thông báo"
+    },
     "MermaidRenderer": {
       "diagram": "Sơ đồ",
       "downloadSvg": "Tải xuống SVG",

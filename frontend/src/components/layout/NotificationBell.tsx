@@ -7,6 +7,7 @@ import { useWorkspaceStore } from "@/store/workspaceStore";
 import type { WorkspaceInvite } from "@/types/workspace";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@clerk/clerk-react";
+import { useTranslation } from "react-i18next";
 
 export function NotificationBell() {
   const { toast } = useToast();
@@ -17,6 +18,7 @@ export function NotificationBell() {
   const loadWorkspaces = useWorkspaceStore((state) => state.loadWorkspaces);
   const upsertWorkspace = useWorkspaceStore((state) => state.upsertWorkspace);
   const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace);
+  const { t } = useTranslation();
 
   const unreadCount = useMemo(() => invites.length, [invites]);
 
@@ -54,7 +56,7 @@ export function NotificationBell() {
   const handleAccept = async (inviteId: string) => {
     try {
       const member = await workspaceApi.acceptInvite(inviteId);
-      toast({ title: "Joined workspace", description: "Invite accepted successfully" });
+      toast({ title: t('components.NotificationBell.joinedWorkspace'), description: t('components.NotificationBell.inviteAccepted') });
       // Reload invites and workspaces, then switch to the joined workspace
       await Promise.all([loadInvites(), loadWorkspaces()]);
       if (member?.workspaceId) {
@@ -66,17 +68,17 @@ export function NotificationBell() {
         setActiveWorkspace(member.workspaceId);
       }
     } catch (error: any) {
-      toast({ title: "Error", description: error?.message || "Failed to accept invite", variant: "destructive" });
+      toast({ title: t('components.NotificationBell.error'), description: error?.message || t('components.NotificationBell.failedToAcceptInvite'), variant: "destructive" });
     }
   };
 
   const handleDecline = async (inviteId: string) => {
     try {
       await workspaceApi.declineInvite(inviteId);
-      toast({ title: "Invite declined" });
+      toast({ title: t('components.NotificationBell.inviteDeclined') });
       await loadInvites();
     } catch (error: any) {
-      toast({ title: "Error", description: error?.message || "Failed to decline invite", variant: "destructive" });
+      toast({ title: t('components.NotificationBell.error'), description: error?.message || t('components.NotificationBell.failedToDeclineInvite'), variant: "destructive" });
     }
   };
 
@@ -87,7 +89,7 @@ export function NotificationBell() {
           variant="ghost"
           size="sm"
           className="relative hidden sm:flex hover-surface"
-          aria-label="Notifications"
+          aria-label={t('components.NotificationBell.ariaLabel')}
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
@@ -98,23 +100,23 @@ export function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('components.NotificationBell.notifications')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {invites.length === 0 && (
-          <DropdownMenuItem className="text-sm text-muted-foreground">No new notifications</DropdownMenuItem>
+          <DropdownMenuItem className="text-sm text-muted-foreground">{t('components.NotificationBell.noNewNotifications')}</DropdownMenuItem>
         )}
         {invites.map((invite) => (
           <div key={invite.id} className="px-2 py-2">
             <div className="text-sm">
-              You were invited to join a workspace
+              {t('components.NotificationBell.invitedToJoinWorkspace')}
             </div>
             <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
               <span>{invite.email}</span>
               <span>{new Date(invite.expiresAt).toLocaleDateString()}</span>
             </div>
             <div className="mt-2 flex gap-2">
-              <Button size="sm" className="h-6 text-xs" onClick={() => handleAccept(invite.id)}>Accept</Button>
-              <Button size="sm" variant="secondary" className="h-6 text-xs" onClick={() => handleDecline(invite.id)}>Decline</Button>
+              <Button size="sm" className="h-6 text-xs" onClick={() => handleAccept(invite.id)}>{t('components.NotificationBell.accept')}</Button>
+              <Button size="sm" variant="secondary" className="h-6 text-xs" onClick={() => handleDecline(invite.id)}>{t('components.NotificationBell.decline')}</Button>
             </div>
           </div>
         ))}
