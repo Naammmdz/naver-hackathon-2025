@@ -336,6 +336,24 @@
       "reviewAction": "Xem xét hành động",
       "reviewDetails": "Xem xét chi tiết của hành động yêu cầu xác nhận.",
       "reviewTitle": "Xem xét hành động yêu cầu"
+    },
+    "MemorySidebar": {
+      "aiMemory": "Bộ Nhớ AI",
+      "confidence": "Độ tin cậy",
+      "conversationHistory": "Lịch sử trò chuyện",
+      "daysAgo": "{{count}} ngày trước",
+      "hoursAgo": "{{count}} giờ trước",
+      "justNow": "Vừa xong",
+      "learnedFacts": "Sự thật đã học",
+      "loading": "Đang tải...",
+      "minutesAgo": "{{count}} phút trước",
+      "noConversationHistoryYet": "Chưa có lịch sử trò chuyện",
+      "noLearnedFactsYet": "Chưa có sự thật đã học",
+      "noMatchingMemories": "Không có ký ức phù hợp",
+      "refreshMemories": "Làm mới ký ức",
+      "searchMemories": "Tìm kiếm ký ức...",
+      "source": "Nguồn",
+      "uses": "lần sử dụng"
     }
   },
   "analytics": {

@@ -336,6 +336,24 @@
       "noteOptional": "Note (Optional)",
       "selectTask": "Select Task",
       "selectTaskPlaceholder": "Select task..."
+    },
+    "MemorySidebar": {
+      "aiMemory": "AI Memory",
+      "confidence": "Confidence",
+      "conversationHistory": "Conversation History",
+      "daysAgo": "{{count}}d ago",
+      "hoursAgo": "{{count}}h ago",
+      "justNow": "Just now",
+      "learnedFacts": "Learned Facts",
+      "loading": "Loading...",
+      "minutesAgo": "{{count}}m ago",
+      "noConversationHistoryYet": "No conversation history yet",
+      "noLearnedFactsYet": "No learned facts yet",
+      "noMatchingMemories": "No matching memories",
+      "refreshMemories": "Refresh Memories",
+      "searchMemories": "Search memories...",
+      "source": "Source",
+      "uses": "uses"
     }
   },
   "analytics": {

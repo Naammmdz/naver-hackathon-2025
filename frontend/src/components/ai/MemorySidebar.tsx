@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils"
 import { memoryApi, type ConversationMessage, type LongTermMemory } from "@/lib/api/memoryApi"
 import { useWorkspaceStore } from "@/store/workspaceStore"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface MemorySidebarProps {
   /** Current session ID */
@@ -33,6 +34,7 @@ interface MemorySidebarProps {
 }
 
 export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps) {
+  const { t } = useTranslation()
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId)
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([])
   const [longTermMemories, setLongTermMemories] = useState<LongTermMemory[]>([])
@@ -105,10 +107,10 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return "Just now"
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMins < 1) return t("components.MemorySidebar.justNow")
+    if (diffMins < 60) return t("components.MemorySidebar.minutesAgo", { count: diffMins })
+    if (diffHours < 24) return t("components.MemorySidebar.hoursAgo", { count: diffHours })
+    if (diffDays < 7) return t("components.MemorySidebar.daysAgo", { count: diffDays })
     return date.toLocaleDateString()
   }
 
@@ -151,7 +153,7 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold">AI Memory</h2>
+            <h2 className="font-semibold">{t("components.MemorySidebar.aiMemory")}</h2>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <ChevronRight className="h-4 w-4" />
@@ -160,7 +162,7 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search memories..."
+            placeholder={t("components.MemorySidebar.searchMemories")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-9"
@@ -181,7 +183,7 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
             <AccordionTrigger className="text-sm font-semibold">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                <span>Conversation History</span>
+                <span>{t("components.MemorySidebar.conversationHistory")}</span>
                 <Badge variant="outline" className="ml-auto">
                   {conversationHistory.length}
                 </Badge>
@@ -190,11 +192,11 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
             <AccordionContent>
               {isLoadingHistory ? (
                 <div className="text-sm text-muted-foreground py-4 text-center">
-                  Loading...
+                  {t("components.MemorySidebar.loading")}
                 </div>
               ) : conversationHistory.length === 0 ? (
                 <div className="text-sm text-muted-foreground py-4 text-center">
-                  No conversation history yet
+                  {t("components.MemorySidebar.noConversationHistoryYet")}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -218,7 +220,7 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
                       </p>
                       {message.confidence && (
                         <div className="mt-1 text-[10px] text-muted-foreground">
-                          Confidence: {(message.confidence * 100).toFixed(0)}%
+                          {t("components.MemorySidebar.confidence")}: {(message.confidence * 100).toFixed(0)}%
                         </div>
                       )}
                     </div>
@@ -235,7 +237,7 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
             <AccordionTrigger className="text-sm font-semibold">
               <div className="flex items-center gap-2">
                 <Lightbulb className="h-4 w-4" />
-                <span>Learned Facts</span>
+                <span>{t("components.MemorySidebar.learnedFacts")}</span>
                 <Badge variant="outline" className="ml-auto">
                   {filteredMemories.length}
                 </Badge>
@@ -244,11 +246,11 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
             <AccordionContent>
               {isLoadingMemories ? (
                 <div className="text-sm text-muted-foreground py-4 text-center">
-                  Loading...
+                  {t("components.MemorySidebar.loading")}
                 </div>
               ) : filteredMemories.length === 0 ? (
                 <div className="text-sm text-muted-foreground py-4 text-center">
-                  {searchQuery ? "No matching memories" : "No learned facts yet"}
+                  {searchQuery ? t("components.MemorySidebar.noMatchingMemories") : t("components.MemorySidebar.noLearnedFactsYet")}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -272,14 +274,14 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
                               {memory.key}
                             </Badge>
                             <span className="text-[10px] text-muted-foreground">
-                              {memory.access_count} uses
+                              {memory.access_count} {t("components.MemorySidebar.uses")}
                             </span>
                           </div>
                           <p className="text-muted-foreground">{memory.value}</p>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                            <span>Source: {memory.source}</span>
+                            <span>{t("components.MemorySidebar.source")}: {memory.source}</span>
                             <span>•</span>
-                            <span>Confidence: {(memory.confidence_score * 100).toFixed(0)}%</span>
+                            <span>{t("components.MemorySidebar.confidence")}: {(memory.confidence_score * 100).toFixed(0)}%</span>
                           </div>
                         </div>
                       ))}
@@ -296,7 +298,7 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
       <div className="p-4 border-t space-y-2">
         <Button variant="outline" size="sm" className="w-full" onClick={() => window.location.reload()}>
           <Sparkles className="h-4 w-4 mr-2" />
-          Refresh Memories
+          {t("components.MemorySidebar.refreshMemories")}
         </Button>
       </div>
     </div>
