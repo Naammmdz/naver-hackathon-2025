@@ -157,6 +157,11 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
+if [ ! -d "dist" ]; then
+    echo -e "${YELLOW}Building TypeScript...${NC}"
+    npm run build
+fi
+
 nohup npm start > ../logs/hocuspocus.log 2>&1 &
 HOCUS_PID=$!
 echo $HOCUS_PID > ../logs/hocuspocus.pid
