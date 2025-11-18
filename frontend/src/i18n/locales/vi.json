@@ -354,6 +354,14 @@
       "searchMemories": "Tìm kiếm ký ức...",
       "source": "Nguồn",
       "uses": "lần sử dụng"
+    },
+    "MermaidRenderer": {
+      "diagram": "Sơ đồ",
+      "downloadSvg": "Tải xuống SVG",
+      "failedToRenderDiagram": "Không thể hiển thị sơ đồ. Mã Mermaid có thể không hợp lệ.",
+      "noMermaidDiagramFound": "Không tìm thấy sơ đồ Mermaid nào trong phản hồi.",
+      "renderingDiagram": "Đang hiển thị sơ đồ...",
+      "viewFullscreen": "Xem toàn màn hình"
     }
   },
   "analytics": {

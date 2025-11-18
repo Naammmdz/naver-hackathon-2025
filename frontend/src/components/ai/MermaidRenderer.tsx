@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { useTranslation } from "react-i18next"
 
 interface MermaidRendererProps {
   /** Mermaid diagram code */
@@ -39,6 +40,7 @@ export function MermaidRenderer({
   chartType,
   className = "",
 }: MermaidRendererProps) {
+  const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isRendering, setIsRendering] = useState(true)
@@ -87,7 +89,7 @@ export function MermaidRenderer({
         setError(
           err instanceof Error 
             ? err.message 
-            : "Failed to render diagram. The Mermaid code may be invalid."
+            : t("components.MermaidRenderer.failedToRenderDiagram")
         )
       } finally {
         setIsRendering(false)
@@ -124,20 +126,20 @@ export function MermaidRenderer({
                     variant="ghost"
                     size="sm"
                     onClick={downloadSVG}
-                    title="Download SVG"
+                    title={t("components.MermaidRenderer.downloadSvg")}
                   >
                     <Download className="h-4 w-4" />
                   </Button>
                 )}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm" title="View fullscreen">
+                    <Button variant="ghost" size="sm" title={t("components.MermaidRenderer.viewFullscreen")}>
                       <Maximize2 className="h-4 w-4" />
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-5xl max-h-[90vh] overflow-auto">
                     <DialogHeader>
-                      <DialogTitle>{title || "Diagram"}</DialogTitle>
+                      <DialogTitle>{title || t("components.MermaidRenderer.diagram")}</DialogTitle>
                     </DialogHeader>
                     <div 
                       className="mermaid-fullscreen"
@@ -160,7 +162,7 @@ export function MermaidRenderer({
         ) : isRendering ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-pulse text-muted-foreground">
-              Rendering diagram...
+              {t("components.MermaidRenderer.renderingDiagram")}
             </div>
           </div>
         ) : (
@@ -190,6 +192,7 @@ interface MermaidCodeBlockProps {
 }
 
 export function MermaidCodeBlock({ markdown, title, chartType }: MermaidCodeBlockProps) {
+  const { t } = useTranslation()
   // Extract mermaid code from markdown code blocks
   const mermaidCodeMatch = markdown.match(/```mermaid\n([\s\S]*?)```/)
   const mermaidCode = mermaidCodeMatch ? mermaidCodeMatch[1].trim() : null
@@ -199,7 +202,7 @@ export function MermaidCodeBlock({ markdown, title, chartType }: MermaidCodeBloc
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          No Mermaid diagram found in the response.
+          {t("components.MermaidRenderer.noMermaidDiagramFound")}
         </AlertDescription>
       </Alert>
     )

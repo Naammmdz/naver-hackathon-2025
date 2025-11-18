@@ -354,6 +354,14 @@
       "searchMemories": "Search memories...",
       "source": "Source",
       "uses": "uses"
+    },
+    "MermaidRenderer": {
+      "diagram": "Diagram",
+      "downloadSvg": "Download SVG",
+      "failedToRenderDiagram": "Failed to render diagram. The Mermaid code may be invalid.",
+      "noMermaidDiagramFound": "No Mermaid diagram found in the response.",
+      "renderingDiagram": "Rendering diagram...",
+      "viewFullscreen": "View fullscreen"
     }
   },
   "analytics": {
