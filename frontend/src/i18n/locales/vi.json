@@ -236,6 +236,11 @@
       "reject": "Từ chối",
       "rejected": "Đã từ chối"
     },
+    "ChatHistoryGroupWithoutDiff": {
+      "thoughtForLessThanSecond": "Suy nghĩ trong chưa đầy một giây",
+      "thoughtForOneSecond": "Suy nghĩ trong 1 giây",
+      "thoughtForSeconds": "Suy nghĩ trong {{count}} giây"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "Trợ lý AI",
       "attachButtonSr": "Thêm tệp đính kèm",

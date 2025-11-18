@@ -9,6 +9,7 @@ import { ChevronDownIcon } from '../icons/ChevronDownIcon'
 import { ChevronRightIcon } from '../icons/ChevronRightIcon'
 import { ChatHistoryGroup } from './ChatHistoryGroup'
 import { getActionInfo } from './getActionInfo'
+import { useTranslation } from 'react-i18next'
 
 export function ChatHistoryGroupWithoutDiff({
 	group,
@@ -18,6 +19,7 @@ export function ChatHistoryGroupWithoutDiff({
 	agent: TldrawAgent
 }) {
 	const { items } = group
+	const { t } = useTranslation()
 
 	const nonEmptyItems = useMemo(() => {
 		return items.filter((item) => {
@@ -34,10 +36,10 @@ export function ChatHistoryGroupWithoutDiff({
 
 	const summary = useMemo(() => {
 		const time = Math.floor(items.reduce((acc, item) => acc + item.action.time, 0) / 1000)
-		if (time === 0) return 'Thought for less than a second'
-		if (time === 1) return 'Thought for 1 second'
-		return `Thought for ${time} seconds`
-	}, [items])
+		if (time === 0) return t('components.ChatHistoryGroupWithoutDiff.thoughtForLessThanSecond')
+		if (time === 1) return t('components.ChatHistoryGroupWithoutDiff.thoughtForOneSecond')
+		return t('components.ChatHistoryGroupWithoutDiff.thoughtForSeconds', { count: time })
+	}, [items, t])
 
 	if (nonEmptyItems.length === 0) {
 		return null

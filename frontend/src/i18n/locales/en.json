@@ -236,6 +236,11 @@
       "reject": "Reject",
       "rejected": "Rejected"
     },
+    "ChatHistoryGroupWithoutDiff": {
+      "thoughtForLessThanSecond": "Thought for less than a second",
+      "thoughtForOneSecond": "Thought for 1 second",
+      "thoughtForSeconds": "Thought for {{count}} seconds"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",
