@@ -1,4 +1,4 @@
-"""
+w"""
 Main FastAPI Application
 
 Provides REST API endpoints for:
@@ -19,7 +19,7 @@ if str(Path(__file__).parent.parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.logger import get_logger
-from api.routes import documents, query, workspaces, health
+from api.routes import documents, query, workspaces, health, tasks, boards, hitl
 
 logger = get_logger(__name__)
 
@@ -36,9 +36,28 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(
-    title="Document RAG API",
-    description="REST API for Document-based Question Answering with Retrieval-Augmented Generation",
-    version="1.0.0",
+    title="Agentic AI Project Management API",
+    description="""
+    REST API for AI-powered project management with multiple specialized agents:
+    
+    **Document Agent**: Question answering with RAG (Retrieval-Augmented Generation)
+    - Upload documents (PDF, DOCX, TXT, MD, HTML)
+    - Ask questions and get answers with citations
+    - Multi-turn conversations with memory
+    
+    **Task Agent**: Task analysis and risk detection
+    - Analyze task distribution and workload
+    - Detect overdue and blocked tasks
+    - Get insights and recommendations
+    - Natural language SQL query generation
+    
+    **Board Agent**: Task visualization and project boards
+    - Generate Kanban boards for task tracking
+    - Create Gantt charts for timeline planning
+    - Visualize task dependencies with flowcharts
+    - Support for multiple chart types (Mermaid.js)
+    """,
+    version="2.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -58,16 +77,28 @@ app.include_router(health.router, prefix="/api/v1", tags=["Health"])
 app.include_router(workspaces.router, prefix="/api/v1", tags=["Workspaces"])
 app.include_router(documents.router, prefix="/api/v1", tags=["Documents"])
 app.include_router(query.router, prefix="/api/v1", tags=["Query"])
+app.include_router(tasks.router, prefix="/api/v1", tags=["Task Analysis"])
+app.include_router(boards.router, prefix="/api/v1", tags=["Board Visualization"])
+app.include_router(hitl.router, prefix="/api/v1", tags=["HITL"])
 
 
 @app.get("/")
 async def root():
     """Root endpoint"""
     return {
-        "name": "Document RAG API",
-        "version": "1.0.0",
+        "name": "Agentic AI Project Management API",
+        "version": "2.0.0",
         "status": "running",
-        "docs": "/docs"
+        "agents": {
+            "document_agent": "✅ Available - Document Q&A with RAG",
+            "task_agent": "✅ Available - Task analysis and insights"
+        },
+        "docs": "/docs",
+        "endpoints": {
+            "documents": "/api/v1/workspaces/{workspace_id}/documents",
+            "query": "/api/v1/workspaces/{workspace_id}/query",
+            "tasks": "/api/v1/workspaces/{workspace_id}/tasks/analyze"
+        }
     }
 
 
