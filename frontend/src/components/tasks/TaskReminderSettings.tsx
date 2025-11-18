@@ -15,12 +15,14 @@ import { Task } from "@/types/task";
 import { reminderStorage } from "@/utils/reminderStorage";
 import { Bell, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface TaskReminderSettingsProps {
   task: Task;
 }
 
 export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
+  const { t } = useTranslation();
   const { updateTask } = useTaskStore();
   const { toast } = useToast();
   const [reminderEnabled, setReminderEnabled] = useState(task.reminderEnabled ?? false);
@@ -62,8 +64,8 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
   const handleSave = async () => {
     if (!task.dueDate) {
       toast({
-        title: "No due date",
-        description: "Please set a due date for the task first",
+        title: t("components.TaskReminderSettings.noDueDate"),
+        description: t("components.TaskReminderSettings.pleaseSetDueDateFirst"),
         variant: "destructive",
       });
       return;
@@ -100,15 +102,15 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
       });
 
       toast({
-        title: reminderEnabled ? "Reminder enabled" : "Reminder disabled",
+        title: reminderEnabled ? t("components.TaskReminderSettings.reminderEnabled") : t("components.TaskReminderSettings.reminderDisabled"),
         description: reminderEnabled
-          ? `You'll receive an email ${formatTimeBefore(minutesBefore)} before the due date`
-          : "Reminder has been disabled",
+          ? `${t("components.TaskReminderSettings.youWillReceiveEmail")} ${formatTimeBefore(minutesBefore)} ${t("components.TaskReminderSettings.beforeDueDate")}`
+          : t("components.TaskReminderSettings.reminderHasBeenDisabled"),
       });
     } catch (error) {
       toast({
-        title: "Failed to update reminder",
-        description: error instanceof Error ? error.message : "Please try again",
+        title: t("components.TaskReminderSettings.failedToUpdateReminder"),
+        description: error instanceof Error ? error.message : t("components.TaskReminderSettings.pleaseTryAgain"),
         variant: "destructive",
       });
     }
@@ -117,13 +119,13 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
   const formatTimeBefore = (minutes: number): string => {
     if (minutes >= 1440) {
       const days = Math.floor(minutes / 1440);
-      return `${days} ${days === 1 ? "day" : "days"}`;
+      return `${days} ${days === 1 ? t("common.day") : t("common.days")}`;
     }
     if (minutes >= 60) {
       const hours = Math.floor(minutes / 60);
-      return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+      return `${hours} ${hours === 1 ? t("common.hour") : t("common.hours")}`;
     }
-    return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+    return `${minutes} ${minutes === 1 ? t("common.minute") : t("common.minutes")}`;
   };
 
   if (!task.dueDate) {
@@ -131,7 +133,7 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
       <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          <span>Set a due date to enable reminders</span>
+          <span>{t("components.TaskReminderSettings.setDueDateToEnableReminders")}</span>
         </div>
       </div>
     );
@@ -141,7 +143,7 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
     <div className="space-y-4 rounded-lg border bg-card p-4">
       <div className="flex items-center gap-2">
         <Bell className="h-4 w-4 text-primary" />
-        <h4 className="text-sm font-semibold">Email Reminder</h4>
+        <h4 className="text-sm font-semibold">{t("components.TaskReminderSettings.emailReminder")}</h4>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -151,7 +153,7 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
           onCheckedChange={(checked) => setReminderEnabled(checked === true)}
         />
         <Label htmlFor="reminder-enabled" className="text-sm font-normal cursor-pointer">
-          Send reminder email before due date
+          {t("components.TaskReminderSettings.sendReminderEmailBeforeDueDate")}
         </Label>
       </div>
 
@@ -159,7 +161,7 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
         <div className="space-y-3 pl-6">
           <div className="flex items-center gap-2">
             <Label htmlFor="time-value" className="text-sm text-muted-foreground">
-              Remind me
+              {t("components.TaskReminderSettings.remindMe")}
             </Label>
             <Input
               id="time-value"
@@ -174,16 +176,16 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="minutes">Minutes</SelectItem>
-                <SelectItem value="hours">Hours</SelectItem>
-                <SelectItem value="days">Days</SelectItem>
+                <SelectItem value="minutes">{t("components.TaskReminderSettings.minutes")}</SelectItem>
+                <SelectItem value="hours">{t("components.TaskReminderSettings.hours")}</SelectItem>
+                <SelectItem value="days">{t("components.TaskReminderSettings.days")}</SelectItem>
               </SelectContent>
             </Select>
-            <Label className="text-sm text-muted-foreground">before due date</Label>
+            <Label className="text-sm text-muted-foreground">{t("components.TaskReminderSettings.beforeDueDate")}</Label>
           </div>
 
           <div className="text-xs text-muted-foreground">
-            Reminder will be sent on:{" "}
+            {t("components.TaskReminderSettings.reminderWillBeSentOn")}{" "}
             <span className="font-medium">
               {(() => {
                 const dueDate = new Date(task.dueDate!);
@@ -196,7 +198,7 @@ export function TaskReminderSettings({ task }: TaskReminderSettingsProps) {
       )}
 
       <Button onClick={handleSave} size="sm" className="w-full">
-        Save Reminder Settings
+        {t("components.TaskReminderSettings.saveReminderSettings")}
       </Button>
     </div>
   );

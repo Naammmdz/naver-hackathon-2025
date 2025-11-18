@@ -514,15 +514,25 @@
       "workspaceIsNowPublic": "Workspace hiện là công khai",
       "workspaceSettings": "Cài đặt Workspace"
     },
-    "WorkspaceSwitcher": {
-      "cancel": "Hủy",
-      "confirmDelete": "Xóa workspace",
-      "confirmDeleteDescription": "Bạn có chắc chắn muốn xóa workspace này? Tất cả tasks, documents và boards trong workspace sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.",
-      "confirmDeleteTitle": "Xóa workspace?",
-      "createWorkspace": "Tạo Workspace",
-      "selectWorkspace": "Chọn Workspace",
-      "workspaceSettings": "Cài đặt Workspace",
-      "workspaces": "Workspaces"
+    "TaskReminderSettings": {
+      "beforeDueDate": "trước ngày đến hạn",
+      "days": "Ngày",
+      "emailReminder": "Nhắc nhở qua Email",
+      "failedToUpdateReminder": "Không thể cập nhật nhắc nhở",
+      "hours": "Giờ",
+      "minutes": "Phút",
+      "noDueDate": "Không có ngày đến hạn",
+      "pleaseSetDueDateFirst": "Vui lòng đặt ngày đến hạn cho công việc trước",
+      "pleaseTryAgain": "Vui lòng thử lại",
+      "remindMe": "Nhắc tôi",
+      "reminderDisabled": "Đã tắt nhắc nhở",
+      "reminderEnabled": "Đã bật nhắc nhở",
+      "reminderHasBeenDisabled": "Nhắc nhở đã bị tắt",
+      "reminderWillBeSentOn": "Nhắc nhở sẽ được gửi vào:",
+      "saveReminderSettings": "Lưu cài đặt nhắc nhở",
+      "sendReminderEmailBeforeDueDate": "Gửi email nhắc nhở trước ngày đến hạn",
+      "setDueDateToEnableReminders": "Đặt ngày đến hạn để bật nhắc nhở",
+      "youWillReceiveEmail": "Bạn sẽ nhận được email"
     }
   },
   "analytics": {

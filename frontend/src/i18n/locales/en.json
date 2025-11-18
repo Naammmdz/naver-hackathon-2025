@@ -507,15 +507,25 @@
       "workspaceIsNowPublic": "Workspace is now public",
       "workspaceSettings": "Workspace Settings"
     },
-    "WorkspaceSwitcher": {
-      "cancel": "Cancel",
-      "confirmDelete": "Delete workspace",
-      "confirmDeleteDescription": "Are you sure you want to delete this workspace? All tasks, documents, and boards in the workspace will be permanently deleted. This action cannot be undone.",
-      "confirmDeleteTitle": "Delete workspace?",
-      "createWorkspace": "Create Workspace",
-      "selectWorkspace": "Select Workspace",
-      "workspaceSettings": "Workspace Settings",
-      "workspaces": "Workspaces"
+    "TaskReminderSettings": {
+      "beforeDueDate": "before due date",
+      "days": "Days",
+      "emailReminder": "Email Reminder",
+      "failedToUpdateReminder": "Failed to update reminder",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "noDueDate": "No due date",
+      "pleaseSetDueDateFirst": "Please set a due date for the task first",
+      "pleaseTryAgain": "Please try again",
+      "remindMe": "Remind me",
+      "reminderDisabled": "Reminder disabled",
+      "reminderEnabled": "Reminder enabled",
+      "reminderHasBeenDisabled": "Reminder has been disabled",
+      "reminderWillBeSentOn": "Reminder will be sent on:",
+      "saveReminderSettings": "Save Reminder Settings",
+      "sendReminderEmailBeforeDueDate": "Send reminder email before due date",
+      "setDueDateToEnableReminders": "Set a due date to enable reminders",
+      "youWillReceiveEmail": "You'll receive an email"
     }
   },
   "analytics": {
