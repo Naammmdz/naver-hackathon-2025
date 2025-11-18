@@ -238,6 +238,23 @@
       "addOneAbove": "Add one above to get started",
       "addTodoPlaceholder": "Add a todo...",
       "noTodosYet": "No todos yet"
+    },
+    "DocTaskLinker": {
+      "addNotePlaceholder": "Add a note about this relation...",
+      "cancel": "Cancel",
+      "chooseTaskPlaceholder": "Choose a task...",
+      "connectTaskTo": "Connect a task to",
+      "linkTask": "Link Task",
+      "linkTaskButton": "Link Task",
+      "linkTaskToDocument": "Link Task to Document",
+      "noTasksAvailable": "No tasks available",
+      "noTasksLinkedYet": "No tasks linked yet",
+      "noteOptional": "Note (Optional)",
+      "notePrefix": "Note:",
+      "relatedTasks": "Related Tasks",
+      "relationType": "Relation Type",
+      "removeLink": "Remove link",
+      "selectTask": "Select Task"
     }
   },
   "analytics": {

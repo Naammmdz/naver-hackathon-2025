@@ -238,6 +238,23 @@
       "addOneAbove": "Thêm một ở trên để bắt đầu",
       "addTodoPlaceholder": "Thêm việc cần làm...",
       "noTodosYet": "Chưa có việc cần làm"
+    },
+    "DocTaskLinker": {
+      "addNotePlaceholder": "Thêm ghi chú về mối quan hệ này...",
+      "cancel": "Hủy",
+      "chooseTaskPlaceholder": "Chọn một nhiệm vụ...",
+      "connectTaskTo": "Kết nối nhiệm vụ với",
+      "linkTask": "Liên kết nhiệm vụ",
+      "linkTaskButton": "Liên kết nhiệm vụ",
+      "linkTaskToDocument": "Liên kết nhiệm vụ với tài liệu",
+      "noTasksAvailable": "Không có nhiệm vụ nào khả dụng",
+      "noTasksLinkedYet": "Chưa có nhiệm vụ nào được liên kết",
+      "noteOptional": "Ghi chú (Tùy chọn)",
+      "notePrefix": "Ghi chú:",
+      "relatedTasks": "Nhiệm vụ liên quan",
+      "relationType": "Loại quan hệ",
+      "removeLink": "Xóa liên kết",
+      "selectTask": "Chọn nhiệm vụ"
     }
   },
   "analytics": {

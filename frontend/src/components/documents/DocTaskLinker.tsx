@@ -22,6 +22,7 @@ import { useTaskStore } from "@/store/taskStore";
 import { RELATION_TYPE_LABELS, TaskDocRelationType } from "@/types/taskDoc";
 import { CheckCircle2, Circle, Clock, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface DocTaskLinkerProps {
   docId: string;
@@ -29,6 +30,7 @@ interface DocTaskLinkerProps {
 }
 
 export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [relationType, setRelationType] = useState<TaskDocRelationType>("reflection"); // Default to reflection for doc->task
@@ -104,35 +106,35 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-muted-foreground">Related Tasks</h3>
+        <h3 className="text-sm font-semibold text-muted-foreground">{t('components.DocTaskLinker.relatedTasks')}</h3>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              Link Task
+              {t('components.DocTaskLinker.linkTask')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Link Task to Document</DialogTitle>
+              <DialogTitle>{t('components.DocTaskLinker.linkTaskToDocument')}</DialogTitle>
               <DialogDescription>
-                Connect a task to <strong>{docTitle}</strong>
+                {t('components.DocTaskLinker.connectTaskTo')} <strong>{docTitle}</strong>
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               {/* Task Selection */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Select Task</label>
+                <label className="text-sm font-medium">{t('components.DocTaskLinker.selectTask')}</label>
                 <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a task..." />
+                    <SelectValue placeholder={t('components.DocTaskLinker.chooseTaskPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     <ScrollArea className="max-h-[200px]">
                       {availableTasks.length === 0 ? (
                         <div className="p-4 text-sm text-muted-foreground text-center">
-                          No tasks available
+                          {t('components.DocTaskLinker.noTasksAvailable')}
                         </div>
                       ) : (
                         availableTasks.map((task) => (
@@ -151,7 +153,7 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
 
               {/* Relation Type */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Relation Type</label>
+                <label className="text-sm font-medium">{t('components.DocTaskLinker.relationType')}</label>
                 <Select
                   value={relationType}
                   onValueChange={(value) => setRelationType(value as TaskDocRelationType)}
@@ -174,9 +176,9 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
 
               {/* Optional Note */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Note (Optional)</label>
+                <label className="text-sm font-medium">{t('components.DocTaskLinker.noteOptional')}</label>
                 <Textarea
-                  placeholder="Add a note about this relation..."
+                  placeholder={t('components.DocTaskLinker.addNotePlaceholder')}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={3}
@@ -186,10 +188,10 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                {t('components.DocTaskLinker.cancel')}
               </Button>
               <Button onClick={handleLink} disabled={!selectedTaskId}>
-                Link Task
+                {t('components.DocTaskLinker.linkTaskButton')}
               </Button>
             </div>
           </DialogContent>
@@ -199,7 +201,7 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
       {/* Linked Tasks List */}
       {linkedTasks.length === 0 ? (
         <div className="text-sm text-muted-foreground text-center py-6 border border-dashed rounded-lg">
-          No tasks linked yet
+          {t('components.DocTaskLinker.noTasksLinkedYet')}
         </div>
       ) : (
         <div className="space-y-2">
@@ -238,7 +240,7 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
 
                   {taskDoc.note && (
                     <p className="text-xs text-muted-foreground italic line-clamp-2">
-                      Note: {taskDoc.note}
+                      {t('components.DocTaskLinker.notePrefix')} {taskDoc.note}
                     </p>
                   )}
 
@@ -263,7 +265,7 @@ export function DocTaskLinker({ docId, docTitle }: DocTaskLinkerProps) {
                     }}
                   >
                     <X className="h-4 w-4" />
-                    <span className="sr-only">Remove link</span>
+                    <span className="sr-only">{t('components.DocTaskLinker.removeLink')}</span>
                   </Button>
                 </div>
               </div>
