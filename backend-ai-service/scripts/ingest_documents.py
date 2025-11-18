@@ -253,8 +253,7 @@ class DocumentIngestion:
             
             if not self.dry_run:
                 self.db_session.rollback()
-        
-        return result
+        return results
     
     @log_execution_time(logger)
     def ingest_directory(self, directory_path: Path) -> List[Dict[str, Any]]:
@@ -433,6 +432,101 @@ def main():
     finally:
         if ingestion:
             ingestion.cleanup()
+
+
+def ingest_single_document(
+    file_path: str,
+    workspace_id: str,
+    title: str = None,
+    user_id: str = "api-user",
+    db=None
+) -> Dict[str, Any]:
+    """
+    Ingest a single document file.
+    
+    This is a convenience function for API usage.
+    
+    Args:
+        file_path: Path to the document file
+        workspace_id: Target workspace ID
+        title: Document title (optional, uses filename if not provided)
+        user_id: User ID performing the ingestion
+        db: Database session (optional, creates new if not provided)
+        
+    Returns:
+        Dict with document_id, title, chunks_created, success, and error fields
+    """
+    from pathlib import Path
+    from database.connection import get_db_session
+    
+    file_path_obj = Path(file_path)
+    if not file_path_obj.exists():
+        logger.error(f"File not found: {file_path}")
+        return {
+            'document_id': None,
+            'title': title or file_path_obj.stem,
+            'chunks_created': 0,
+            'success': False,
+            'error': f"File not found: {file_path}"
+        }
+    
+    # Use provided db session or create new one
+    if db is None:
+        db_session = get_db_session()
+        should_close = True
+    else:
+        db_session = db
+        should_close = False
+    
+    try:
+        # Create ingestion instance
+        ingestion = DocumentIngestion(
+            workspace_id=workspace_id,
+            user_id=user_id,
+            chunker_method="paragraph",
+            embedding_provider="huggingface",  # Use huggingface as default
+            dry_run=False
+        )
+        
+        # Replace db session with provided one
+        if db is not None:
+            ingestion.db_session = db
+            ingestion.doc_repo = DocumentRepository(db)
+            ingestion.chunk_repo = DocumentChunkRepository(db)
+        
+        # Ingest the file
+        result = ingestion.ingest_file(file_path_obj)
+        
+        if not result['success']:
+            error_msg = result.get('error', 'Unknown error')
+            logger.error(f"Ingestion failed: {error_msg}")
+            return {
+                'document_id': None,
+                'title': title or file_path_obj.stem,
+                'chunks_created': 0,
+                'success': False,
+                'error': error_msg
+            }
+        
+        return {
+            'document_id': result['document_id'],
+            'title': title or file_path_obj.stem,
+            'chunks_created': result['chunks_created'],
+            'success': True,
+            'error': None
+        }
+    except Exception as e:
+        logger.error(f"Error ingesting document: {e}", exc_info=True)
+        return {
+            'document_id': None,
+            'title': title or file_path_obj.stem,
+            'chunks_created': 0,
+            'success': False,
+            'error': str(e)
+        }
+    finally:
+        if should_close and 'db_session' in locals():
+            db_session.close()
 
 
 if __name__ == '__main__':

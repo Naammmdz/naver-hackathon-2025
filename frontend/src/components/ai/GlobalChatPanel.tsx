@@ -1,5 +1,6 @@
 import { Send, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,17 +14,19 @@ type ChatMessage = {
   timestamp?: number;
 };
 
-const defaultMessages: ChatMessage[] = [
-  {
-    id: "assistant-welcome",
-    role: "assistant",
-    content: "Xin chào! Tôi là trợ lý AI toàn cục. Tôi có thể giúp gì cho bạn hôm nay?",
-  },
-];
-
 const panelWidthClass = "w-full sm:w-[24rem] lg:w-[26rem]";
 
 export const GlobalChatPanel = () => {
+  const { t } = useTranslation();
+
+  const defaultMessages: ChatMessage[] = [
+    {
+      id: "assistant-welcome",
+      role: "assistant",
+      content: t('components.GlobalChatPanel.welcomeMessage'),
+    },
+  ];
+
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -118,29 +121,15 @@ export const GlobalChatPanel = () => {
 
       const trimmed = input.trim();
       const timestamp = Date.now().toString();
-      const userMessage = { id: `user-${timestamp}`, role: "user" as const, content: trimmed, timestamp: Date.now() };
-      const assistantMessage = {
-        id: `assistant-${timestamp}`,
-        role: "assistant" as const,
-        content:
-          "Tôi đã ghi nhận yêu cầu của bạn. Tích hợp backend sẽ giúp tôi phản hồi thông minh hơn trong tương lai.",
-        timestamp: Date.now(),
-      };
-      
-      setMessages((prev) => [...prev, userMessage, assistantMessage]);
-      
-      // Save to localStorage
-      try {
-        const stored = localStorage.getItem('global-ai-chat-history');
-        const history = stored ? JSON.parse(stored) : [];
-        const updated = [...history, userMessage, assistantMessage];
-        // Keep only last 50 messages
-        const trimmed = updated.slice(-50);
-        localStorage.setItem('global-ai-chat-history', JSON.stringify(trimmed));
-      } catch (error) {
-        console.error('Error saving chat history:', error);
-      }
-      
+      setMessages((prev) => [
+        ...prev,
+        { id: `user-${timestamp}`, role: "user", content: trimmed },
+        {
+          id: `assistant-${timestamp}`,
+          role: "assistant",
+          content: t('components.GlobalChatPanel.defaultResponse'),
+        },
+      ]);
       setInput("");
     },
     [canSend, input],
@@ -189,12 +178,12 @@ export const GlobalChatPanel = () => {
           )}
           style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
         >
-          AI Chat
+          {t('components.GlobalChatPanel.buttonText')}
         </button>
       )}
 
       <aside
-        aria-label="Trò chuyện với trợ lý AI"
+        aria-label={t('components.GlobalChatPanel.panelAriaLabel')}
         id="global-ai-chat-panel"
         className={cn(
           "fixed right-0 top-0 z-[90] flex h-full max-h-screen flex-col border-l bg-background text-foreground shadow-2xl transition-transform duration-300 ease-in-out",
@@ -209,12 +198,12 @@ export const GlobalChatPanel = () => {
               <Sparkles className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-semibold leading-tight">Trợ lý AI</p>
-              <p className="text-sm text-muted-foreground">Hỗ trợ bạn mọi lúc mọi nơi</p>
+              <p className="font-semibold leading-tight">{t('components.GlobalChatPanel.headerTitle')}</p>
+              <p className="text-sm text-muted-foreground">{t('components.GlobalChatPanel.headerSubtitle')}</p>
             </div>
           </div>
           <Button
-            aria-label="Đóng panel trò chuyện"
+            aria-label={t('components.GlobalChatPanel.closeButtonAria')}
             onClick={closePanel}
             size="icon"
             variant="ghost"
@@ -236,7 +225,7 @@ export const GlobalChatPanel = () => {
                 {message.role === "assistant" && (
                   <img 
                     src="/assets/images/ai-avatar.png" 
-                    alt="AI Assistant" 
+                    alt={t('components.GlobalChatPanel.aiAvatarAlt')} 
                     className="mt-1 h-10 w-10 flex-shrink-0 rounded-full object-cover"
                   />
                 )}
@@ -257,7 +246,7 @@ export const GlobalChatPanel = () => {
 
         <form className="border-t px-5 py-4" onSubmit={handleSend}>
           <label className="sr-only" htmlFor="global-ai-chat-input">
-            Nhập tin nhắn để trò chuyện với trợ lý AI
+            {t('components.GlobalChatPanel.inputLabel')}
           </label>
           <div className="flex items-center gap-2 rounded-full border border-muted bg-muted/40 px-2.5 py-1.5 shadow-inner">
             <Button
@@ -267,11 +256,11 @@ export const GlobalChatPanel = () => {
               className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 bg-background/70 text-muted-foreground transition hover:border-primary hover:bg-primary/10 hover:text-primary"
             >
               <span className="text-lg font-semibold leading-none">+</span>
-              <span className="sr-only">Thêm tệp đính kèm</span>
+              <span className="sr-only">{t('components.GlobalChatPanel.attachButtonSr')}</span>
             </Button>
             <Textarea
               id="global-ai-chat-input"
-              placeholder="Nhập câu hỏi của bạn..."
+              placeholder={t('components.GlobalChatPanel.placeholder')}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               className="flex-1 h-10 min-h-0 resize-none rounded-full border-0 bg-transparent px-3 py-2 text-sm leading-[1.4] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -283,7 +272,7 @@ export const GlobalChatPanel = () => {
               className="h-10 w-10 flex-shrink-0 rounded-full shadow-md transition hover:shadow-lg"
             >
               <Send className="h-4 w-4" />
-              <span className="sr-only">Gửi</span>
+              <span className="sr-only">{t('components.GlobalChatPanel.sendButtonSr')}</span>
             </Button>
           </div>
         </form>
