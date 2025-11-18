@@ -507,10 +507,27 @@
       "workspaceIsNowPublic": "Workspace is now public",
       "workspaceSettings": "Workspace Settings"
     },
-    "Carousel": {
-      "nextSlide": "Next slide",
-      "previousSlide": "Previous slide",
-      "useCarouselError": "useCarousel must be used within a <Carousel />"
+    "Footer": {
+      "allTrademarksCopyrights": "All trademarks and copyrights belong to their respective owners.",
+      "apiDocs": "API Docs",
+      "apiEndpoints": "API Endpoints",
+      "blog": "Blog",
+      "company": "Company",
+      "copyright": "Copyright ┬⌐ 2023-2025",
+      "dcmaContentTakedown": "DCMA - Content Takedown",
+      "gettingStarted": "Getting started",
+      "github": "Github",
+      "healthStatus": "Health status",
+      "legal": "Legal",
+      "linkedin": "Linkedin",
+      "logoAlt": "logo",
+      "pricing": "Pricing",
+      "privacyPolicy": "Privacy Policy",
+      "resources": "Resources",
+      "supportChannels": "Support channels",
+      "systems": "Systems",
+      "termsOfService": "Terms of service",
+      "twitter": "Twitter"
     }
   },
   "analytics": {

@@ -745,6 +745,28 @@
       "flightInfo": "Thông Tin Chuyến Bay",
       "loadingRoute": "Đang tải tuyến ngẫu nhiên...",
       "status": "Trạng Thái"
+    },
+    "Footer": {
+      "allTrademarksCopyrights": "Tất cả thương hiệu và bản quyền thuộc về chủ sở hữu tương ứng.",
+      "apiDocs": "Tài Liệu API",
+      "apiEndpoints": "Điểm Cuối API",
+      "blog": "Blog",
+      "company": "Công Ty",
+      "copyright": "Bản Quyền ┬⌐ 2023-2025",
+      "dcmaContentTakedown": "DCMA - Gỡ Nội Dung",
+      "gettingStarted": "Bắt Đầu",
+      "github": "Github",
+      "healthStatus": "Trạng Thái Sức Khỏe",
+      "legal": "Pháp Lý",
+      "linkedin": "Linkedin",
+      "logoAlt": "logo",
+      "pricing": "Giá",
+      "privacyPolicy": "Chính Sách Bảo Mật",
+      "resources": "Tài Nguyên",
+      "supportChannels": "Kênh Hỗ Trợ",
+      "systems": "Hệ Thống",
+      "termsOfService": "Điều Khoản Dịch Vụ",
+      "twitter": "Twitter"
     }
   }
 }
