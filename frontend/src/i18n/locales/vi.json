@@ -191,6 +191,15 @@
       "retryButton": "Thử lại",
       "viewSampleBoard": "Xem board mẫu"
     },
+    "ChatInput": {
+      "addContext": "Thêm ngữ cảnh",
+      "askPlaceholder": "Hỏi, học, brainstorm, vẽ...",
+      "pickArea": "Chọn khu vực",
+      "pickShapes": "Chọn hình dạng",
+      "send": "Gửi",
+      "sending": "Đang gửi...",
+      "stop": "Dừng"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Thêm tệp đính kèm",

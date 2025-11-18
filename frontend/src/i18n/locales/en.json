@@ -191,6 +191,15 @@
       "retryButton": "Retry",
       "viewSampleBoard": "View sample board"
     },
+    "ChatInput": {
+      "addContext": "Add Context",
+      "askPlaceholder": "Ask, learn, brainstorm, draw...",
+      "pickArea": "Pick Area",
+      "pickShapes": "Pick Shapes",
+      "send": "Send",
+      "sending": "Sending...",
+      "stop": "Stop"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",

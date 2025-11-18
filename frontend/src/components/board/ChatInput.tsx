@@ -1,5 +1,6 @@
 import { Loader2, Send, Square } from 'lucide-react'
 import { FormEventHandler, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Editor, useValue } from 'tldraw'
 import { AGENT_MODEL_DEFINITIONS, AgentModelName } from '../../worker/models'
 import { TldrawAgent } from '../agent/TldrawAgent'
@@ -20,6 +21,7 @@ export function ChatInput({
 	handleSubmit: FormEventHandler<HTMLFormElement>
 	inputRef: React.RefObject<HTMLTextAreaElement>
 }) {
+	const { t } = useTranslation()
 	const { editor } = agent
 	const [inputValue, setInputValue] = useState('')
 	const isGenerating = useValue('isGenerating', () => agent.isGenerating(), [agent])
@@ -37,6 +39,32 @@ export function ChatInput({
 	const contextItems = useValue(agent.$contextItems)
 	const modelName = useValue(agent.$modelName)
 
+	const ADD_CONTEXT_ACTIONS = [
+		{
+			name: t('components.ChatInput.pickShapes'),
+			onSelect: (editor: Editor) => {
+				editor.setCurrentTool('target-shape')
+				editor.focus()
+			},
+		},
+		{
+			name: t('components.ChatInput.pickArea'),
+			onSelect: (editor: Editor) => {
+				editor.setCurrentTool('target-area')
+				editor.focus()
+			},
+		},
+		{
+			name: ' ',
+			onSelect: (editor: Editor) => {
+				const currentTool = editor.getCurrentTool()
+				if (currentTool.id === 'target-area' || currentTool.id === 'target-shape') {
+					editor.setCurrentTool('select')
+				}
+			},
+		},
+	]
+
 	return (
 		<div className="space-y-3">
 			{/* Context Tags */}
@@ -47,7 +75,7 @@ export function ChatInput({
 						: 'bg-muted border-border text-muted-foreground hover:bg-muted/80'
 				}`}>
 					<AtIcon />
-					<span>Add Context</span>
+					<span>{t('components.ChatInput.addContext')}</span>
 					<Select onValueChange={(value) => {
 						const action = ADD_CONTEXT_ACTIONS.find((action) => action.name === value)
 						if (action) action.onSelect(editor)
@@ -89,7 +117,7 @@ export function ChatInput({
 						ref={inputRef}
 						name="input"
 						autoComplete="off"
-						placeholder="Ask, learn, brainstorm, draw..."
+						placeholder={t('components.ChatInput.askPlaceholder')}
 						value={inputValue}
 						onChange={(e) => setInputValue(e.currentTarget.value)}
 						onKeyDown={(e) => {
@@ -130,17 +158,17 @@ export function ChatInput({
 							{isGenerating && inputValue === '' ? (
 								<>
 									<Square className="h-4 w-4" />
-									Stop
+									{t('components.ChatInput.stop')}
 								</>
 							) : isGenerating ? (
 								<>
 									<Loader2 className="h-4 w-4 animate-spin" />
-									Sending...
+									{t('components.ChatInput.sending')}
 								</>
 							) : (
 								<>
 									<Send className="h-4 w-4" />
-									Send
+									{t('components.ChatInput.send')}
 								</>
 							)}
 						</Button>
@@ -150,29 +178,3 @@ export function ChatInput({
 		</div>
 	)
 }
-
-const ADD_CONTEXT_ACTIONS = [
-	{
-		name: 'Pick Shapes',
-		onSelect: (editor: Editor) => {
-			editor.setCurrentTool('target-shape')
-			editor.focus()
-		},
-	},
-	{
-		name: 'Pick Area',
-		onSelect: (editor: Editor) => {
-			editor.setCurrentTool('target-area')
-			editor.focus()
-		},
-	},
-	{
-		name: ' ',
-		onSelect: (editor: Editor) => {
-			const currentTool = editor.getCurrentTool()
-			if (currentTool.id === 'target-area' || currentTool.id === 'target-shape') {
-				editor.setCurrentTool('select')
-			}
-		},
-	},
-]
