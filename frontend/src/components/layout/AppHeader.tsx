@@ -123,7 +123,7 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
             size="sm"
             onClick={toggleLanguage}
             className="hidden sm:flex"
-            title={i18n.language === 'en' ? 'Switch to Vietnamese' : 'Chuyển sang tiếng Anh'}
+            title={i18n.language === 'en' ? t('components.AppHeader.switchToVietnamese') : t('components.AppHeader.switchToEnglish')}
           >
             <Languages className="h-4 w-4 mr-2" />
             {i18n.language === 'en' ? 'VI' : 'EN'}

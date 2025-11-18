@@ -143,6 +143,10 @@
     "doneDescription": "Các công việc đã hoàn thành"
   },
   "components": {
+    "AppHeader": {
+      "switchToEnglish": "Chuyển sang tiếng Anh",
+      "switchToVietnamese": "Chuyển sang tiếng Việt"
+    },
     "AppSidebar": {
       "allTasks": "Tất cả công việc",
       "byPriority": "Theo độ ưu tiên",
@@ -274,6 +278,16 @@
       "addOneAbove": "Thêm một ở trên để bắt đầu",
       "addTodoPlaceholder": "Thêm việc cần làm...",
       "noTodosYet": "Chưa có việc cần làm"
+    },
+    "DashboardCard": {
+      "cardSettings": "Cài đặt thẻ",
+      "customize": "Tùy chỉnh",
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "removeCard": "Xóa thẻ",
+      "removeThisCard": "Xóa thẻ này",
+      "resizeDiagonal": "Thay đổi kích thước (chéo)",
+      "resizeHorizontal": "Thay đổi kích thước (ngang)",
+      "resizeVertical": "Thay đổi kích thước (dọc)"
     },
     "DocTaskLinker": {
       "addNotePlaceholder": "Thêm ghi chú về mối quan hệ này...",

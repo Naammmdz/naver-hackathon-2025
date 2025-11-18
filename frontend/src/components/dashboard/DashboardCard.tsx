@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ReactNode, useRef, useState, useEffect, memo } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface DashboardCardConfig {
   id: string;
@@ -38,6 +39,7 @@ interface DashboardCardProps {
 }
 
 export const DashboardCard = memo(function DashboardCard({ config, children, onRemove, onEdit, onResize, isDragging }: DashboardCardProps) {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -183,8 +185,8 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 {...attributes}
                 {...listeners}
                 className="cursor-grab active:cursor-grabbing p-1 hover:bg-accent rounded transition-all flex-shrink-0 hover:scale-110"
-                aria-label="Drag to reorder"
-                title="Drag to reorder"
+                aria-label={t('components.DashboardCard.dragToReorder')}
+                title={t('components.DashboardCard.dragToReorder')}
               >
                 <GripVertical className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
               </button>
@@ -213,8 +215,8 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                   size="sm" 
                   className="h-6 w-6 p-0 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all hover:scale-110"
                   onClick={() => onRemove(config.id)}
-                  title="Remove this card"
-                  aria-label="Remove card"
+                  title={t('components.DashboardCard.removeThisCard')}
+                  aria-label={t('components.DashboardCard.removeCard')}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -228,7 +230,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                       variant="ghost" 
                       size="sm" 
                       className="h-6 w-6 p-0 text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-all"
-                      title="Card settings"
+                      title={t('components.DashboardCard.cardSettings')}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -236,7 +238,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => onEdit(config.id)}>
                       <Settings className="h-4 w-4 mr-2" />
-                      Customize
+                      {t('components.DashboardCard.customize')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -260,7 +262,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (diagonal)"
+              title={t('components.DashboardCard.resizeDiagonal')}
             >
               <div className="absolute top-0.5 left-0.5 w-2 h-2 border-t-2 border-l-2 border-muted-foreground/40 group-hover:border-primary/60 transition-colors" />
             </div>
@@ -273,7 +275,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (diagonal)"
+              title={t('components.DashboardCard.resizeDiagonal')}
             >
               <div className="absolute top-0.5 right-0.5 w-2 h-2 border-t-2 border-r-2 border-muted-foreground/40 group-hover:border-primary/60 transition-colors" />
             </div>
@@ -286,7 +288,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (diagonal)"
+              title={t('components.DashboardCard.resizeDiagonal')}
             >
               <div className="absolute bottom-0.5 left-0.5 w-2 h-2 border-b-2 border-l-2 border-muted-foreground/40 group-hover:border-primary/60 transition-colors" />
             </div>
@@ -299,7 +301,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (diagonal)"
+              title={t('components.DashboardCard.resizeDiagonal')}
             >
               <div className="absolute bottom-0.5 right-0.5 w-2 h-2 border-r-2 border-b-2 border-muted-foreground/40 group-hover:border-primary/60 transition-colors" />
             </div>
@@ -313,7 +315,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (vertical)"
+              title={t('components.DashboardCard.resizeVertical')}
             />
             
             {/* Bottom */}
@@ -324,7 +326,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (vertical)"
+              title={t('components.DashboardCard.resizeVertical')}
             />
             
             {/* Left */}
@@ -335,7 +337,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (horizontal)"
+              title={t('components.DashboardCard.resizeHorizontal')}
             />
             
             {/* Right */}
@@ -346,7 +348,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
                 "bg-transparent hover:bg-primary/20 transition-colors z-10",
                 "group-hover:bg-primary/10"
               )}
-              title="Resize (horizontal)"
+              title={t('components.DashboardCard.resizeHorizontal')}
             />
           </>
         )}
