@@ -9,11 +9,13 @@ import {
 	Vec,
 } from 'tldraw'
 import { TldrawAgent } from '../agent/TldrawAgent'
+import { useTranslation } from 'react-i18next'
 
 export function GoToAgentButton({ agent }: { agent: TldrawAgent }) {
 	const editor = useEditor()
 	const currentRequest = useValue(agent.$activeRequest)
 	const agentViewport = currentRequest?.bounds
+	const { t } = useTranslation()
 
 	// We only show the button if the agent is offscreen
 	const agentIsOffscreen = useValue(
@@ -82,7 +84,7 @@ export function GoToAgentButton({ agent }: { agent: TldrawAgent }) {
 						</svg>
 					}
 				/>
-				<TldrawUiButtonLabel>Go to agent</TldrawUiButtonLabel>
+				<TldrawUiButtonLabel>{t('components.GoToAgentButton.goToAgent')}</TldrawUiButtonLabel>
 			</div>
 		</TldrawUiButton>
 	)

@@ -256,6 +256,9 @@
       "sendButtonSr": "Send",
       "welcomeMessage": "Hello! I'm the global AI assistant. How can I help you today?"
     },
+    "GoToAgentButton": {
+      "goToAgent": "Go to agent"
+    },
     "HITLConfirmationDialog": {
       "additionalCommentsLabel": "Additional Comments (Optional)",
       "aiAgentConfirmationRequired": "AI Agent Confirmation Required",

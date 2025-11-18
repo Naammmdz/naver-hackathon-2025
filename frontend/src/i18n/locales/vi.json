@@ -256,6 +256,9 @@
       "sendButtonSr": "Gửi",
       "welcomeMessage": "Xin chào! Tôi là trợ lý AI toàn cầu. Tôi có thể giúp gì cho bạn hôm nay?"
     },
+    "GoToAgentButton": {
+      "goToAgent": "Đi đến agent"
+    },
     "OnlineUsers": {
       "editingNow": "Đang chỉnh sửa",
       "online": "trực tuyến",
