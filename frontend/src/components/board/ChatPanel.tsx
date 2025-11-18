@@ -1,5 +1,6 @@
 import { MessageSquarePlus, X } from 'lucide-react'
 import { FormEventHandler, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useValue } from 'tldraw'
 import { convertTldrawShapeToSimpleShape } from '../../shared/format/convertTldrawShapeToSimpleShape'
 import { TldrawAgent } from '../agent/TldrawAgent'
@@ -10,6 +11,7 @@ import { ChatInput } from './ChatInput'
 import { TodoList } from './TodoList'
 
 export function ChatPanel({ agent, onClose }: { agent: TldrawAgent; onClose?: () => void }) {
+	const { t } = useTranslation()
 	const { editor } = agent
 	const inputRef = useRef<HTMLTextAreaElement>(null)
 	const modelName = useValue(agent.$modelName)
@@ -67,7 +69,7 @@ export function ChatPanel({ agent, onClose }: { agent: TldrawAgent; onClose?: ()
 				size="icon"
 				onClick={handleNewChat}
 				className="h-8 w-8"
-				title="New Chat"
+				title={t('components.ChatPanel.newChat')}
 			>
 				<MessageSquarePlus className="h-4 w-4" />
 			</Button>
@@ -81,7 +83,7 @@ export function ChatPanel({ agent, onClose }: { agent: TldrawAgent; onClose?: ()
 				size="icon"
 				onClick={onClose}
 				className="h-8 w-8"
-				title="Close Chat"
+				title={t('components.ChatPanel.closeChat')}
 			>
 				<X className="h-4 w-4" />
 			</Button>
@@ -93,7 +95,7 @@ export function ChatPanel({ agent, onClose }: { agent: TldrawAgent; onClose?: ()
 			<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
 				<div className="flex items-center gap-2">
 					<div className="w-2 h-2 bg-primary rounded-full"></div>
-					<h3 className="text-lg font-semibold text-foreground">AI Assistant</h3>
+					<h3 className="text-lg font-semibold text-foreground">{t('components.ChatPanel.aiAssistant')}</h3>
 				</div>
 				<div className="flex items-center gap-1">
 					<NewChatButton />

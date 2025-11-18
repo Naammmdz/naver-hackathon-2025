@@ -1,14 +1,17 @@
+import { useTranslation } from 'react-i18next'
+
 export function ChatPanelFallback() {
+	const { t } = useTranslation()
 	return (
 		<div className="chat-fallback">
-			<p>Error loading chat history</p>
+			<p>{t('components.ChatPanelFallback.errorLoadingChatHistory')}</p>
 			<button
 				onClick={() => {
 					localStorage.clear()
 					window.location.reload()
 				}}
 			>
-				Clear chat history
+				{t('components.ChatPanelFallback.clearChatHistory')}
 			</button>
 		</div>
 	)

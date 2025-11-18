@@ -200,6 +200,15 @@
       "sending": "Đang gửi...",
       "stop": "Dừng"
     },
+    "ChatPanel": {
+      "aiAssistant": "Trợ lý AI",
+      "closeChat": "Đóng trò chuyện",
+      "newChat": "Trò chuyện mới"
+    },
+    "ChatPanelFallback": {
+      "clearChatHistory": "Xóa lịch sử trò chuyện",
+      "errorLoadingChatHistory": "Lỗi tải lịch sử trò chuyện"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Thêm tệp đính kèm",

@@ -200,6 +200,15 @@
       "sending": "Sending...",
       "stop": "Stop"
     },
+    "ChatPanel": {
+      "aiAssistant": "AI Assistant",
+      "closeChat": "Close Chat",
+      "newChat": "New Chat"
+    },
+    "ChatPanelFallback": {
+      "clearChatHistory": "Clear chat history",
+      "errorLoadingChatHistory": "Error loading chat history"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",
