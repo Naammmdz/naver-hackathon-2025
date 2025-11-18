@@ -447,6 +447,19 @@
       "noDataToDisplay": "Không có dữ liệu để hiển thị",
       "queryResults": "Kết quả truy vấn",
       "taskAnalysis": "Phân tích nhiệm vụ"
+    },
+    "WorkspaceOnboarding": {
+      "createButton": "Tạo Workspace & Tiếp tục",
+      "createButtonLoading": "Đang tạo workspace...",
+      "descriptionLabel": "Mô tả (tùy chọn)",
+      "descriptionPlaceholder": "Workspace này dùng để làm gì?",
+      "errorFailedToCreate": "Không thể tạo workspace",
+      "errorNameRequired": "Tên workspace là bắt buộc",
+      "footerText": "Bạn có thể tạo thêm workspace sau và chuyển đổi giữa chúng bất cứ lúc nào",
+      "nameLabel": "Tên Workspace *",
+      "namePlaceholder": "ví dụ: Nhóm của tôi, Dự án cá nhân",
+      "title": "Chào mừng! 🎉",
+      "welcomeDescription": "Hãy tạo workspace đầu tiên của bạn để bắt đầu"
     }
   },
   "analytics": {

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Loader2, Rocket } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface WorkspaceOnboardingProps {
   open: boolean;
@@ -25,10 +26,11 @@ export function WorkspaceOnboarding({ open, onWorkspaceCreated }: WorkspaceOnboa
   const [error, setError] = useState<string | null>(null);
 
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
+  const { t } = useTranslation();
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      setError("Workspace name is required");
+      setError(t('components.WorkspaceOnboarding.errorNameRequired'));
       return;
     }
 
@@ -54,7 +56,7 @@ export function WorkspaceOnboarding({ open, onWorkspaceCreated }: WorkspaceOnboa
         await onWorkspaceCreated();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create workspace");
+      setError(err instanceof Error ? err.message : t('components.WorkspaceOnboarding.errorFailedToCreate'));
     } finally {
       setIsCreating(false);
     }
@@ -76,9 +78,9 @@ export function WorkspaceOnboarding({ open, onWorkspaceCreated }: WorkspaceOnboa
               <Rocket className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-2xl">Welcome! 🎉</DialogTitle>
+              <DialogTitle className="text-2xl">{t('components.WorkspaceOnboarding.title')}</DialogTitle>
               <DialogDescription className="text-base mt-1">
-                Let's create your first workspace to get started
+                {t('components.WorkspaceOnboarding.welcomeDescription')}
               </DialogDescription>
             </div>
           </div>
@@ -87,11 +89,11 @@ export function WorkspaceOnboarding({ open, onWorkspaceCreated }: WorkspaceOnboa
         <div className="space-y-4 pt-4">
           <div className="space-y-2">
             <Label htmlFor="workspace-name" className="text-base font-medium">
-              Workspace Name <span className="text-destructive">*</span>
+              {t('components.WorkspaceOnboarding.nameLabel')}
             </Label>
             <Input
               id="workspace-name"
-              placeholder="e.g., My Team, Personal Projects"
+              placeholder={t('components.WorkspaceOnboarding.namePlaceholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -103,11 +105,11 @@ export function WorkspaceOnboarding({ open, onWorkspaceCreated }: WorkspaceOnboa
 
           <div className="space-y-2">
             <Label htmlFor="workspace-description" className="text-base font-medium">
-              Description <span className="text-muted-foreground text-sm">(optional)</span>
+              {t('components.WorkspaceOnboarding.descriptionLabel')}
             </Label>
             <Textarea
               id="workspace-description"
-              placeholder="What's this workspace for?"
+              placeholder={t('components.WorkspaceOnboarding.descriptionPlaceholder')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={isCreating}
@@ -131,18 +133,18 @@ export function WorkspaceOnboarding({ open, onWorkspaceCreated }: WorkspaceOnboa
             {isCreating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating workspace...
+                {t('components.WorkspaceOnboarding.createButtonLoading')}
               </>
             ) : (
               <>
                 <Rocket className="mr-2 h-4 w-4" />
-                Create Workspace & Continue
+                {t('components.WorkspaceOnboarding.createButton')}
               </>
             )}
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            You can create more workspaces later and switch between them anytime
+            {t('components.WorkspaceOnboarding.footerText')}
           </p>
         </div>
       </DialogContent>

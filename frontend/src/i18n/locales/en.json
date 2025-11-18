@@ -440,6 +440,19 @@
       "showingResults": "Showing {{count}} results",
       "taskAnalysis": "Task Analysis",
       "tasksAffected": "tasks affected"
+    },
+    "WorkspaceOnboarding": {
+      "createButton": "Create Workspace & Continue",
+      "createButtonLoading": "Creating workspace...",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "What's this workspace for?",
+      "errorFailedToCreate": "Failed to create workspace",
+      "errorNameRequired": "Workspace name is required",
+      "footerText": "You can create more workspaces later and switch between them anytime",
+      "nameLabel": "Workspace Name *",
+      "namePlaceholder": "e.g., My Team, Personal Projects",
+      "title": "Welcome! 🎉",
+      "welcomeDescription": "Let's create your first workspace to get started"
     }
   },
   "analytics": {
