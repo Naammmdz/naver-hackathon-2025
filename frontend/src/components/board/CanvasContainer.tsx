@@ -4,9 +4,11 @@ import { useBoardStore } from '@/store/boardStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { Layers, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Canvas } from './Canvas';
 
 export function CanvasContainer() {
+  const { t } = useTranslation();
   const {
     boards,
     activeBoardId,
@@ -79,7 +81,7 @@ export function CanvasContainer() {
   }, [activeBoardId, workspaceFilteredBoards, isInitialized, setActiveBoard]);
 
   if (!isInitialized || (isLoading && boards.length === 0)) {
-    return <div className="w-full h-full flex items-center justify-center">Loading...</div>;
+    return <div className="w-full h-full flex items-center justify-center">{t('components.CanvasContainer.loadingText')}</div>;
   }
 
   if (error && boards.length === 0) {
@@ -87,7 +89,7 @@ export function CanvasContainer() {
       <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-sm text-destructive">
         <p>{error}</p>
         <Button onClick={() => void initialize()} size="sm" disabled={isLoading}>
-          Thử lại
+          {t('components.CanvasContainer.retryButton')}
         </Button>
       </div>
     );
@@ -138,37 +140,36 @@ export function CanvasContainer() {
           </span>
 
           <div className="space-y-3">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Khởi tạo không gian sáng tạo</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">{t('components.CanvasContainer.initializeWorkspaceTitle')}</h2>
             <p className="text-sm leading-relaxed text-muted-foreground/80">
-              Tập hợp ý tưởng, sơ đồ sản phẩm và bản phác thảo chung trên cùng một bảng.
-              Tạo board đầu tiên để bắt đầu cộng tác trực quan.
+              {t('components.CanvasContainer.initializeWorkspaceDescription')}
             </p>
           </div>
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-              <span>Tự động lưu từng nét vẽ và đồng bộ với team theo thời gian thực.</span>
+              <span>{t('components.CanvasContainer.autoSaveFeature')}</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
-              <span>Nhúng icon, link, hình ảnh để kể câu chuyện sản phẩm hấp dẫn.</span>
+              <span>{t('components.CanvasContainer.embedFeature')}</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-              <span>Kéo thả khối, sticky note và khung để tổ chức ý tưởng dễ dàng.</span>
+              <span>{t('components.CanvasContainer.dragDropFeature')}</span>
             </div>
           </div>
 
           <div className="flex flex-col items-center gap-3 sm:flex-row">
             <Button
-              onClick={() => void addBoard('Board đầu tiên')}
+              onClick={() => void addBoard(t('components.CanvasContainer.defaultBoardName'))}
               size="lg"
               className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
               disabled={isLoading}
             >
               <Sparkles className="h-4 w-4" />
-              Tạo board mới
+              {t('components.CanvasContainer.createFirstBoard')}
             </Button>
             <Button
               size="lg"
@@ -177,12 +178,12 @@ export function CanvasContainer() {
               disabled
             >
               <Layers className="h-4 w-4" />
-              Xem board mẫu
+              {t('components.CanvasContainer.viewSampleBoard')}
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground/70">
-            Mẹo: giữ phím <span className="rounded-md bg-muted px-1.5 py-0.5 text-foreground">Space</span> để pan nhanh khi di chuyển trên canvas.
+            {t('components.CanvasContainer.panTip')}
           </p>
         </div>
       </div>
@@ -201,10 +202,10 @@ export function CanvasContainer() {
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              Chọn board từ sidebar
+              {t('components.CanvasContainer.noBoardSelectedTitle')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Chọn một board từ danh sách bên trái hoặc tạo board mới
+              {t('components.CanvasContainer.noBoardSelectedDescription')}
             </p>
           </div>
         </div>

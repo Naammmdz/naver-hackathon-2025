@@ -176,6 +176,21 @@
       "generateDiagramTitle": "Tạo Sơ đồ với AI",
       "generatingText": "Đang tạo..."
     },
+    "CanvasContainer": {
+      "autoSaveFeature": "Tự động lưu từng nét vẽ và đồng bộ với team theo thời gian thực.",
+      "createFirstBoard": "Tạo board mới",
+      "defaultBoardName": "Board đầu tiên",
+      "dragDropFeature": "Kéo thả khối, sticky note và khung để tổ chức ý tưởng dễ dàng.",
+      "embedFeature": "Nhúng icon, link, hình ảnh để kể câu chuyện sản phẩm hấp dẫn.",
+      "initializeWorkspaceDescription": "Tập hợp ý tưởng, sơ đồ sản phẩm và bản phác thảo chung trên cùng một bảng. Tạo board đầu tiên để bắt đầu cộng tác trực quan.",
+      "initializeWorkspaceTitle": "Khởi tạo không gian sáng tạo",
+      "loadingText": "Đang tải...",
+      "noBoardSelectedDescription": "Chọn một board từ danh sách bên trái hoặc tạo board mới",
+      "noBoardSelectedTitle": "Chọn board từ sidebar",
+      "panTip": "Mẹo: giữ phím Space để pan nhanh khi di chuyển trên canvas.",
+      "retryButton": "Thử lại",
+      "viewSampleBoard": "Xem board mẫu"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Thêm tệp đính kèm",

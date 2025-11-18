@@ -176,6 +176,21 @@
       "generateDiagramTitle": "Generate Diagram with AI",
       "generatingText": "Generating..."
     },
+    "CanvasContainer": {
+      "autoSaveFeature": "Auto-save every stroke and sync with your team in real-time.",
+      "createFirstBoard": "Create new board",
+      "defaultBoardName": "First Board",
+      "dragDropFeature": "Drag and drop blocks, sticky notes, and frames to organize ideas easily.",
+      "embedFeature": "Embed icons, links, images to tell compelling product stories.",
+      "initializeWorkspaceDescription": "Gather ideas, product diagrams, and shared sketches on the same board. Create your first board to start visual collaboration.",
+      "initializeWorkspaceTitle": "Initialize creative space",
+      "loadingText": "Loading...",
+      "noBoardSelectedDescription": "Select a board from the list on the left or create a new board",
+      "noBoardSelectedTitle": "Select board from sidebar",
+      "panTip": "Tip: hold the Space key to pan quickly when moving on the canvas.",
+      "retryButton": "Retry",
+      "viewSampleBoard": "View sample board"
+    },
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",
