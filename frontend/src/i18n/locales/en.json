@@ -216,6 +216,16 @@
       "retryButton": "Retry",
       "viewSampleBoard": "View sample board"
     },
+    "CreateWorkspaceDialog": {
+      "cancel": "Cancel",
+      "createButton": "Create Workspace",
+      "createDescription": "Create a new workspace to organize your tasks, documents, and boards.",
+      "createTitle": "Create New Workspace",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Describe what this workspace is for...",
+      "nameLabel": "Workspace Name *",
+      "namePlaceholder": "My Workspace"
+    },
     "ChatInput": {
       "addContext": "Add Context",
       "askPlaceholder": "Ask, learn, brainstorm, draw...",

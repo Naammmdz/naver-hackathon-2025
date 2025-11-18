@@ -216,6 +216,16 @@
       "retryButton": "Thử lại",
       "viewSampleBoard": "Xem board mẫu"
     },
+    "CreateWorkspaceDialog": {
+      "cancel": "Hủy",
+      "createButton": "Tạo Workspace",
+      "createDescription": "Tạo workspace mới để tổ chức công việc, tài liệu và bảng của bạn.",
+      "createTitle": "Tạo Workspace Mới",
+      "descriptionLabel": "Mô tả (tùy chọn)",
+      "descriptionPlaceholder": "Mô tả workspace này dùng để làm gì...",
+      "nameLabel": "Tên Workspace *",
+      "namePlaceholder": "Workspace của tôi"
+    },
     "ChatInput": {
       "addContext": "Thêm ngữ cảnh",
       "askPlaceholder": "Hỏi, học, brainstorm, vẽ...",
