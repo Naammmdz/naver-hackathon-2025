@@ -362,6 +362,28 @@
       "noMermaidDiagramFound": "No Mermaid diagram found in the response.",
       "renderingDiagram": "Rendering diagram...",
       "viewFullscreen": "View fullscreen"
+    },
+    "SessionManager": {
+      "active": "Active",
+      "cancel": "Cancel",
+      "chatSessions": "Chat Sessions",
+      "close": "Close",
+      "createFirstSession": "Create First Session",
+      "daysAgo": "{{count}} days ago",
+      "delete": "Delete",
+      "deleteSessionDescription": "This will permanently delete this chat session and all its messages. This action cannot be undone.",
+      "deleteSessionTitle": "Delete Session?",
+      "loadingSessions": "Loading sessions...",
+      "messages": "messages",
+      "newSession": "New Session",
+      "noChatSessionsYet": "No chat sessions yet",
+      "noMatchingSessions": "No matching sessions",
+      "searchSessions": "Search sessions...",
+      "startNewConversation": "Start a new conversation to create your first session",
+      "today": "Today",
+      "tryDifferentSearchTerm": "Try a different search term",
+      "viewPastConversations": "View your past conversations or start a new chat session",
+      "yesterday": "Yesterday"
     }
   },
   "analytics": {

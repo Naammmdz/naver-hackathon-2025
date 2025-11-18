@@ -362,6 +362,28 @@
       "noMermaidDiagramFound": "Không tìm thấy sơ đồ Mermaid nào trong phản hồi.",
       "renderingDiagram": "Đang hiển thị sơ đồ...",
       "viewFullscreen": "Xem toàn màn hình"
+    },
+    "SessionManager": {
+      "active": "Đang hoạt động",
+      "cancel": "Hủy",
+      "chatSessions": "Phiên trò chuyện",
+      "close": "Đóng",
+      "createFirstSession": "Tạo phiên đầu tiên",
+      "daysAgo": "{{count}} ngày trước",
+      "delete": "Xóa",
+      "deleteSessionDescription": "Điều này sẽ xóa vĩnh viễn phiên trò chuyện này và tất cả tin nhắn của nó. Hành động này không thể hoàn tác.",
+      "deleteSessionTitle": "Xóa phiên?",
+      "loadingSessions": "Đang tải phiên...",
+      "messages": "tin nhắn",
+      "newSession": "Phiên mới",
+      "noChatSessionsYet": "Chưa có phiên trò chuyện nào",
+      "noMatchingSessions": "Không có phiên phù hợp",
+      "searchSessions": "Tìm kiếm phiên...",
+      "startNewConversation": "Bắt đầu cuộc trò chuyện mới để tạo phiên đầu tiên của bạn",
+      "today": "Hôm nay",
+      "tryDifferentSearchTerm": "Thử từ khóa tìm kiếm khác",
+      "viewPastConversations": "Xem các cuộc trò chuyện trước đây hoặc bắt đầu phiên trò chuyện mới",
+      "yesterday": "Hôm qua"
     }
   },
   "analytics": {

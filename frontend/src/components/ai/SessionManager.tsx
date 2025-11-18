@@ -30,6 +30,7 @@ import { memoryApi, type SessionInfo } from "@/lib/api/memoryApi"
 import { useUser } from "@clerk/clerk-react"
 import { useWorkspaceStore } from "@/store/workspaceStore"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 interface SessionManagerProps {
   /** Currently active session ID */
@@ -48,6 +49,7 @@ export function SessionManager({
   open,
   onClose,
 }: SessionManagerProps) {
+  const { t } = useTranslation()
   const { user } = useUser()
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId)
   const [sessions, setSessions] = useState<SessionInfo[]>([])
@@ -148,9 +150,9 @@ export function SessionManager({
     const diffMs = now.getTime() - date.getTime()
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffDays === 0) return "Today"
-    if (diffDays === 1) return "Yesterday"
-    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays === 0) return t("components.SessionManager.today")
+    if (diffDays === 1) return t("components.SessionManager.yesterday")
+    if (diffDays < 7) return t("components.SessionManager.daysAgo", { count: diffDays })
     return date.toLocaleDateString()
   }
 
@@ -161,10 +163,10 @@ export function SessionManager({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              Chat Sessions
+              {t("components.SessionManager.chatSessions")}
             </DialogTitle>
             <DialogDescription>
-              View your past conversations or start a new chat session
+              {t("components.SessionManager.viewPastConversations")}
             </DialogDescription>
           </DialogHeader>
 
@@ -174,7 +176,7 @@ export function SessionManager({
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search sessions..."
+                  placeholder={t("components.SessionManager.searchSessions")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -182,7 +184,7 @@ export function SessionManager({
               </div>
               <Button onClick={handleNewSession} className="gap-2">
                 <Plus className="h-4 w-4" />
-                New Session
+                {t("components.SessionManager.newSession")}
               </Button>
             </div>
 
@@ -190,23 +192,23 @@ export function SessionManager({
             <ScrollArea className="h-[400px] rounded-md border">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <p className="text-sm text-muted-foreground">Loading sessions...</p>
+                  <p className="text-sm text-muted-foreground">{t("components.SessionManager.loadingSessions")}</p>
                 </div>
               ) : filteredSessions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
                   <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
                   <p className="text-sm font-medium mb-2">
-                    {searchQuery ? "No matching sessions" : "No chat sessions yet"}
+                    {searchQuery ? t("components.SessionManager.noMatchingSessions") : t("components.SessionManager.noChatSessionsYet")}
                   </p>
                   <p className="text-xs text-muted-foreground mb-4">
                     {searchQuery
-                      ? "Try a different search term"
-                      : "Start a new conversation to create your first session"}
+                      ? t("components.SessionManager.tryDifferentSearchTerm")
+                      : t("components.SessionManager.startNewConversation")}
                   </p>
                   {!searchQuery && (
                     <Button onClick={handleNewSession} size="sm" className="gap-2">
                       <Plus className="h-4 w-4" />
-                      Create First Session
+                      {t("components.SessionManager.createFirstSession")}
                     </Button>
                   )}
                 </div>
@@ -231,7 +233,7 @@ export function SessionManager({
                           </p>
                           {session.session_id === currentSessionId && (
                             <Badge variant="default" className="text-[10px]">
-                              Active
+                              {t("components.SessionManager.active")}
                             </Badge>
                           )}
                         </div>
@@ -241,7 +243,7 @@ export function SessionManager({
                             {formatDate(session.created_at)}
                           </span>
                           {session.message_count && (
-                            <span>{session.message_count} messages</span>
+                            <span>{session.message_count} {t("components.SessionManager.messages")}</span>
                           )}
                         </div>
                       </div>
@@ -261,7 +263,7 @@ export function SessionManager({
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
+                            {t("components.SessionManager.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -274,7 +276,7 @@ export function SessionManager({
 
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>
-              Close
+              {t("components.SessionManager.close")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -284,21 +286,20 @@ export function SessionManager({
       <Dialog open={!!sessionToDelete} onOpenChange={() => setSessionToDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Session?</DialogTitle>
+            <DialogTitle>{t("components.SessionManager.deleteSessionTitle")}</DialogTitle>
             <DialogDescription>
-              This will permanently delete this chat session and all its messages.
-              This action cannot be undone.
+              {t("components.SessionManager.deleteSessionDescription")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSessionToDelete(null)}>
-              Cancel
+              {t("components.SessionManager.cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => sessionToDelete && handleDeleteSession(sessionToDelete)}
             >
-              Delete
+              {t("components.SessionManager.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
