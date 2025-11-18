@@ -182,6 +182,7 @@
       "buttonText": "AI Chat",
       "closeButtonAria": "Close chat panel",
       "defaultResponse": "I have noted your request. Backend integration will help me respond more intelligently in the future.",
+      "errorMessage": "Sorry, I encountered an error while processing your request. Please try again.",
       "headerSubtitle": "Support you anytime, anywhere",
       "headerTitle": "AI Assistant",
       "inputLabel": "Enter message to chat with AI assistant",
