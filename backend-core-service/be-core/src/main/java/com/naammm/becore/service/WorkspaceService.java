@@ -12,6 +12,9 @@ import com.naammm.becore.entity.WorkspaceInvite;
 import com.naammm.becore.entity.WorkspaceMember;
 import com.naammm.becore.entity.WorkspaceRole;
 import com.naammm.becore.exception.ResourceNotFoundException;
+import com.naammm.becore.repository.BoardRepository;
+import com.naammm.becore.repository.DocumentRepository;
+import com.naammm.becore.repository.TaskRepository;
 import com.naammm.becore.repository.WorkspaceInviteRepository;
 import com.naammm.becore.repository.WorkspaceMemberRepository;
 import com.naammm.becore.repository.WorkspaceRepository;
@@ -29,6 +32,9 @@ public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final WorkspaceInviteRepository inviteRepository;
+    private final TaskRepository taskRepository;
+    private final DocumentRepository documentRepository;
+    private final BoardRepository boardRepository;
     private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
@@ -118,6 +124,12 @@ public class WorkspaceService {
         if (!workspace.getOwnerId().equals(userId)) {
             throw new SecurityException("Only workspace owner can delete workspace");
         }
+        
+        // Delete all related resources
+        taskRepository.deleteByWorkspaceId(id);
+        documentRepository.deleteByWorkspaceId(id);
+        boardRepository.deleteByWorkspaceId(id);
+        inviteRepository.deleteByWorkspaceId(id);
         
         workspaceRepository.delete(workspace);
     }
