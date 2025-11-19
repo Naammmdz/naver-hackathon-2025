@@ -202,15 +202,15 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Status Breakdown - Compact */}
             <div className="grid grid-cols-3 gap-1.5">
-              <div className="rounded bg-muted/50 p-1.5 text-center">
+              <div className="rounded-md bg-muted/60 border border-border/40 p-1.5 text-center hover:bg-muted/80 hover:border-border/60 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold">{todoTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.todo', 'Todo')}</p>
               </div>
-              <div className="rounded bg-primary/10 p-1.5 text-center">
+              <div className="rounded-md bg-primary/10 border border-primary/20 p-1.5 text-center hover:bg-primary/15 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold text-primary">{inProgressTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.inProgress', 'In Progress')}</p>
               </div>
-              <div className="rounded bg-success/10 p-1.5 text-center">
+              <div className="rounded-md bg-success/10 border border-success/20 p-1.5 text-center hover:bg-success/15 hover:border-success/30 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold text-success">{doneTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.done', 'Done')}</p>
               </div>
@@ -224,7 +224,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   {latestTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center gap-1.5 p-1.5 rounded hover:bg-muted/50 transition-colors text-[11px]"
+                      className="flex items-center gap-1.5 p-1.5 rounded-md hover:bg-accent border border-transparent hover:border-border/40 hover:shadow-sm transition-all text-[11px] cursor-pointer"
                     >
                       <div className={`w-1 h-1 rounded-full flex-shrink-0 ${
                         task.status === 'Done' ? 'bg-success' :
@@ -319,7 +319,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 {members.slice(0, 5).map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-accent transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/80 border border-transparent hover:border-border/40 hover:shadow-sm transition-all cursor-pointer"
                   >
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
@@ -956,9 +956,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Key Metrics Row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Completion Rate */}
-              <div className="rounded-lg border bg-card p-3">
+              <div className="rounded-lg border border-border/60 bg-gradient-to-br from-chart-2/5 via-background to-background p-3 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">Completion</p>
+                  <p className="text-[10px] font-medium text-muted-foreground">Completion</p>
                   <BarChart3 className="h-4 w-4 text-[hsl(var(--chart-2))]" />
                 </div>
                 <p className="text-2xl font-bold">{completionRate}%</p>
@@ -968,7 +968,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               </div>
 
               {/* Total Tasks */}
-              <div className="rounded-lg border bg-card p-3">
+              <div className="rounded-lg border border-border/60 bg-gradient-to-br from-primary/5 via-background to-background p-3 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] text-muted-foreground">Total Tasks</p>
                   <CheckSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
@@ -1649,12 +1649,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
   };
 
   return (
-    <div className="h-full overflow-auto bg-background">
+    <div className="h-full overflow-auto bg-gradient-to-br from-background via-background to-secondary/5">
       <div className="max-w-[1800px] mx-auto p-4 sm:p-6 space-y-4">
         {/* Header - More compact */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-gradient-to-r from-background via-secondary/10 to-background border border-border/40 shadow-sm">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
               {activeWorkspace ? activeWorkspace.name : t('dashboard.home', 'Home')}
             </h1>
             <p className="text-sm text-muted-foreground">

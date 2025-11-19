@@ -67,7 +67,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
-      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar text-sidebar-foreground border border-sidebar-border/60 shadow-sm">
+      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-gradient-to-b from-sidebar via-sidebar to-sidebar-accent/20 text-sidebar-foreground border border-sidebar-border shadow-md">
         <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-sidebar-accent/10 hover:bg-sidebar-accent/20 p-1.5" onClick={() => window.location.href = '/'}>
           <img
             src="/devflow-demo.png"
