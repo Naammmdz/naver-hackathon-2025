@@ -280,9 +280,12 @@ export function WorkspaceSettingsDialog({
                     return userId;
                   };
                   
-                  // Get display name: prefer current user info (if match), then user info from API, then formatted userId
+                  // Get display name: prefer stored fullName, then current user info, then API info, then fallback
                   let displayName: string;
-                  if (isCurrentUser && currentUser) {
+                  const storedFullName = member.fullName || member.user?.fullName;
+                  if (storedFullName) {
+                    displayName = storedFullName;
+                  } else if (isCurrentUser && currentUser) {
                     // Always use current user's info if this is the current user
                     if (currentUser.fullName) {
                       displayName = currentUser.fullName;
@@ -303,8 +306,8 @@ export function WorkspaceSettingsDialog({
                   
                   // Get email: prefer current user email (if match), then user info from API
                   const displayEmail = 
-                    (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) ||
                     member.user?.email ||
+                    (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) ||
                     undefined;
                   
                   // Get avatar: prefer current user image (if match), then user info from API
@@ -337,7 +340,7 @@ export function WorkspaceSettingsDialog({
                               <Badge variant="outline" className="ml-2">Owner</Badge>
                             )}
                           </div>
-                          {displayEmail && displayEmail !== displayName && (
+                          {displayEmail && (
                             <div className="text-xs text-muted-foreground">
                               {displayEmail}
                             </div>

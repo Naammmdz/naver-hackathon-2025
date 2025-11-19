@@ -2,6 +2,7 @@ import { BoardView } from "@/components/board/BoardView";
 import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
+import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
 import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
 import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
@@ -14,23 +15,18 @@ import { useTaskDocStore } from "@/store/taskDocStore";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
-import { startReminderScheduler } from "@/services/reminderScheduler";
-
-// Lazy load page components
-const Home = lazy(() => import("./Home"));
-const Index = lazy(() => import("./Index"));
-const Docs = lazy(() => import("./Docs"));
-const Teams = lazy(() => import("./Teams"));
-const GraphViewPage = lazy(() => import("./GraphViewPage"));
+import Docs from "./Docs";
+import Home from "./Home";
+import Index from "./Index";
+import Teams from "./Teams";
+import type { SearchResult } from "@/types/search";
 
 export default function AppWrapper() {
+  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
   const { isLoaded, isSignedIn, userId, getToken } = useAuth();
   const { user } = useUser();
@@ -76,14 +72,6 @@ export default function AppWrapper() {
   // Manage user identity in awareness (separate from view-specific awareness like boardCursor)
   // This ensures user info is always present for OnlineUsers display in header
   useUserIdentityAwareness();
-
-  // Detect current view from URL
-  const currentView = location.pathname.split('/')[2] || 'home';
-  
-  // Handle view change navigation
-  const handleViewChange = (view: string) => {
-    navigate(`/app/${view}`);
-  };
 
   // Force awareness reseed when switching to home/board/teams views
   useEffect(() => {
@@ -266,32 +254,31 @@ export default function AppWrapper() {
     previousWorkspaceRef.current = newWorkspace;
   };
 
-  // Start reminder scheduler when user is signed in
   useEffect(() => {
-    if (!isSignedIn || !user) {
-      return;
-    }
-
-    // Store user email and name in localStorage for reminder scheduler
-    const userEmail = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
-    const userName = user.fullName || user.firstName || user.username || 'User';
-    
-    if (userEmail) {
-      localStorage.setItem('userEmail', userEmail);
-      localStorage.setItem('userName', userName);
-    }
-
-    // Start reminder scheduler
-    const stopScheduler = startReminderScheduler();
-
-    // Cleanup on unmount
-    return () => {
-      stopScheduler();
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<SearchResult>).detail;
+      if (!detail) {
+        return;
+      }
+      setSidebarOpen(true);
+      if (detail.type === "task") {
+        setCurrentView("tasks");
+        useTaskStore.getState().setFilters({ search: detail.title });
+      } else if (detail.type === "doc") {
+        setCurrentView("docs");
+        useDocumentStore.getState().setActiveDocument(detail.id);
+      } else if (detail.type === "board") {
+        setCurrentView("board");
+        useBoardStore.getState().setActiveBoard(detail.id);
+      }
     };
-  }, [isSignedIn, user]);
+    window.addEventListener("globalSearchNavigate", handler as EventListener);
+    return () => window.removeEventListener("globalSearchNavigate", handler as EventListener);
+  }, [setCurrentView]);
 
   return (
     <>
+      <GlobalSearchModal />
       {/* Workspace Onboarding Modal */}
       {showOnboarding && (
         <WorkspaceOnboarding
@@ -315,33 +302,21 @@ export default function AppWrapper() {
             <ClickupAppSidebar
               isOpen={sidebarOpen}
               onClose={() => setSidebarOpen(false)}
-              currentView={currentView as any}
-              onViewChange={handleViewChange as any}
+              currentView={currentView}
+              onViewChange={setCurrentView}
             />
 
-            {/* Main Content with Nested Routes */}
+            {/* Main Content */}
             <main className="flex-1 overflow-auto">
-              <Suspense fallback={
-                <div className="flex items-center justify-center h-full">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-3 border-primary border-t-transparent"></div>
-                    <p className="text-xs text-muted-foreground">Loading page...</p>
-                  </div>
-                </div>
-              }>
-                <Routes>
-                  <Route path="/" element={<Home onViewChange={handleViewChange} />} />
-                  <Route path="/home" element={<Home onViewChange={handleViewChange} />} />
-                  <Route path="/tasks" element={<Index onViewChange={handleViewChange} onSmartCreate={() => {
-                    const event = new CustomEvent('openSmartParser');
-                    window.dispatchEvent(event);
-                  }} />} />
-                  <Route path="/docs" element={<Docs />} />
-                  <Route path="/board" element={<BoardView />} />
-                  <Route path="/graph" element={<GraphViewPage onViewChange={handleViewChange} />} />
-                  <Route path="/teams" element={<Teams onViewChange={handleViewChange} />} />
-                </Routes>
-              </Suspense>
+              {currentView === 'home' ? <Home onViewChange={setCurrentView} /> :
+               currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
+                const event = new CustomEvent('openSmartParser');
+                window.dispatchEvent(event);
+              }} /> :
+               currentView === 'docs' ? <Docs /> :
+               currentView === 'board' ? <BoardView /> :
+               currentView === 'teams' ? <Teams onViewChange={setCurrentView} /> :
+               <Home onViewChange={setCurrentView} />}
             </main>
           </div>
         </div>

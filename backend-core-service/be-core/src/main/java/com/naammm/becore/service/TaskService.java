@@ -33,6 +33,7 @@ public class TaskService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper;
+    private final GlobalSearchService globalSearchService;
 
     public List<Task> getAllTasks() {
         String userId = UserContext.requireUserId();
@@ -76,7 +77,9 @@ public class TaskService {
             task.getSubtasks().forEach(subtask -> subtask.setTask(task));
         }
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        globalSearchService.indexTask(saved);
+        return saved;
     }
 
     public Task updateTask(String id, Task updatedTask) {
@@ -100,6 +103,7 @@ public class TaskService {
                     task.setPriority(updatedTask.getPriority());
                     task.setDueDate(updatedTask.getDueDate());
                     task.setTags(updatedTask.getTags());
+                    task.setAssigneeId(updatedTask.getAssigneeId());
                     if (updatedTask.getOrderIndex() != null) {
                         task.setOrderIndex(updatedTask.getOrderIndex());
                     }
@@ -122,6 +126,7 @@ public class TaskService {
                         publishMetadataUpdate("task", id, "STATUS_CHANGE", saved.getStatus().name());
                     }
                     
+                    globalSearchService.indexTask(saved);
                     return saved;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -140,6 +145,7 @@ public class TaskService {
             throw new SecurityException("Access denied");
         }
         taskRepository.delete(task);
+        globalSearchService.deleteTask(id);
     }
 
     public void moveTask(String id, TaskStatus newStatus) {
@@ -164,6 +170,7 @@ public class TaskService {
         
         // Publish metadata update to Redis
         publishMetadataUpdate("task", id, "MOVE", newStatus.name());
+        globalSearchService.indexTask(saved);
     }
 
     private void publishMetadataUpdate(String type, String id, String action, Object payload) {

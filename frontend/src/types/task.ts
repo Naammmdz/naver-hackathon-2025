@@ -30,10 +30,7 @@ export const taskSchema = z.object({
   updatedAt: z.date(),
   userId: z.string(),
   workspaceId: z.string().optional(), // Add workspace support
-  // Reminder settings
-  reminderEnabled: z.boolean().default(false),
-  reminderTimeBefore: z.number().optional(), // Time in minutes before due date
-  reminderSent: z.boolean().default(false), // Track if reminder has been sent
+  assigneeId: z.string().optional(), // Add assignee support
 });
 
 export type Task = z.infer<typeof taskSchema>;

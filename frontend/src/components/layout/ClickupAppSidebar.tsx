@@ -6,7 +6,6 @@ import {
   FileText,
   Home,
   Kanban,
-  Network,
   Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -14,12 +13,12 @@ import { useEffect, useState } from 'react';
 interface ClickupAppSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph') => void;
-  currentView?: 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph';
+  onViewChange?: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void;
+  currentView?: 'tasks' | 'docs' | 'board' | 'home' | 'teams';
 }
 
 export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'home' }: ClickupAppSidebarProps) {
-  const [activeNav, setActiveNav] = useState<'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph'>(currentView || 'home');
+  const [activeNav, setActiveNav] = useState(currentView || 'home');
   const [expandedSpaces, setExpandedSpaces] = useState<string[]>(['workspace-1']);
 
   // Update activeNav when currentView changes
@@ -40,7 +39,6 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const },
     { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const },
     { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const },
-    { id: 'graph', icon: Network, label: 'Graph', view: 'graph' as const },
     { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const },
   ];
 
@@ -61,14 +59,11 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'pm', name: 'Project management', count: 4 },
     { id: 'doc', name: 'IT Doc' },
   ];
-  const gradientClass = 'bg-primary';
-  const monochromeGradientClass = 'bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50';
-
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
-      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-gradient-to-b from-sidebar via-sidebar to-sidebar-accent/20 text-sidebar-foreground border border-sidebar-border shadow-md">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-sidebar-accent/10 hover:bg-sidebar-accent/20 p-1.5" onClick={() => window.location.href = '/'}>
+      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar-primary text-sidebar-primary-foreground border border-sidebar-border/60 shadow-sm">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-primary/10 hover:bg-primary/20 p-1.5" onClick={() => window.location.href = '/'}>
           <img
             src="/devflow-demo.png"
             alt="DevFlow Logo"
@@ -80,46 +75,35 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
 
         {navItems.map(item => (
           <div key={item.id} className="flex flex-col items-center gap-0.5 relative group">
-            <div className="relative">
-              {/* Background - using primary/accent colors from CSS variables */}
-              <div
-                className={cn(
-                  'pointer-events-none absolute inset-0 rounded-xl transition-all duration-300 z-0',
-                  activeNav === item.id 
-                    ? 'bg-primary/20 dark:bg-primary/30' 
-                    : 'bg-accent/40 dark:bg-accent/20 group-hover:bg-primary/15 dark:group-hover:bg-primary/25'
-                )}
-              />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
-                    activeNav === item.id 
-                      ? 'text-foreground dark:text-white shadow-elegant' 
-                      : 'text-sidebar-foreground/70 hover:text-foreground dark:hover:text-white'
-                  )}
-                  onClick={() => {
-                    setActiveNav(item.id as 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph');
-                    if (item.id === 'home' && onViewChange) {
-                      onViewChange('home');
-                    } else if (item.view && onViewChange) {
-                      onViewChange(item.view);
-                    }
-                  }}
-                  title={item.label}
-                >
-                  <item.icon className="h-4 w-4 transition-colors" />
-                </Button>
-            </div>
-            
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
+                activeNav === item.id
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg'
+                  : 'text-sidebar-primary-foreground/70 hover:text-foreground hover:bg-foreground/10'
+              )}
+              onClick={() => {
+                setActiveNav(item.id);
+                if (item.id === 'home' && onViewChange) {
+                  onViewChange('home');
+                } else if (item.view && onViewChange) {
+                  onViewChange(item.view);
+                }
+              }}
+              title={item.label}
+            >
+              <item.icon className="h-4 w-4 transition-colors" />
+            </Button>
+
             {/* Small label below icon */}
             <span
               className={cn(
                 'text-[10px] font-medium text-center leading-tight transition-colors',
                 activeNav === item.id
                   ? 'text-foreground dark:text-white'
-                  : 'text-sidebar-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
+                  : 'text-sidebar-primary-foreground/70 group-hover:text-foreground'
               )}
             >
               {item.label}
@@ -139,7 +123,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
               },
             }}
           />
-          <span className="text-[10px] text-sidebar-foreground font-medium text-center leading-tight">
+          <span className="text-[10px] text-sidebar-primary-foreground font-medium text-center leading-tight">
             Profile
           </span>
         </div>

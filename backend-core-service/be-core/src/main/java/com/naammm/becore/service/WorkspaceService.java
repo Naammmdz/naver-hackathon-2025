@@ -18,9 +18,11 @@ import com.naammm.becore.repository.TaskRepository;
 import com.naammm.becore.repository.WorkspaceInviteRepository;
 import com.naammm.becore.repository.WorkspaceMemberRepository;
 import com.naammm.becore.repository.WorkspaceRepository;
+import com.naammm.becore.security.UserContext;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +74,7 @@ public class WorkspaceService {
         WorkspaceMember ownerMember = WorkspaceMember.builder()
             .workspace(workspace)
             .userId(userId)
+            .fullName(resolveCurrentUserFullName())
             .role(WorkspaceRole.ADMIN)
             .joinedAt(LocalDateTime.now())
             .build();
@@ -271,6 +274,7 @@ public class WorkspaceService {
         WorkspaceMember member = WorkspaceMember.builder()
             .workspace(workspace)
             .userId(userId)
+            .fullName(resolveCurrentUserFullName())
             .role(invite.getRole())
             .build();
         
@@ -315,6 +319,7 @@ public class WorkspaceService {
         WorkspaceMember member = WorkspaceMember.builder()
             .workspace(workspace)
             .userId(userId)
+            .fullName(resolveCurrentUserFullName())
             .role(WorkspaceRole.MEMBER)
             .build();
         
@@ -323,5 +328,30 @@ public class WorkspaceService {
 
     private boolean hasAccess(String workspaceId, String userId) {
         return workspaceRepository.userHasAccess(workspaceId, userId);
+    }
+
+    private String resolveCurrentUserFullName() {
+        String firstName = StringUtils.hasText(UserContext.getFirstName()) ? UserContext.getFirstName() : null;
+        String lastName = StringUtils.hasText(UserContext.getLastName()) ? UserContext.getLastName() : null;
+        String username = StringUtils.hasText(UserContext.getUsername()) ? UserContext.getUsername() : null;
+        String email = StringUtils.hasText(UserContext.getEmail()) ? UserContext.getEmail() : null;
+        String userId = UserContext.requireUserId();
+
+        if (firstName != null || lastName != null) {
+            if (firstName != null && lastName != null) {
+                return firstName + " " + lastName;
+            }
+            return firstName != null ? firstName : lastName;
+        }
+
+        if (username != null) {
+            return username;
+        }
+
+        if (email != null) {
+            return email;
+        }
+
+        return userId;
     }
 }

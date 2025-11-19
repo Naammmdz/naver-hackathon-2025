@@ -18,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { workspaceApi } from '@/lib/api/workspaceApi';
-import { useAuth, useUser } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/clerk-react';
 import { useToast } from '@/hooks/use-toast';
 import { Crown, Mail, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -26,7 +26,7 @@ import type { WorkspaceMember, WorkspaceInvite } from '@/types/workspace';
 
 export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { toast } = useToast();
-  const { user: currentUser } = useUser();
+  const { user: currentUser } = useAuth();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const { inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
@@ -42,16 +42,58 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
   const [isLoading, setIsLoading] = useState(false);
 
   const currentUserMember = members.find((m) => m.userId === currentUser?.id);
+  const isOwner = activeWorkspace?.ownerId === currentUser?.id;
+  const isAdmin = currentUserMember?.role === 'ADMIN' || isOwner;
+
+  useEffect(() => {
+    if (activeWorkspaceId) {
+      loadData();
+    }
+  }, [activeWorkspaceId]);
+
+  const loadData = async () => {
+    if (!activeWorkspaceId) return;
+    
+    setIsLoading(true);
+    try {
+      const [membersData, invitesData] = await Promise.all([
+        workspaceApi.getMembers(activeWorkspaceId),
+        workspaceApi.getInvites(activeWorkspaceId).catch(() => []), // Ignore if no permission
+      ]);
+      setMembers(membersData);
+      setInvites(invitesData);
+    } catch (error) {
+      console.error('Failed to load workspace data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load team members',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Helper function to get display name for a member
   const getMemberDisplayName = (member: WorkspaceMember) => {
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
-    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser?.id);
     
-    if (isCurrentUserNormalized) return "You";
-    
+    if (member.fullName) return member.fullName;
     if (member.user?.fullName) return member.user.fullName;
+
+    if (isCurrentUser && currentUser) {
+      if (currentUser.fullName) return currentUser.fullName;
+      if (currentUser.firstName || currentUser.lastName) {
+        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ").trim();
+      }
+    }
+
     if (member.user?.email) return member.user.email;
-    
+    if (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) {
+        return currentUser.primaryEmailAddress.emailAddress;
+      }
+
     // Format userId for display
     if (member.userId.length > 20) {
       return `User ${member.userId.substring(member.userId.length - 8)}`;
@@ -61,12 +103,11 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
 
   // Helper function to get display email for a member
   const getMemberDisplayEmail = (member: WorkspaceMember) => {
-    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
-    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser?.id);
     
     if (member.user?.email) return member.user.email;
-    if (isCurrentUserNormalized && currentUser?.primaryEmailAddress?.emailAddress) {
+    if (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) {
       return currentUser.primaryEmailAddress.emailAddress;
     }
     return undefined;
@@ -160,7 +201,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-              <Users className="h-8 w-8 text-[hsl(var(--primary))]" />
+              <Users className="h-8 w-8 text-blue-500" />
               Team Members
             </h1>
             <p className="text-muted-foreground">
@@ -310,12 +351,12 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                               className="h-10 w-10 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent-foreground))] flex items-center justify-center text-white font-semibold">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
                               {initials}
                             </div>
                           )}
                           {(member.role === 'ADMIN' || member.role === 'OWNER') && (
-                            <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-[hsl(var(--warning))] flex items-center justify-center border-2 border-background">
+                            <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-yellow-500 flex items-center justify-center border-2 border-background">
                               <Crown className="h-3 w-3 text-white" />
                             </div>
                           )}
@@ -327,12 +368,12 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                               <Badge variant="outline">Owner</Badge>
                             )}
                             {member.role === 'ADMIN' && member.userId !== activeWorkspace?.ownerId && (
-                              <Badge variant="secondary" className="bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]">
+                              <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
                                 Admin
                               </Badge>
                             )}
                             {member.role === 'MEMBER' && (
-                              <Badge variant="secondary" className="bg-[hsl(var(--chart-2))]/10 text-[hsl(var(--chart-2))]">
+                              <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400">
                                 Member
                               </Badge>
                             )}
@@ -387,8 +428,8 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
         {/* Info Card */}
         <div className="rounded-lg border bg-muted/50 p-4">
           <div className="flex items-start gap-3">
-            <div className="rounded-full bg-[hsl(var(--primary))]/10 p-2">
-              <Users className="h-5 w-5 text-[hsl(var(--primary))]" />
+            <div className="rounded-full bg-blue-500/10 p-2">
+              <Users className="h-5 w-5 text-blue-500" />
             </div>
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium">About Team Roles</p>

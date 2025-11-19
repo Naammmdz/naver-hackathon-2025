@@ -59,6 +59,9 @@ public class Task {
     @Column(name = "workspace_id", length = 160)
     private String workspaceId;
 
+    @Column(name = "assignee_id", length = 160)
+    private String assigneeId;
+
     @ElementCollection
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "tag")
