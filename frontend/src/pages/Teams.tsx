@@ -18,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { workspaceApi } from '@/lib/api/workspaceApi';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { useToast } from '@/hooks/use-toast';
 import { Crown, Mail, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -26,7 +26,7 @@ import type { WorkspaceMember, WorkspaceInvite } from '@/types/workspace';
 
 export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { toast } = useToast();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser } = useUser();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const { inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
@@ -42,55 +42,16 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
   const [isLoading, setIsLoading] = useState(false);
 
   const currentUserMember = members.find((m) => m.userId === currentUser?.id);
-  const isOwner = activeWorkspace?.ownerId === currentUser?.id;
-  const isAdmin = currentUserMember?.role === 'ADMIN' || isOwner;
-
-  useEffect(() => {
-    if (activeWorkspaceId) {
-      loadData();
-    }
-  }, [activeWorkspaceId]);
-
-  const loadData = async () => {
-    if (!activeWorkspaceId) return;
-    
-    setIsLoading(true);
-    try {
-      const [membersData, invitesData] = await Promise.all([
-        workspaceApi.getMembers(activeWorkspaceId),
-        workspaceApi.getInvites(activeWorkspaceId).catch(() => []), // Ignore if no permission
-      ]);
-      setMembers(membersData);
-      setInvites(invitesData);
-    } catch (error) {
-      console.error('Failed to load workspace data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load team members',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Helper function to get display name for a member
   const getMemberDisplayName = (member: WorkspaceMember) => {
-    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
     const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
     
+    if (isCurrentUserNormalized) return "You";
+    
     if (member.user?.fullName) return member.user.fullName;
     if (member.user?.email) return member.user.email;
-    if (isCurrentUserNormalized && currentUser) {
-      if (currentUser.fullName) return currentUser.fullName;
-      if (currentUser.firstName || currentUser.lastName) {
-        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(' ').trim();
-      }
-      if (currentUser.primaryEmailAddress?.emailAddress) {
-        return currentUser.primaryEmailAddress.emailAddress;
-      }
-    }
+    
     // Format userId for display
     if (member.userId.length > 20) {
       return `User ${member.userId.substring(member.userId.length - 8)}`;

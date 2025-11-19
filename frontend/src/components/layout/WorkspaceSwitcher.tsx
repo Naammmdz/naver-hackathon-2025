@@ -88,7 +88,7 @@ export function WorkspaceSwitcher() {
                   variant="ghost"
                   size="icon"
                   aria-disabled={workspaces.length <= 1}
-                  className="h-6 w-6 text-foreground group-hover:text-background hover:bg-accent/50 transition-colors aria-disabled:opacity-30 aria-disabled:cursor-not-allowed"
+                  className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-transparent transition-colors aria-disabled:opacity-30 aria-disabled:cursor-not-allowed"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (workspaces.length > 1) {

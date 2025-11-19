@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { workspaceApi } from "@/lib/api/workspaceApi";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +44,7 @@ export function WorkspaceSettingsDialog({
   onOpenChange,
 }: WorkspaceSettingsDialogProps) {
   const { toast } = useToast();
-  const { user: currentUser, isLoaded: isAuthLoaded } = useAuth();
+  const { user: currentUser, isLoaded: isAuthLoaded } = useUser();
   const { activeWorkspaceId, workspaces, updateWorkspace, loadMembers, inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
   
   // Debug: log when currentUser changes
