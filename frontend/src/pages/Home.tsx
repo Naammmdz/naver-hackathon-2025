@@ -196,7 +196,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xl font-bold">{workspaceTasks.length}</p>
-                <p className="text-[10px] text-muted-foreground">{t('dashboard.totalTasks', 'Total Tasks')}</p>
+                <p className="text-[10px] text-muted-foreground">{t('components.Home.totalTasks')}</p>
               </div>
             </div>
 
@@ -204,22 +204,22 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="grid grid-cols-3 gap-1.5">
               <div className="rounded bg-muted/50 p-1.5 text-center">
                 <p className="text-sm font-semibold">{todoTasks}</p>
-                <p className="text-[9px] text-muted-foreground">{t('tasks.status.todo', 'Todo')}</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.todo')}</p>
               </div>
               <div className="rounded bg-blue-500/10 p-1.5 text-center">
                 <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{inProgressTasks}</p>
-                <p className="text-[9px] text-muted-foreground">{t('tasks.status.inProgress', 'In Progress')}</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.inProgress')}</p>
               </div>
               <div className="rounded bg-green-500/10 p-1.5 text-center">
                 <p className="text-sm font-semibold text-green-600 dark:text-green-400">{doneTasks}</p>
-                <p className="text-[9px] text-muted-foreground">{t('tasks.status.done', 'Done')}</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.done')}</p>
               </div>
             </div>
 
             {/* Latest Tasks Preview - Compact */}
             {latestTasks.length > 0 && (
               <div className="space-y-1 flex-1 overflow-hidden">
-                <p className="text-[10px] font-medium text-muted-foreground">Recent</p>
+                <p className="text-[10px] font-medium text-muted-foreground">{t('components.Home.recent')}</p>
                 <div className="space-y-0.5">
                   {latestTasks.map((task) => (
                     <div
@@ -244,7 +244,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               onClick={() => onViewChange('tasks')}
               className="w-full text-[11px] h-7 mt-auto"
             >
-              {t('dashboard.viewAllTasks', 'View All')} →
+              {t('components.Home.viewAllTasks')} →
             </Button>
           </div>
         );
@@ -255,7 +255,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold">{workspaceDocuments.length}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.totalDocuments', 'Total Documents')}</p>
+                <p className="text-sm text-muted-foreground">{t('components.Home.totalDocuments')}</p>
               </div>
               <div className="rounded-full bg-orange-500/10 p-3">
                 <FileText className="h-6 w-6 text-orange-500" />
@@ -267,7 +267,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               onClick={() => onViewChange('docs')}
               className="w-full"
             >
-              {t('dashboard.viewAllDocs', 'View All Documents')} →
+              {t('components.Home.viewAllDocs')} →
             </Button>
           </div>
         );
@@ -278,7 +278,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold">{workspaceBoards.length}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.totalBoards', 'Total Boards')}</p>
+                <p className="text-sm text-muted-foreground">{t('components.Home.totalBoards')}</p>
               </div>
               <div className="rounded-full bg-pink-500/10 p-3">
                 <Layers className="h-6 w-6 text-pink-500" />
@@ -290,7 +290,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               onClick={() => onViewChange('board')}
               className="w-full"
             >
-              {t('dashboard.viewAllBoards', 'View All Boards')} →
+              {t('components.Home.viewAllBoards')} →
             </Button>
           </div>
         );
@@ -302,7 +302,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold">{members.length}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.teamMembers', 'Team Members')}</p>
+                <p className="text-sm text-muted-foreground">{t('components.Home.teamMembers')}</p>
               </div>
               <div className="rounded-full bg-green-500/10 p-3">
                 <Users className="h-6 w-6 text-green-500" />
@@ -312,7 +312,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Members List */}
             {members.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-4">
-                {t('dashboard.noMembers', 'No members yet')}
+                {t('components.Home.noMembersYet')}
               </p>
             ) : (
               <div className="flex-1 space-y-2 overflow-y-auto">
@@ -353,9 +353,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         {member.user?.fullName || member.user?.email || 'Unknown'}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">
-                        {member.role === 'OWNER' ? '👑 Owner' : 
-                         member.role === 'ADMIN' ? '⚡ Admin' : 
-                         '👤 Member'}
+                        {member.role === 'OWNER' ? t('components.Home.ownerLabel') : 
+                         member.role === 'ADMIN' ? t('components.Home.adminLabel') : 
+                         t('components.Home.memberLabel')}
                       </p>
                     </div>
                   </div>
@@ -369,7 +369,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       className="h-7 text-xs"
                       onClick={() => onViewChange('teams')}
                     >
-                      +{members.length - 5} more
+                      +{members.length - 5} {t('components.Home.more')}
                     </Button>
                   </div>
                 )}
@@ -383,7 +383,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               onClick={() => onViewChange('teams')}
               className="w-full mt-auto"
             >
-              {t('dashboard.viewAllMembers', 'View All Members')} →
+              {t('components.Home.viewAllMembers')} →
             </Button>
           </div>
         );
@@ -393,7 +393,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
           <div className="space-y-1.5 h-full flex flex-col">
             {recentDocuments.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-4">
-                {t('dashboard.noDocuments', 'No documents yet')}
+                {t('components.Home.noDocumentsYet')}
               </p>
             ) : (
               <div className="space-y-1.5 flex-1 overflow-y-auto">
@@ -401,7 +401,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   // Extract preview text from BlockNote content
                   const getPreviewText = (content: any[]): string => {
                     try {
-                      if (!content || content.length === 0) return 'Empty document';
+                      if (!content || content.length === 0) return t('components.Home.emptyDocument');
                       
                       // Try to extract text from more blocks for better preview
                       let text = '';
@@ -429,10 +429,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         if (text.length > 200) break;
                       }
                       
-                      return text.trim() || 'Empty document';
+                      return text.trim() || t('components.Home.emptyDocument');
                     } catch (error) {
                       console.error('Error extracting preview text:', error);
-                      return 'Empty document';
+                      return t('components.Home.emptyDocument');
                     }
                   };
 
@@ -441,7 +441,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   // Get more text for hover preview (up to 500 chars)
                   const getFullPreviewText = (content: any[]): string => {
                     try {
-                      if (!content || content.length === 0) return 'Empty document';
+                      if (!content || content.length === 0) return t('components.Home.emptyDocument');
                       
                       let text = '';
                       for (let i = 0; i < content.length; i++) {
@@ -467,9 +467,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         if (text.length > 500) break;
                       }
                       
-                      return text.trim() || 'Empty document';
+                      return text.trim() || t('components.Home.emptyDocument');
                     } catch (error) {
-                      return 'Empty document';
+                      return t('components.Home.emptyDocument');
                     }
                   };
                   
@@ -514,7 +514,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
-                              <span>Updated {new Date(doc.updatedAt).toLocaleDateString()}</span>
+                              <span>{t('components.Home.updated')} {new Date(doc.updatedAt).toLocaleDateString()}</span>
                             </div>
                           </div>
                           
@@ -523,7 +523,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                           
                           {/* Full Preview */}
                           <div className="space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground">Preview</p>
+                            <p className="text-xs font-medium text-muted-foreground">{t('components.Home.preview')}</p>
                             <div className="max-h-64 overflow-y-auto rounded-md bg-muted/30 p-3">
                               <p className="text-xs leading-relaxed whitespace-pre-wrap">
                                 {fullPreviewText}
@@ -534,7 +534,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                           {/* Footer */}
                           <div className="pt-2 border-t">
                             <p className="text-xs text-muted-foreground italic">
-                              Click to open document
+                              {t('components.Home.clickToOpenDocument')}
                             </p>
                           </div>
                         </div>
@@ -552,7 +552,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
           <div className="space-y-1.5 h-full flex flex-col">
             {recentBoards.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-4">
-                {t('dashboard.noBoards', 'No boards yet')}
+                {t('components.Home.noBoardsYet')}
               </p>
             ) : (
               <div className="space-y-1.5 flex-1 overflow-y-auto">
@@ -668,10 +668,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                                  {boardInfo.count} shapes
+                                  {boardInfo.count} {t('components.Home.shapes')}
                                 </span>
                                 <span>•</span>
-                                <span>Whiteboard</span>
+                                <span>{t('components.Home.whiteboard')}</span>
                               </div>
                               <div className="text-[9px] text-muted-foreground/60">
                                 {new Date(board.updatedAt).toLocaleDateString()}
@@ -694,11 +694,11 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Clock className="h-3 w-3" />
-                                <span>Updated {new Date(board.updatedAt).toLocaleDateString()}</span>
+                                <span>{t('components.Home.updated')} {new Date(board.updatedAt).toLocaleDateString()}</span>
                                 <span>•</span>
                                 <span className="flex items-center gap-1">
                                   <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                                  {boardInfo.count} shapes
+                                  {boardInfo.count} {t('components.Home.shapes')}
                                 </span>
                               </div>
                             </div>
@@ -708,7 +708,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             
                             {/* Full Preview */}
                             <div className="space-y-2">
-                              <p className="text-xs font-medium text-muted-foreground">Preview</p>
+                              <p className="text-xs font-medium text-muted-foreground">{t('components.Home.preview')}</p>
                               <div className="rounded-md bg-muted/30 overflow-hidden border">
                                 {isLoading ? (
                                   <div className="h-64 flex items-center justify-center">
@@ -731,7 +731,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             {/* Footer */}
                             <div className="pt-2 border-t">
                               <p className="text-xs text-muted-foreground italic">
-                                Click to open board
+                                {t('components.Home.clickToOpenBoard')}
                               </p>
                             </div>
                           </div>
@@ -752,7 +752,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
           <div className="space-y-1.5 h-full flex flex-col">
             {recentTasks.length === 0 ? (
               <p className="text-[11px] text-muted-foreground text-center py-4">
-                {t('dashboard.noTasks', 'No tasks yet')}
+                {t('components.Home.noTasksYet')}
               </p>
             ) : (
               <div className="space-y-1.5 flex-1 overflow-y-auto">
@@ -762,7 +762,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     ? (task.description.length > 150 
                         ? task.description.substring(0, 150) + '...' 
                         : task.description)
-                    : 'No description';
+                    : t('components.Home.noDescription');
 
                   // Get status color
                   const getStatusColor = (status: string) => {
@@ -842,7 +842,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
-                              <span>Updated {new Date(task.updatedAt).toLocaleDateString()}</span>
+                              <span>{t('components.Home.updated')} {new Date(task.updatedAt).toLocaleDateString()}</span>
                             </div>
                           </div>
                           
@@ -853,11 +853,11 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                           <div className="space-y-2">
                             <div className="flex items-center gap-4 text-xs">
                               <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground">Status:</span>
+                                <span className="text-muted-foreground">{t('components.Home.statusLabel')}:</span>
                                 <span className="font-medium">{task.status}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground">Priority:</span>
+                                <span className="text-muted-foreground">{t('components.Home.priorityLabel')}:</span>
                                 <span className={`font-medium ${getPriorityColor(task.priority)}`}>
                                   {task.priority}
                                 </span>
@@ -865,7 +865,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             </div>
                             {task.dueDate && (
                               <div className="text-xs">
-                                <span className="text-muted-foreground">Due:</span>
+                                <span className="text-muted-foreground">{t('components.Home.dueLabel')}:</span>
                                 <span className="ml-1 font-medium">
                                   {new Date(task.dueDate).toLocaleDateString()}
                                 </span>
@@ -875,7 +875,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                               <>
                                 <div className="border-t" />
                                 <div className="space-y-2">
-                                  <p className="text-xs font-medium text-muted-foreground">Description</p>
+                                  <p className="text-xs font-medium text-muted-foreground">{t('components.Home.descriptionLabel')}</p>
                                   <div className="max-h-64 overflow-y-auto rounded-md bg-muted/30 p-3">
                                     <p className="text-xs leading-relaxed whitespace-pre-wrap">
                                       {task.description}
@@ -901,7 +901,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                           {/* Footer */}
                           <div className="pt-2 border-t">
                             <p className="text-xs text-muted-foreground italic">
-                              Click to open task
+                              {t('components.Home.clickToOpenTask')}
                             </p>
                           </div>
                         </div>
@@ -958,7 +958,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               {/* Completion Rate */}
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">Completion</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.completion')}</p>
                   <BarChart3 className="h-4 w-4 text-blue-500" />
                 </div>
                 <p className="text-2xl font-bold">{completionRate}%</p>
@@ -970,24 +970,24 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               {/* Total Tasks */}
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">Total Tasks</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.totalTasks')}</p>
                   <CheckSquare className="h-4 w-4 text-purple-500" />
                 </div>
                 <p className="text-2xl font-bold">{workspaceTasks.length}</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
-                  In workspace
+                  {t('components.Home.inWorkspace')}
                 </p>
               </div>
             </div>
 
             {/* Status Breakdown */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2">Status Breakdown</p>
+              <p className="text-xs font-semibold text-foreground mb-2">{t('components.Home.statusBreakdown')}</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-gray-500" />
-                    <span className="text-[11px] text-muted-foreground">Todo</span>
+                    <span className="text-[11px] text-muted-foreground">{t('components.Home.todo')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.todo}</span>
@@ -1002,7 +1002,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span className="text-[11px] text-muted-foreground">In Progress</span>
+                    <span className="text-[11px] text-muted-foreground">{t('components.Home.inProgress')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.inProgress}</span>
@@ -1017,7 +1017,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-[11px] text-muted-foreground">Done</span>
+                    <span className="text-[11px] text-muted-foreground">{t('components.Home.done')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.done}</span>
@@ -1034,7 +1034,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* 7-Day Completion Trend */}
             <div className="flex-1 min-h-0">
-              <p className="text-xs font-semibold text-foreground mb-3">7-Day Completion Trend</p>
+              <p className="text-xs font-semibold text-foreground mb-3">{t('components.Home.sevenDayTrend')}</p>
               <div className="flex items-end justify-between gap-1.5 h-32">
                 {completionByDay.map((day, idx) => {
                   const height = maxCompleted > 0 ? (day.completed / maxCompleted) * 100 : 0;
@@ -1057,19 +1057,19 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Priority Breakdown */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2">By Priority</p>
+              <p className="text-xs font-semibold text-foreground mb-2">{t('components.Home.byPriority')}</p>
               <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg border bg-red-500/5 border-red-500/20 p-2.5 text-center">
                   <p className="text-lg font-bold text-red-600 dark:text-red-400">{priorityBreakdown.high}</p>
-                  <p className="text-[10px] text-muted-foreground font-medium">High</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">{t('components.Home.high')}</p>
                 </div>
                 <div className="rounded-lg border bg-yellow-500/5 border-yellow-500/20 p-2.5 text-center">
                   <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{priorityBreakdown.medium}</p>
-                  <p className="text-[10px] text-muted-foreground font-medium">Medium</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">{t('components.Home.medium')}</p>
                 </div>
                 <div className="rounded-lg border bg-gray-500/5 border-gray-500/20 p-2.5 text-center">
                   <p className="text-lg font-bold text-gray-600 dark:text-gray-400">{priorityBreakdown.low}</p>
-                  <p className="text-[10px] text-muted-foreground font-medium">Low</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">{t('components.Home.low')}</p>
                 </div>
               </div>
             </div>
@@ -1113,7 +1113,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <p className="text-3xl font-bold">{completionRateValue}%</p>
-                  <p className="text-[10px] text-muted-foreground">Complete</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.completionRate')}</p>
                 </div>
               </div>
             </div>
@@ -1121,15 +1121,15 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Stats */}
             <div className="w-full space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Completed</span>
+                <span className="text-muted-foreground">{t('components.Home.completed')}</span>
                 <span className="font-semibold">{doneTasks}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Total</span>
+                <span className="text-muted-foreground">{t('components.Home.total')}</span>
                 <span className="font-semibold">{workspaceTasks.length}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Remaining</span>
+                <span className="text-muted-foreground">{t('components.Home.remaining')}</span>
                 <span className="font-semibold">{workspaceTasks.length - doneTasks}</span>
               </div>
             </div>
@@ -1179,28 +1179,28 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Score Display */}
             <div className={`rounded-lg border p-6 ${getScoreBgColor(productivityScore)}`}>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-2">Productivity Score</p>
+                <p className="text-xs text-muted-foreground mb-2">{t('components.Home.productivityScore')}</p>
                 <p className={`text-5xl font-bold ${getScoreColor(productivityScore)}`}>
                   {productivityScore}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">out of 100</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('components.Home.outOf100')}</p>
               </div>
             </div>
 
             {/* Breakdown */}
             <div className="w-full space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">This Week</span>
+                <span className="text-muted-foreground">{t('components.Home.thisWeek')}</span>
                 <span className="font-semibold">{tasksCompletedThisWeek} tasks</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Overdue</span>
+                <span className="text-muted-foreground">{t('components.Home.overdue')}</span>
                 <span className={`font-semibold ${overdueTasksCount > 0 ? 'text-red-500' : 'text-green-500'}`}>
                   {overdueTasksCount}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Completion</span>
+                <span className="text-muted-foreground">{t('components.Home.completion')}</span>
                 <span className="font-semibold">{Math.round(completionRateForScore)}%</span>
               </div>
             </div>
@@ -1230,37 +1230,37 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="space-y-3">
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] text-muted-foreground">Avg Task Age</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.avgTaskAge')}</p>
                   <Clock className="h-4 w-4 text-orange-500" />
                 </div>
                 <p className="text-xl font-bold">{averageTaskAge}h</p>
-                <p className="text-[9px] text-muted-foreground">Average hours</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.averageHours')}</p>
               </div>
 
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] text-muted-foreground">Total Estimated</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.totalEstimated')}</p>
                   <TrendingUp className="h-4 w-4 text-blue-500" />
                 </div>
                 <p className="text-xl font-bold">{totalEstimatedHours}h</p>
-                <p className="text-[9px] text-muted-foreground">All tasks</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.allTasks')}</p>
               </div>
             </div>
 
             {/* Task Status Timeline */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2">Task Timeline</p>
+              <p className="text-xs font-semibold text-foreground mb-2">{t('components.Home.taskTimeline')}</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">With Due Dates</span>
+                  <span className="text-muted-foreground">{t('components.Home.withDueDates')}</span>
                   <span className="font-semibold">{tasksWithDueDate.length}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Completed on Time</span>
+                  <span className="text-muted-foreground">{t('components.Home.completedOnTime')}</span>
                   <span className="font-semibold text-green-500">{completedWithDueDate.length}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Pending</span>
+                  <span className="text-muted-foreground">{t('components.Home.pending')}</span>
                   <span className="font-semibold">{tasksWithDueDate.length - completedWithDueDate.length}</span>
                 </div>
               </div>
@@ -1294,10 +1294,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
                 <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-3" />
                 <p className="text-sm font-medium text-muted-foreground mb-1">
-                  No chat history
+                  {t('components.Home.noChatHistory')}
                 </p>
                 <p className="text-xs text-muted-foreground/70">
-                  Start a conversation with AI Chat
+                  {t('components.Home.startConversation')}
                 </p>
                 <Button
                   variant="outline"
@@ -1310,13 +1310,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   }}
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Open AI Chat
+                  {t('components.Home.openAiChat')}
                 </Button>
               </div>
             ) : (
               <>
                 <div className="flex items-center justify-between px-2 pb-2 border-b">
-                  <p className="text-xs font-semibold text-foreground">Recent Conversations</p>
+                  <p className="text-xs font-semibold text-foreground">{t('components.Home.recentConversations')}</p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1326,7 +1326,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       if (button) button.click();
                     }}
                   >
-                    View All
+                    {t('components.Home.viewAll')}
                   </Button>
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto">
@@ -1363,7 +1363,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     }}
                   >
                     <MessageSquare className="h-3 w-3 mr-2" />
-                    Continue Chat
+                    {t('components.Home.continueChat')}
                   </Button>
                 </div>
               </>
@@ -1384,7 +1384,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 onClick={() => onViewChange('tasks')}
               >
                 <CheckSquare className="h-5 w-5 text-blue-500" />
-                <span className="text-xs font-medium">New Task</span>
+                <span className="text-xs font-medium">{t('components.Home.newTask')}</span>
               </Button>
               
               <Button
@@ -1393,7 +1393,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 onClick={() => onViewChange('docs')}
               >
                 <FileText className="h-5 w-5 text-orange-500" />
-                <span className="text-xs font-medium">New Doc</span>
+                <span className="text-xs font-medium">{t('components.Home.newDoc')}</span>
               </Button>
               
               <Button
@@ -1402,7 +1402,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 onClick={() => onViewChange('board')}
               >
                 <Layers className="h-5 w-5 text-pink-500" />
-                <span className="text-xs font-medium">New Board</span>
+                <span className="text-xs font-medium">{t('components.Home.newBoard')}</span>
               </Button>
               
               <Button
@@ -1414,7 +1414,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 }}
               >
                 <Sparkles className="h-5 w-5 text-purple-500" />
-                <span className="text-xs font-medium">AI Chat</span>
+                <span className="text-xs font-medium">{t('components.Home.aiChat')}</span>
               </Button>
             </div>
           </div>
@@ -1478,7 +1478,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="url"
-                  placeholder="Paste YouTube, Google Docs, Figma, or any URL..."
+                  placeholder={t('components.Home.embedPlaceholder')}
                   value={embedUrl}
                   onChange={(e) => setEmbedUrl(e.target.value)}
                   className="pl-8 text-xs"
@@ -1491,7 +1491,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   onClick={() => setEmbedUrl('')}
                   className="flex-shrink-0"
                 >
-                  Clear
+                  {t('components.Home.clear')}
                 </Button>
               )}
             </div>
@@ -1504,10 +1504,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <div className="h-full flex flex-col items-center justify-center text-center p-4">
                   <ExternalLink className="h-12 w-12 text-muted-foreground/50 mb-3" />
                   <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Embed External Content
+                    {t('components.Home.embedExternalContent')}
                   </p>
                   <p className="text-xs text-muted-foreground/70">
-                    Paste a link to preview YouTube videos, Google Docs, Figma designs, and more
+                    {t('components.Home.pasteLinkHelp')}
                   </p>
                 </div>
               )}
@@ -1616,12 +1616,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Today's Tasks Summary */}
             <div className="pt-2 border-t space-y-1">
-              <p className="text-[10px] font-medium text-muted-foreground">Today's Tasks</p>
+              <p className="text-[10px] font-medium text-muted-foreground">{t('components.Home.calendarTodayTasks')}</p>
               {(() => {
                 const todayTasks = getTasksForDate(new Date());
                 if (todayTasks.length === 0) {
                   return (
-                    <p className="text-[10px] text-muted-foreground/60 italic">No tasks for today</p>
+                    <p className="text-[10px] text-muted-foreground/60 italic">{t('components.Home.calendarNoTasksToday')}</p>
                   );
                 }
                 return todayTasks.slice(0, 2).map((task) => (
@@ -1655,10 +1655,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              {activeWorkspace ? activeWorkspace.name : t('dashboard.home', 'Home')}
+              {activeWorkspace ? activeWorkspace.name : t('components.Home.homeTitle')}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {t('dashboard.subtitle', 'Overview of your workspace activities and recent updates')}
+              {t('components.Home.homeSubtitle')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -1666,17 +1666,17 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                   <Settings2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('dashboard.customize', 'Customize')}</span>
+                  <span className="hidden sm:inline">{t('components.Home.customize')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setShowCardGallery(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  {t('dashboard.addCard', 'Add Card')}
+                  {t('components.Home.addCard')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={resetToDefault}>
                   <RotateCcw className="h-4 w-4 mr-2" />
-                  {t('dashboard.resetLayout', 'Reset Layout')}
+                  {t('components.Home.resetLayout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1759,13 +1759,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
         {visibleCards.length === 0 && (
           <div className="text-center py-12 border-2 border-dashed rounded-lg">
             <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t('dashboard.noCards', 'No cards to display')}</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('components.Home.noCards')}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              {t('dashboard.addCardsHint', 'Add cards to customize your dashboard')}
+              {t('components.Home.addCardsHint')}
             </p>
             <Button onClick={() => setShowCustomizationDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              {t('dashboard.addFirstCard', 'Add Your First Card')}
+              {t('components.Home.addFirstCard')}
             </Button>
           </div>
         )}
