@@ -912,6 +912,16 @@
       "totalMembers": "Tổng Số Thành Viên",
       "workspace": "Workspace"
     },
+    "WorkspaceSwitcher": {
+      "cancel": "Hủy",
+      "confirmDelete": "Xóa",
+      "confirmDeleteDescription": "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn workspace này và tất cả dữ liệu của nó.",
+      "confirmDeleteTitle": "Bạn có hoàn toàn chắc chắn không?",
+      "createWorkspace": "Tạo Workspace",
+      "selectWorkspace": "Chọn Workspace", 
+      "workspaces": "Workspaces",
+      "workspaceSettings": "Cài Đặt Workspace"
+    },
     "GraphView": {
       "containerNotAvailable": "Container không khả dụng",
       "dragScrollHoverClick": "Kéo · Cuộn · Di chuột · Nhấp",

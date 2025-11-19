@@ -682,6 +682,16 @@
       "teamMembers": "Team Members",
       "totalMembers": "Total Members",
       "workspace": "Workspace"
+    },
+    "WorkspaceSwitcher": {
+      "cancel": "Cancel",
+      "confirmDelete": "Delete",
+      "confirmDeleteDescription": "This action cannot be undone. This will permanently delete this workspace and all of its data.",
+      "confirmDeleteTitle": "Are you absolutely sure?",
+      "createWorkspace": "Create Workspace",
+      "selectWorkspace": "Select Workspace",
+      "workspaces": "Workspaces",
+      "workspaceSettings": "Workspace Settings"
     }
   },
   "analytics": {
