@@ -421,8 +421,8 @@ const handleDragEnd = (event: DragEndEvent) => {
               "group flex h-8 w-8 items-center justify-center rounded-full border border-sidebar-border/50 bg-card/85 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all",
               "absolute top-4 right-3 z-10",
             )}
-            title="Ẩn sidebar task"
-            aria-label="Hide task sidebar"
+            title={t('components.Home.hideSidebarTask', 'Ẩn sidebar task')}
+            aria-label={t('components.Home.hideTaskSidebar', 'Hide task sidebar')}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -441,8 +441,8 @@ const handleDragEnd = (event: DragEndEvent) => {
             type="button"
         onClick={toggleSidebar}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-sidebar-border/60 bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
-            title="Hiện sidebar task"
-            aria-label="Show task sidebar"
+            title={t('components.Home.showSidebarTask', 'Hiện sidebar task')}
+            aria-label={t('components.Home.showTaskSidebar', 'Show task sidebar')}
           >
             <ChevronRight className="h-4 w-4" />
           </button>

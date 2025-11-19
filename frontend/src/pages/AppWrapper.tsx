@@ -143,7 +143,7 @@ export default function AppWrapper() {
           : { skipCache: true };
         await getToken(tokenOptions);
       } catch (error) {
-        console.warn("Failed to prefetch Clerk token before data load", error);
+                console.warn(t('components.Home.clerkTokenError', 'Failed to prefetch Clerk token before data load'), error);
       }
 
       await initializeWorkspace();
@@ -223,7 +223,7 @@ export default function AppWrapper() {
             : { skipCache: true };
           await getToken(tokenOptions);
         } catch (error) {
-          console.warn("Failed to refresh token before reload", error);
+          console.warn(t('components.Home.tokenRefreshError', 'Failed to refresh token before reload'), error);
         }
 
         await Promise.all([

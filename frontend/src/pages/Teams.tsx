@@ -24,8 +24,10 @@ import { Crown, Mail, MoreHorizontal, Search, UserPlus, Users } from 'lucide-rea
 import { useEffect, useState } from 'react';
 import type { WorkspaceMember, WorkspaceInvite } from '@/types/workspace';
 import { getAvatarColor, getInitials } from '@/utils/avatarColors';
+import { useTranslation } from 'react-i18next';
 
 export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user: currentUser } = useUser();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
@@ -66,8 +68,8 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
     } catch (error) {
       console.error('Failed to load workspace data:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load team members',
+        title: t('components.Home.error', 'Error'),
+        description: t('components.Home.failedToLoadTeam', 'Failed to load team members'),
         variant: 'destructive',
       });
     } finally {
@@ -140,14 +142,14 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
       setInviteEmail('');
       setIsInviteDialogOpen(false);
       toast({
-        title: 'Success',
-        description: 'Invite sent successfully',
+        title: t('components.Home.success', 'Success'),
+        description: t('components.Home.inviteSentSuccess', 'Invite sent successfully'),
       });
       await loadData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to send invite',
+        title: t('components.Home.error', 'Error'),
+        description: error.message || t('components.Home.failedToSendInvite', 'Failed to send invite'),
         variant: 'destructive',
       });
     } finally {
@@ -157,19 +159,19 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
 
   const handleRemoveMember = async (memberId: string) => {
     if (!activeWorkspaceId) return;
-    if (!confirm('Are you sure you want to remove this member?')) return;
+    if (!confirm(t('components.Home.removeConfirmation', 'Are you sure you want to remove this member?'))) return;
 
     try {
       await removeMember(activeWorkspaceId, memberId);
       toast({
-        title: 'Success',
-        description: 'Member removed successfully',
+        title: t('components.Home.success', 'Success'),
+        description: t('components.Home.memberRemovedSuccess', 'Member removed successfully'),
       });
       await loadData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to remove member',
+        title: t('components.Home.error', 'Error'),
+        description: error.message || t('components.Home.failedToRemoveMember', 'Failed to remove member'),
         variant: 'destructive',
       });
     }
@@ -181,14 +183,14 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
     try {
       await updateMemberRole(activeWorkspaceId, memberId, newRole);
       toast({
-        title: 'Success',
-        description: `Member role updated to ${newRole}`,
+        title: t('components.Home.success', 'Success'),
+        description: `${t('components.Home.memberRoleUpdated', 'Member role updated to')} ${newRole}`,
       });
       await loadData();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to change role',
+        title: t('components.Home.error', 'Error'),
+        description: error.message || t('components.Home.failedToChangeRole', 'Failed to change role'),
         variant: 'destructive',
       });
     }
@@ -202,10 +204,10 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-500" />
-              Team Members
+              {t('components.Home.teamMembers', 'Team Members')}
             </h1>
             <p className="text-muted-foreground">
-              Manage your workspace team members and permissions
+              {t('components.Home.manageTeamDescription', 'Manage your workspace team members and permissions')}
             </p>
           </div>
 
@@ -214,25 +216,25 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
               <DialogTrigger asChild>
                 <Button className="gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Invite Member
+                  {t('components.Home.inviteMember', 'Invite Member')}
                 </Button>
               </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Invite Team Member</DialogTitle>
+                <DialogTitle>{t('components.Home.inviteTeamMember', 'Invite Team Member')}</DialogTitle>
                 <DialogDescription>
-                  Send an invitation to join this workspace. They will receive an email with instructions.
+                  {t('components.Home.inviteDescription', 'Send an invitation to join this workspace. They will receive an email with instructions.')}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium">
-                    Email Address
+                    {t('components.Home.emailAddress', 'Email Address')}
                   </label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="colleague@example.com"
+                    placeholder={t('components.Home.emailPlaceholder', 'colleague@example.com')}
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     onKeyDown={(e) => {
@@ -244,7 +246,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="role" className="text-sm font-medium">
-                    Role
+                    {t('components.Home.role', 'Role')}
                   </label>
                   <select
                     id="role"
@@ -252,8 +254,8 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                     onChange={(e) => setInviteRole(e.target.value as 'ADMIN' | 'MEMBER')}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
-                    <option value="MEMBER">Member</option>
-                    <option value="ADMIN">Admin</option>
+                    <option value="MEMBER">{t('components.Home.member', 'Member')}</option>
+                    <option value="ADMIN">{t('components.Home.admin', 'Admin')}</option>
                   </select>
                 </div>
               </div>
@@ -263,10 +265,10 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                   onClick={() => setIsInviteDialogOpen(false)}
                   disabled={isInviting}
                 >
-                  Cancel
+                  {t('components.Home.cancel', 'Cancel')}
                 </Button>
                 <Button onClick={handleInvite} disabled={!inviteEmail.trim() || isInviting}>
-                  {isInviting ? 'Sending...' : 'Send Invitation'}
+                  {isInviting ? t('components.Home.sending', 'Sending...') : t('components.Home.sendInvitation', 'Send Invitation')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -279,11 +281,11 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
           <div className="rounded-lg border bg-card p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Workspace</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('components.Home.workspace', 'Workspace')}</p>
                 <p className="text-lg font-semibold">{activeWorkspace.name}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-muted-foreground">Total Members</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('components.Home.totalMembers', 'Total Members')}</p>
                 <p className="text-lg font-semibold">{members.length}</p>
               </div>
             </div>
@@ -294,7 +296,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search members by name or email..."
+            placeholder={t('components.Home.searchMembersPlaceholder', 'Search members by name or email...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -304,17 +306,17 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
         {/* Team Members List */}
         <div className="rounded-lg border bg-card shadow-sm">
           <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold">All Members ({filteredMembers.length})</h2>
+            <h2 className="text-lg font-semibold">{t('components.Home.allMembers', 'All Members')} ({filteredMembers.length})</h2>
           </div>
           {isLoading ? (
             <div className="p-12 text-center">
-              <p className="text-muted-foreground">Loading members...</p>
+              <p className="text-muted-foreground">{t('components.Home.loadingMembers', 'Loading members...')}</p>
             </div>
           ) : filteredMembers.length === 0 ? (
             <div className="p-12 text-center">
               <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
               <p className="text-muted-foreground">
-                {searchQuery ? 'No members found' : 'No team members yet'}
+                {searchQuery ? t('components.Home.noMembersFound', 'No members found') : t('components.Home.noTeamMembersYet', 'No team members yet')}
               </p>
               {!searchQuery && isAdmin && (
                 <Button
@@ -365,16 +367,16 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                           <div className="flex items-center gap-2">
                             <p className="font-medium truncate">{displayName}</p>
                             {member.userId === activeWorkspace?.ownerId && (
-                              <Badge variant="outline">Owner</Badge>
+                              <Badge variant="outline">{t('components.Home.owner', 'Owner')}</Badge>
                             )}
                             {member.role === 'ADMIN' && member.userId !== activeWorkspace?.ownerId && (
                               <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
-                                Admin
+                                {t('components.Home.admin', 'Admin')}
                               </Badge>
                             )}
                             {member.role === 'MEMBER' && (
                               <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                Member
+                                {t('components.Home.member', 'Member')}
                               </Badge>
                             )}
                           </div>
@@ -385,7 +387,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                             </div>
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
-                            Joined {new Date(member.joinedAt).toLocaleDateString()}
+                            {t('components.Home.joined', 'Joined')} {new Date(member.joinedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -400,20 +402,20 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                             {member.role === 'MEMBER' && (
                               <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'ADMIN')}>
                                 <Crown className="h-4 w-4 mr-2" />
-                                Make Admin
+                                {t('components.Home.makeAdmin', 'Make Admin')}
                               </DropdownMenuItem>
                             )}
                             {member.role === 'ADMIN' && (
                               <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'MEMBER')}>
                                 <Users className="h-4 w-4 mr-2" />
-                                Make Member
+                                {t('components.Home.makeMember', 'Make Member')}
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuItem
                               onClick={() => handleRemoveMember(member.id)}
                               className="text-destructive"
                             >
-                              Remove from Workspace
+                              {t('components.Home.removeFromWorkspace', 'Remove from Workspace')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -432,10 +434,9 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
               <Users className="h-5 w-5 text-blue-500" />
             </div>
             <div className="flex-1 space-y-1">
-              <p className="text-sm font-medium">About Team Roles</p>
+              <p className="text-sm font-medium">{t('components.Home.aboutTeamRoles', 'About Team Roles')}</p>
               <p className="text-sm text-muted-foreground">
-                <strong>Admins</strong> can manage workspace settings, invite members, and remove members.{' '}
-                <strong>Members</strong> can create and edit tasks, documents, and boards within the workspace.
+                {t('components.Home.rolesDescription', 'Admins can manage workspace settings, invite members, and remove members. Members can create and edit tasks, documents, and boards within the workspace.')}
               </p>
             </div>
           </div>

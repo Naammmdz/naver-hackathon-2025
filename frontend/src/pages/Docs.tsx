@@ -15,7 +15,10 @@ import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles, Edit, Network } fr
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+
 export default function Docs() {
+  const { t } = useTranslation();
   const {
     documents,
     activeDocumentId,
@@ -359,25 +362,25 @@ export default function Docs() {
 
               <div className="space-y-3">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  Kho kiến thức của bạn đang chờ được viết
+                  {t('components.Home.knowledgeWaiting', 'Kho kiến thức của bạn đang chờ được viết')}
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground/80">
-                  Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.
+                  {t('components.Home.documentDescription', 'Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.')}
                 </p>
               </div>
 
               <div className="flex flex-col gap-2 text-sm text-muted-foreground/70">
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                  <span>Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.</span>
+                  <span>{t('components.Home.autoSaveFeature', 'Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.')}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
-                  <span>Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.</span>
+                  <span>{t('components.Home.embedFeature', 'Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.')}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-                  <span>Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.</span>
+                  <span>{t('components.Home.slashMenuFeature', 'Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.')}</span>
                 </div>
               </div>
 
@@ -388,11 +391,11 @@ export default function Docs() {
                 disabled={isLoading}
               >
                 <Sparkles className="h-4 w-4" />
-                Tạo tài liệu đầu tiên
+                {t('components.Home.createFirstDocument', 'Tạo tài liệu đầu tiên')}
               </Button>
 
               <p className="text-xs text-muted-foreground/70">
-                Hoặc kéo tài liệu đã có vào đây để tiếp tục biên soạn cùng đội ngũ.
+                {t('components.Home.dragDocumentHint', 'Hoặc kéo tài liệu đã có vào đây để tiếp tục biên soạn cùng đội ngũ.')}
               </p>
             </div>
           </div>
@@ -409,10 +412,10 @@ export default function Docs() {
                   </div>
                 </div>
                 <h2 className="text-3xl font-bold mb-4 text-foreground">
-                  Document in Trash
+                  {t('components.Home.documentInTrash', 'Document in Trash')}
                 </h2>
                 <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
-                  This document has been moved to trash. You can restore it or permanently delete it from the sidebar.
+                  {t('components.Home.documentTrashDescription', 'This document has been moved to trash. You can restore it or permanently delete it from the sidebar.')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button
@@ -422,7 +425,7 @@ export default function Docs() {
                     className="gap-2 border-border hover:bg-muted/60 dark:border-border dark:hover:bg-muted/40"
                   >
                     <FileText className="h-5 w-5" />
-                    Restore Document
+                    {t('components.Home.restoreDocument', 'Restore Document')}
                   </Button>
                   <Button
                     onClick={() => addDocument(t('components.Docs.untitledDocument'))}
@@ -430,7 +433,7 @@ export default function Docs() {
                     className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >
                     <Plus className="h-5 w-5" />
-                    Create New
+                    {t('components.Home.createNew', 'Create New')}
                   </Button>
                 </div>
               </div>
@@ -443,7 +446,7 @@ export default function Docs() {
                   <div className="flex items-center gap-3">
                     <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
                     <div className="text-xs text-muted-foreground">
-                      {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                      {activeDocument.updatedAt && `${t('components.Home.modified', 'Modified')} ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -461,7 +464,7 @@ export default function Docs() {
                         )}
                       >
                         <Edit className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Editor</span>
+                        <span className="hidden sm:inline">{t('components.Home.editor', 'Editor')}</span>
                       </Button>
                       <Button
                         variant={viewMode === 'graph' ? 'default' : 'ghost'}
@@ -475,14 +478,14 @@ export default function Docs() {
                         )}
                       >
                         <Network className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Graph</span>
+                        <span className="hidden sm:inline">{t('components.Home.graph', 'Graph')}</span>
                       </Button>
                     </div>
                     
                     {viewMode === 'editor' && (
                       <Button variant="ghost" size="sm" className="gap-2">
                         <FileText className="h-4 w-4" />
-                        Share
+                        {t('components.Home.share', 'Share')}
                       </Button>
                     )}
                   </div>
@@ -538,10 +541,10 @@ export default function Docs() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  Chọn tài liệu từ sidebar
+                  {t('components.Home.selectDocumentFromSidebar', 'Chọn tài liệu từ sidebar')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới
+                  {t('components.Home.selectOrCreateDocument', 'Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới')}
                 </p>
               </div>
             </div>
