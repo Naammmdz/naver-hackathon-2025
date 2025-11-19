@@ -20,11 +20,10 @@ import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
 import Teams from "./Teams";
-import GraphViewPage from "./GraphViewPage";
 import { startReminderScheduler } from "@/services/reminderScheduler";
 
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams" | "graph">("home");
+  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { t } = useTranslation();
@@ -316,7 +315,6 @@ export default function AppWrapper() {
               }} /> :
                currentView === 'docs' ? <Docs /> :
                currentView === 'board' ? <BoardView /> :
-               currentView === 'graph' ? <GraphViewPage onViewChange={setCurrentView} /> :
                currentView === 'teams' ? <Teams onViewChange={setCurrentView} /> :
                <Home onViewChange={setCurrentView} />}
             </main>

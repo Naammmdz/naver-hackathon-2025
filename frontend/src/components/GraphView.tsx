@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { initGraph } from "@/lib/graph/initGraph";
 import { fetchGraphData, fetchDemoGraphData, type GraphData } from "@/lib/api/graphApi";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
@@ -22,7 +21,6 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
   const graphApiRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [vennMode, setVennMode] = useState(true);
   const [isDark, setIsDark] = useState(false);
 
   // Detect theme and update graph
@@ -127,13 +125,6 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
     };
   }, [workspaceId, onNodeClick, isDark]);
 
-  const handleToggleVenn = () => {
-    if (graphApiRef.current?.toggleVennMode) {
-      const newMode = graphApiRef.current.toggleVennMode();
-      setVennMode(newMode);
-    }
-  };
-
   return (
     <div className="relative w-full h-full">
       {/* Loading overlay */}
@@ -165,36 +156,15 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
 
       {/* Controls overlay */}
       {!loading && !error && (
-        <>
-          <div className="absolute left-4 top-3 z-10 flex items-center gap-2">
-            <div className={`px-3 py-1.5 rounded-full text-xs uppercase tracking-wider ${
-              isDark
-                ? "bg-card/90 border border-border text-muted-foreground shadow-sm"
-                : "bg-card/90 border border-border text-muted-foreground shadow-sm"
-            }`}>
-              Drag · Scroll · Hover · Click
-            </div>
+        <div className="absolute left-4 top-3 z-10 flex items-center gap-2">
+          <div className={`px-3 py-1.5 rounded-full text-xs uppercase tracking-wider ${
+            isDark
+              ? "bg-card/90 border border-border text-muted-foreground shadow-sm"
+              : "bg-card/90 border border-border text-muted-foreground shadow-sm"
+          }`}>
+            Drag · Scroll · Hover · Click
           </div>
-
-          <div className="absolute right-4 top-3 z-10">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleToggleVenn}
-              className={`rounded-full text-xs uppercase tracking-wider ${
-                vennMode 
-                  ? isDark
-                    ? "bg-primary/10 border-primary/50 text-primary hover:bg-primary/20"
-                    : "bg-primary/10 border-primary/50 text-primary hover:bg-primary/20"
-                  : isDark
-                    ? "bg-card/80 border-border text-muted-foreground hover:bg-muted"
-                    : "bg-card/80 border-border text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              Venn mode: {vennMode ? "ON" : "OFF"}
-            </Button>
-          </div>
-        </>
+        </div>
       )}
 
       {/* Graph container - always rendered */}
