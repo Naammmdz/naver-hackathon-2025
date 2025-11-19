@@ -453,7 +453,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCreatedTasks} 
-              color="hsl(0deg 90.6% 70.78%)"
+              color="hsl(var(--chart-1))"
             />
           </CardContent>
         </Card>
@@ -465,7 +465,7 @@ export function AnalyticsView() {
           <CardContent>
             <SimpleBarChart 
               data={analytics.dailyCompletedTasks} 
-              color="hsl(0deg 90.6% 70.78%)"
+              color="hsl(var(--chart-3))"
             />
           </CardContent>
         </Card>

@@ -65,7 +65,7 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
   }, []);
 
   return (
-    <header className="border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50">
+    <header className="border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-50 shadow-sm">
       <div className="flex h-16 items-center justify-between px-6">
         {/* Left section */}
         <div className="flex items-center gap-4">
@@ -95,7 +95,7 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
               placeholder={t('header.searchPlaceholder')}
               value={filters.search || ""}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 bg-muted/50 border-0 focus:bg-background"
+              className="pl-10 luxury-input focus:bg-background"
             />
           </div>
         </div>
@@ -106,7 +106,7 @@ export function AppHeader({ onSmartCreate }: AppHeaderProps) {
           {onSmartCreate && (
             <Button 
               onClick={onSmartCreate}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
+              className="flex items-center gap-2 luxury-button text-primary-foreground shadow-elegant hover:shadow-lg transition-all"
               size="sm"
             >
               <Zap className="h-4 w-4" />

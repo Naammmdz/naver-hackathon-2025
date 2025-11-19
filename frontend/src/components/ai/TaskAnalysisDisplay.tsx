@@ -100,9 +100,9 @@ export function TaskAnalysisDisplay({
                 <Alert key={idx} variant={risk.severity === "high" ? "destructive" : "default"}>
                   <AlertDescription className="flex items-start gap-2">
                     {risk.severity === "high" ? (
-                      <TrendingDown className="h-4 w-4 text-red-500 mt-0.5" />
+                      <TrendingDown className="h-4 w-4 text-destructive mt-0.5" />
                     ) : (
-                      <TrendingUp className="h-4 w-4 text-yellow-500 mt-0.5" />
+                      <TrendingUp className="h-4 w-4 text-warning mt-0.5" />
                     )}
                     <div>
                       <div className="font-medium">{risk.title || risk.type}</div>
@@ -124,7 +124,7 @@ export function TaskAnalysisDisplay({
         {summary && (
           <div className="rounded-lg bg-muted p-4">
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               AI Insights
             </h4>
             <p className="text-sm text-muted-foreground">{summary}</p>
@@ -189,14 +189,14 @@ function renderCellValue(key: string, value: unknown): React.ReactNode {
   // Status badges
   if (key === "status") {
     const statusColors: Record<string, string> = {
-      todo: "bg-gray-100 text-gray-800",
-      in_progress: "bg-blue-100 text-blue-800",
-      in_review: "bg-purple-100 text-purple-800",
-      blocked: "bg-red-100 text-red-800",
-      done: "bg-green-100 text-green-800",
-      completed: "bg-green-100 text-green-800",
+      todo: "bg-muted text-muted-foreground",
+      in_progress: "bg-primary/10 text-primary",
+      in_review: "bg-secondary/10 text-secondary",
+      blocked: "bg-destructive/10 text-destructive",
+      done: "bg-success/10 text-success",
+      completed: "bg-success/10 text-success",
     }
-    const color = statusColors[String(value).toLowerCase()] || "bg-gray-100 text-gray-800"
+    const color = statusColors[String(value).toLowerCase()] || "bg-muted text-muted-foreground"
     return (
       <Badge variant="outline" className={color}>
         {String(value).replace(/_/g, " ")}
@@ -207,12 +207,12 @@ function renderCellValue(key: string, value: unknown): React.ReactNode {
   // Priority badges
   if (key === "priority") {
     const priorityColors: Record<string, string> = {
-      low: "bg-gray-100 text-gray-800",
-      medium: "bg-yellow-100 text-yellow-800",
-      high: "bg-orange-100 text-orange-800",
-      critical: "bg-red-100 text-red-800",
+      low: "bg-muted text-muted-foreground",
+      medium: "bg-warning/10 text-warning",
+      high: "bg-destructive/10 text-destructive",
+      critical: "bg-destructive text-destructive-foreground",
     }
-    const color = priorityColors[String(value).toLowerCase()] || "bg-gray-100 text-gray-800"
+    const color = priorityColors[String(value).toLowerCase()] || "bg-muted text-muted-foreground"
     return (
       <Badge variant="outline" className={color}>
         {String(value)}
@@ -240,7 +240,7 @@ function renderCellValue(key: string, value: unknown): React.ReactNode {
   // Booleans
   if (typeof value === "boolean") {
     return value ? (
-      <CheckCircle2 className="h-4 w-4 text-green-500" />
+      <CheckCircle2 className="h-4 w-4 text-success" />
     ) : (
       <span className="text-muted-foreground">—</span>
     )

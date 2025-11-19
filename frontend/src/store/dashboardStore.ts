@@ -20,7 +20,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'medium',
     visible: true,
     order: 0,
-    color: 'border-l-blue-500',
+    color: 'border-l-primary',
   },
   {
     id: 'documents-stat',
@@ -30,7 +30,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'small',
     visible: true,
     order: 1,
-    color: 'border-l-orange-500',
+    color: 'border-l-secondary',
   },
   {
     id: 'boards-stat',
@@ -40,7 +40,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'small',
     visible: true,
     order: 2,
-    color: 'border-l-pink-500',
+    color: 'border-l-accent',
   },
   {
     id: 'team-stat',
@@ -50,7 +50,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'small',
     visible: true,
     order: 3,
-    color: 'border-l-green-500',
+    color: 'border-l-success',
   },
   {
     id: 'recent-documents',
@@ -60,7 +60,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'medium',
     visible: true,
     order: 4,
-    color: 'border-l-orange-500',
+    color: 'border-l-secondary',
   },
   {
     id: 'recent-boards',
@@ -70,7 +70,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'medium',
     visible: true,
     order: 5,
-    color: 'border-l-pink-500',
+    color: 'border-l-accent',
   },
   {
     id: 'task-analytics',
@@ -80,7 +80,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'large',
     visible: true,
     order: 6,
-    color: 'border-l-purple-500',
+    color: 'border-l-primary',
   },
   {
     id: 'embed-link',
@@ -90,7 +90,7 @@ const defaultCards: DashboardCardConfig[] = [
     size: 'medium',
     visible: true,
     order: 7,
-    color: 'border-l-cyan-500',
+    color: 'border-l-primary',
   },
 ];
 
@@ -145,7 +145,7 @@ export const useDashboardStore = create<DashboardState>()(
               size: 'large',
               visible: true,
               order: state.cards.length,
-              color: 'border-l-purple-500',
+              color: 'border-l-primary',
             });
           }
 
@@ -166,9 +166,23 @@ export const useDashboardStore = create<DashboardState>()(
               size: 'medium',
               visible: true,
               order: state.cards.length,
-              color: 'border-l-cyan-500',
+              color: 'border-l-primary',
             });
           }
+
+          // Migrate old colors to theme colors
+          state.cards = state.cards.map(card => {
+            if (card.color?.includes('blue-500')) return { ...card, color: 'border-l-primary' };
+            if (card.color?.includes('orange-500')) return { ...card, color: 'border-l-secondary' };
+            if (card.color?.includes('pink-500')) return { ...card, color: 'border-l-accent' };
+            if (card.color?.includes('green-500')) return { ...card, color: 'border-l-success' };
+            if (card.color?.includes('purple-500')) return { ...card, color: 'border-l-primary' };
+            if (card.color?.includes('cyan-500')) return { ...card, color: 'border-l-primary' };
+            if (card.color?.includes('red-500')) return { ...card, color: 'border-l-destructive' };
+            if (card.color?.includes('yellow-500')) return { ...card, color: 'border-l-warning' };
+            if (card.color?.includes('indigo-500')) return { ...card, color: 'border-l-primary' };
+            return card;
+          });
         }
       },
     }

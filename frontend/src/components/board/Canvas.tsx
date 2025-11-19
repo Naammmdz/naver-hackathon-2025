@@ -431,7 +431,7 @@ export function Canvas() {
           <DialogTrigger asChild>
             <Button
               size="lg"
-              className="rounded-full shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="rounded-full shadow-elegant hover:shadow-xl transition-shadow luxury-button"
             >
               <Wand2 className="h-5 w-5" />
               <span className="ml-2 hidden sm:inline">{t('components.Canvas.aiDrawButton')}</span>
@@ -473,7 +473,7 @@ export function Canvas() {
                 <Button
                   onClick={generateDiagram}
                   disabled={!prompt.trim() || isGenerating}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  className="luxury-button"
                 >
                   {isGenerating ? (
                     <>

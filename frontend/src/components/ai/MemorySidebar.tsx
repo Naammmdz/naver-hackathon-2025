@@ -130,15 +130,15 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
   const getKnowledgeTypeColor = (type: string) => {
     switch (type) {
       case "decision":
-        return "bg-purple-100 text-purple-800 border-purple-200"
+        return "bg-primary/10 text-primary border-primary/20"
       case "pattern":
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-secondary/10 text-secondary border-secondary/20"
       case "preference":
-        return "bg-pink-100 text-pink-800 border-pink-200"
+        return "bg-accent/10 text-accent border-accent/20"
       case "fact":
-        return "bg-green-100 text-green-800 border-green-200"
+        return "bg-success/10 text-success border-success/20"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-muted text-muted-foreground border-border"
     }
   }
 
