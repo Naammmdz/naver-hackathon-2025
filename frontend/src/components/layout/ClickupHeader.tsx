@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useBoardStore } from '@/store/boardStore';
 import { useDocumentStore } from '@/store/documentStore';
-import { useTaskStore } from '@/store/taskStore';
+import { useSearchStore } from '@/store/useSearchStore';
 import { Languages, Menu, Monitor, Moon, Palette, Search, Sun } from 'lucide-react';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +29,6 @@ export const ClickupHeader = memo(function ClickupHeader({
   onMenuClick,
   currentView,
 }: ClickupHeaderProps) {
-  const { filters, setFilters } = useTaskStore();
   const activeDocumentId = useDocumentStore((state) => state.activeDocumentId);
   const getDocument = useDocumentStore((state) => state.getDocument);
   const activeBoardId = useBoardStore((state) => state.activeBoardId);
@@ -38,14 +36,22 @@ export const ClickupHeader = memo(function ClickupHeader({
   const [isDark, setIsDark] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const { t, i18n } = useTranslation();
+  const openSearchModal = useSearchStore((state) => state.openWithPrefill);
+
+  const handleOpenSearch = () => {
+    const typeMap: Record<ClickupHeaderProps["currentView"], 'all' | 'task' | 'doc' | 'board'> = {
+      home: 'all',
+      tasks: 'task',
+      docs: 'doc',
+      board: 'board',
+      teams: 'all',
+    };
+    openSearchModal({ initialType: typeMap[currentView] });
+  };
 
   // Get context for breadcrumb
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
   const activeBoard = activeBoardId ? boards.find((b) => b.id === activeBoardId) : null;
-
-  const handleSearchChange = (value: string) => {
-    setFilters({ search: value });
-  };
 
   const toggleLanguage = () => {
     const currentLang = i18n.language;
@@ -152,17 +158,18 @@ export const ClickupHeader = memo(function ClickupHeader({
           </div>
         </div>
 
-        {/* Center Section - Search (ClickUp style) */}
-        <div className="flex-1 max-w-lg hidden lg:block flex-shrink-0">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t('header.searchPlaceholder', 'Search everything...')}
-              value={filters.search || ''}
-              onChange={e => handleSearchChange(e.target.value)}
-              className="pl-10 bg-muted/40 border-0 h-9 text-sm rounded-lg hover:bg-primary/5 focus:ring-primary focus:ring-offset-0"
-            />
-          </div>
+        {/* Center Section - Global Search Trigger */}
+        <div className="flex-1 max-w-lg hidden lg:flex flex-shrink-0 justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full max-w-lg justify-start gap-3 text-muted-foreground bg-muted/40 border-border hover:bg-muted/60"
+            onClick={handleOpenSearch}
+          >
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{t('header.searchPlaceholder', 'Search everything...')}</span>
+            <span className="ml-auto text-xs text-muted-foreground">⌘K / Ctrl+K</span>
+          </Button>
         </div>
 
         {/* Right Section - Actions */}

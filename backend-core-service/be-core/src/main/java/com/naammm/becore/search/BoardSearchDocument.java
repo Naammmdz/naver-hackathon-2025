@@ -11,14 +11,13 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.LocalDate;
-import java.util.List;
 
-@Document(indexName = "tasks")
+@Document(indexName = "boards")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskSearchDocument {
+public class BoardSearchDocument {
 
     @Id
     private String id;
@@ -27,19 +26,7 @@ public class TaskSearchDocument {
     private String title;
 
     @Field(type = FieldType.Text, analyzer = "standard")
-    private String description;
-
-    @Field(type = FieldType.Keyword)
-    private String status;
-
-    @Field(type = FieldType.Keyword)
-    private String priority;
-
-    @Field(type = FieldType.Date, format = DateFormat.date_optional_time)
-    private LocalDate dueDate;
-
-    @Field(type = FieldType.Keyword)
-    private List<String> tags;
+    private String snapshot;
 
     @Field(type = FieldType.Keyword)
     private String userId;
@@ -47,12 +34,10 @@ public class TaskSearchDocument {
     @Field(type = FieldType.Keyword)
     private String workspaceId;
 
-    @Field(type = FieldType.Keyword)
-    private String assigneeId;
-
     @Field(type = FieldType.Date, format = DateFormat.date_optional_time)
     private LocalDate createdAt;
 
     @Field(type = FieldType.Date, format = DateFormat.date_optional_time)
     private LocalDate updatedAt;
 }
+

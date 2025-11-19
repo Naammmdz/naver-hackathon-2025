@@ -2,6 +2,7 @@ import { BoardView } from "@/components/board/BoardView";
 import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
+import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
 import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
 import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
@@ -20,6 +21,7 @@ import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
 import Teams from "./Teams";
+import type { SearchResult } from "@/types/search";
 
 export default function AppWrapper() {
   const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
@@ -252,8 +254,31 @@ export default function AppWrapper() {
     previousWorkspaceRef.current = newWorkspace;
   };
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<SearchResult>).detail;
+      if (!detail) {
+        return;
+      }
+      setSidebarOpen(true);
+      if (detail.type === "task") {
+        setCurrentView("tasks");
+        useTaskStore.getState().setFilters({ search: detail.title });
+      } else if (detail.type === "doc") {
+        setCurrentView("docs");
+        useDocumentStore.getState().setActiveDocument(detail.id);
+      } else if (detail.type === "board") {
+        setCurrentView("board");
+        useBoardStore.getState().setActiveBoard(detail.id);
+      }
+    };
+    window.addEventListener("globalSearchNavigate", handler as EventListener);
+    return () => window.removeEventListener("globalSearchNavigate", handler as EventListener);
+  }, [setCurrentView]);
+
   return (
     <>
+      <GlobalSearchModal />
       {/* Workspace Onboarding Modal */}
       {showOnboarding && (
         <WorkspaceOnboarding
