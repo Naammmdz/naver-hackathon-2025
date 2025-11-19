@@ -1,18 +1,19 @@
 import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
+import { GraphView } from '@/components/GraphView';
 import { Button } from '@/components/ui/button';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
+import { useBoardStore } from '@/store/boardStore';
 import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
-import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles, Edit, Network } from 'lucide-react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
-import type { DebouncedFunc } from 'lodash';
 import { cn } from '@/lib/utils';
 export default function Docs() {
   const {
@@ -45,7 +46,7 @@ export default function Docs() {
   const pendingTitleRef = useRef<string | null>(null);
   
   // Debounced onChange handler to avoid too many updates
-  const onChangeRef = useRef<DebouncedFunc<(content: any[]) => void>>();
+  const onChangeRef = useRef<ReturnType<typeof debounce>>();
   useEffect(() => {
     // Backup current content
     if (activeDocumentId && activeDocument?.content) {
@@ -228,6 +229,12 @@ export default function Docs() {
   const [isDark, setIsDark] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
+  // View mode: 'editor' or 'graph'
+  const [viewMode, setViewMode] = useState<'editor' | 'graph'>('editor');
+  
+  // Board store for graph navigation
+  const setActiveBoard = useBoardStore((state) => state.setActiveBoard);
+  
   useEffect(() => {
     const checkTheme = () => {
       const savedTheme = localStorage.getItem("theme");
@@ -247,7 +254,6 @@ export default function Docs() {
     
     return () => observer.disconnect();
   }, []);
-
 
   // Handle task link clicks
   useEffect(() => {
@@ -281,48 +287,32 @@ export default function Docs() {
   return (
     <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
       {/* Document Sidebar - Collapsible on larger screens */}
-      <div
-        className={`relative hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
+      <div className={`hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
         isSidebarCollapsed ? 'w-0' : 'w-64'
-        }`}
-      >
-        {!isSidebarCollapsed && (
-          <button
-            type="button"
-            onClick={() => setIsSidebarCollapsed(true)}
-            className={cn(
-              'group flex h-8 w-8 items-center justify-center rounded-full border border-sidebar-border/50 bg-card/85 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all',
-              'absolute top-4 right-3 z-10'
-            )}
-            aria-label="Ẩn sidebar tài liệu"
-            title="Ẩn sidebar tài liệu"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-        )}
-        {!isSidebarCollapsed && (
-          <DocumentSidebar
-            onCollapse={() => setIsSidebarCollapsed(true)}
-          />
-        )}
+      }`}>
+        <DocumentSidebar />
       </div>
 
-      {isSidebarCollapsed && (
-        <div className="hidden lg:flex w-12 items-start justify-center pt-4">
-          <button
-            type="button"
-            onClick={() => setIsSidebarCollapsed(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-sidebar-border/60 bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
-            aria-label="Hiển thị sidebar tài liệu"
-            title="Hiển thị sidebar tài liệu"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
+      {/* Drag Handle - Small indicator bar like iPhone navigation */}
+      <div
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        className={`hidden lg:flex relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
+        title={isSidebarCollapsed ? t('components.Docs.showSidebar') : t('components.Docs.hideSidebar')}
+      >
+        {/* Small navigation bar in the middle */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
+        
+        {/* Chevron indicator */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          {isSidebarCollapsed ? (
+            <ChevronRight className="w-4 h-4 text-primary" />
+          ) : (
+            <ChevronLeft className="w-4 h-4 text-primary" />
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Main Content with comments */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {documents.filter((doc) => !doc.trashed).length === 0 ? (
           <div
@@ -392,7 +382,7 @@ export default function Docs() {
               </div>
 
               <Button
-                onClick={() => void addDocument('Tài liệu mới')}
+                onClick={() => void addDocument(t('components.Docs.newDocumentTitle'))}
                 size="lg"
                 className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
                 disabled={isLoading}
@@ -435,7 +425,7 @@ export default function Docs() {
                     Restore Document
                   </Button>
                   <Button
-                    onClick={() => addDocument('Untitled')}
+                    onClick={() => addDocument(t('components.Docs.untitledDocument'))}
                     size="lg"
                     className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >
@@ -456,25 +446,85 @@ export default function Docs() {
                       {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <FileText className="h-4 w-4" />
-                      Share
-                    </Button>
+                  <div className="flex items-center gap-3">
+                    {/* View Switcher */}
+                    <div className="flex border rounded-lg p-1 bg-muted/50">
+                      <Button
+                        variant={viewMode === 'editor' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('editor')}
+                        className={cn(
+                          "flex items-center gap-1.5 h-7",
+                          viewMode === 'editor' 
+                            ? "shadow-sm bg-primary text-primary-foreground" 
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Editor</span>
+                      </Button>
+                      <Button
+                        variant={viewMode === 'graph' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('graph')}
+                        className={cn(
+                          "flex items-center gap-1.5 h-7",
+                          viewMode === 'graph' 
+                            ? "shadow-sm bg-primary text-primary-foreground" 
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Network className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Graph</span>
+                      </Button>
+                    </div>
+                    
+                    {viewMode === 'editor' && (
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Share
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Editor Container */}
-              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6 relative">
-                <DocumentEditor
-                  key={activeDocument.id}
-                  document={activeDocument}
-                  isDark={isDark}
-                  canEditWorkspace={true}
-                  onTaskClick={setSelectedTask}
-                  onChange={handleDocumentChange}
-                />
+              {/* Content Container */}
+              <div className="flex-1 overflow-hidden">
+                {viewMode === 'editor' ? (
+                  <div className="h-full overflow-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <DocumentEditor
+                      key={activeDocument.id}
+                      document={activeDocument}
+                      isDark={isDark}
+                      canEditWorkspace={true}
+                      onTaskClick={setSelectedTask}
+                      onChange={handleDocumentChange}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-full">
+                    <GraphView 
+                      workspaceId={activeWorkspaceId || undefined}
+                      onNodeClick={(node) => {
+                        console.log("Node clicked:", node);
+                        const nodeId = node.id || '';
+                        
+                        // Handle document nodes
+                        if (node.type === "note" || nodeId.startsWith("doc_")) {
+                          const docId = nodeId.startsWith("doc_") 
+                            ? nodeId.replace("doc_", "") 
+                            : nodeId;
+                          setActiveDocument(docId);
+                          setViewMode('editor'); // Switch to editor when opening a document
+                        } else if (nodeId.startsWith("board_")) {
+                          const boardId = nodeId.replace("board_", "");
+                          setActiveBoard(boardId);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </>
           )
@@ -497,7 +547,6 @@ export default function Docs() {
             </div>
           </div>
         )}
-        </div>
       </div>
 
       {/* Task Details Drawer */}
