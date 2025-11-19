@@ -246,6 +246,7 @@ export default function Docs() {
     return () => observer.disconnect();
   }, []);
 
+
   // Handle task link clicks
   useEffect(() => {
     const handleTaskLinkClick = (event: MouseEvent) => {
@@ -303,7 +304,8 @@ export default function Docs() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content with comments */}
+      <div className="flex-1 flex overflow-hidden">
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {documents.filter((doc) => !doc.trashed).length === 0 ? (
           <div
@@ -447,7 +449,7 @@ export default function Docs() {
               </div>
 
               {/* Editor Container */}
-              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6 relative">
                 <DocumentEditor
                   key={activeDocument.id}
                   document={activeDocument}
@@ -478,6 +480,7 @@ export default function Docs() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Task Details Drawer */}

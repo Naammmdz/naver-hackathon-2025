@@ -12,6 +12,8 @@ import { useWorkspaceStore } from '@/store/workspaceStore';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { useWorkspaceYjs } from '@/hooks/useWorkspaceYjs';
 import { getColor } from '@/lib/userColors';
+import { createThreadStore } from '@/lib/blocknote/threadStore';
+import { createResolveUsers } from '@/lib/blocknote/resolveUsers';
 
 interface DocumentEditorProps {
   document: Document;
@@ -386,6 +388,20 @@ export function DocumentEditor({
     headingEnsuredRef.current.delete(document?.id || '');
   }, [document?.id]);
   
+  const commentRole: "comment" | "editor" = canEditWorkspace ? 'editor' : 'comment';
+  
+  // Create threadStore for BlockNote comments
+  const threadStore = useMemo(() => {
+    if (!ydoc || !document?.id || !userId) {
+      return null;
+    }
+    const threadsMap = ydoc.getMap(`threads-${document.id}`);
+    return createThreadStore(userId, threadsMap, commentRole);
+  }, [ydoc, document?.id, userId, commentRole]);
+
+  // Create resolveUsers function
+  const resolveUsers = useMemo(() => createResolveUsers(), []);
+  
   // Create editor config - only include collaboration when ready
   const editorConfig = useMemo(() => {
     // If we've had any errors, disable collaboration immediately to prevent data loss
@@ -394,6 +410,10 @@ export function DocumentEditor({
       return {};
     }
     
+    const config: any = {};
+    
+    // Comments require collaboration fragment to work properly (for UndoManager and Yjs sync)
+    // Only enable comments when collaboration is ready
     if (shouldCreateCollabEditor && provider && fragment) {
       const providerAny = provider as any;
       const displayName =
@@ -405,16 +425,24 @@ export function DocumentEditor({
       // Use consistent color based on userId (same as useUserIdentityAwareness)
       // This prevents conflicts with user online display in header
       const userColor = getColor(userId || 'anonymous');
-      const config = {
-        collaboration: {
+      config.collaboration = {
           provider: provider as any,
           fragment: fragment,
           user: {
             name: displayName,
             color: userColor, // Use consistent color instead of random
           },
-        },
       };
+      
+      // Add comments if threadStore is available (only when collaboration is ready)
+      // resolveUsers must be at top level, not inside comments
+      if (threadStore && resolveUsers) {
+        config.resolveUsers = resolveUsers;
+        config.comments = {
+          threadStore,
+      };
+      }
+      
       console.log('[BlockNote Collab] Editor config WITH collaboration:');
       console.log('  - hasProvider:', !!config.collaboration.provider);
       console.log('  - providerType:', config.collaboration.provider?.constructor?.name);
@@ -422,13 +450,17 @@ export function DocumentEditor({
       console.log('  - hasFragment:', !!config.collaboration.fragment);
       console.log('  - fragmentName:', `document-${document?.id}`);
       console.log('  - user:', JSON.stringify(config.collaboration.user));
+      console.log('  - hasComments:', !!config.comments);
+      console.log('  - hasThreadStore:', !!threadStore);
+      console.log('  - hasResolveUsers:', !!config.resolveUsers);
       return config;
     }
+    
     // Return empty config when collaboration is not ready
-    // Editor will be created but without collaboration
+    // Editor will be created but without collaboration and comments
     console.log('[BlockNote Collab] Editor config WITHOUT collaboration (waiting)');
     return {};
-  }, [shouldCreateCollabEditor, provider, fragment, userId, document?.id, hasError]);
+  }, [shouldCreateCollabEditor, provider, fragment, userId, document?.id, hasError, threadStore, resolveUsers, user]);
 
   // Create editor - use a key that changes when collaboration becomes available
   // This forces useCreateBlockNote to create a new editor instance with collaboration
@@ -509,6 +541,22 @@ export function DocumentEditor({
     return function EditorWrapperComponent() {
       // This editor will be created fresh when the wrapper is recreated
       const wrappedEditor = useCreateBlockNote(editorConfig);
+      
+      // Log editor creation with comments info
+      useEffect(() => {
+        if (wrappedEditor) {
+          const editorAny = wrappedEditor as any;
+          console.log('[EditorWrapper] Editor created:');
+          console.log('  - hasComments:', !!editorConfig.comments);
+          console.log('  - hasThreadStore:', !!editorConfig.comments?.threadStore);
+          console.log('  - hasResolveUsers:', !!editorConfig.resolveUsers);
+          console.log('  - editor.comments:', !!editorAny.comments);
+          console.log('  - editor.threadStore:', !!editorAny.threadStore);
+          
+          // No additional comment handling needed when using YjsThreadStore.
+          // BlockNote automatically creates and restores marks via Yjs updates.
+        }
+      }, [wrappedEditor, editorConfig, threadStore]);
       
       // Stable onChange handler for wrapped editor - use ref to avoid recreating
       const wrappedOnChangeRef = useRef(onChange);
@@ -929,6 +977,7 @@ export function DocumentEditor({
       }, [wrappedEditor, document?.id]);
 
   return (
+      <>
       <BlockNoteView
           editor={wrappedEditor}
           onChange={wrappedHandleChange}
@@ -936,6 +985,7 @@ export function DocumentEditor({
         className="rounded-lg border border-border/50 shadow-sm"
         slashMenu={false}
         editable={canEditWorkspace}
+        comments={true}
       >
         {canEditWorkspace && (
           <CustomSlashMenu
@@ -946,6 +996,7 @@ export function DocumentEditor({
           />
         )}
       </BlockNoteView>
+      </>
       );
     };
   }, [editorConfig, isDark, canEditWorkspace, document.id, onTaskClick, hasError]); // Remove document.title to prevent re-render
