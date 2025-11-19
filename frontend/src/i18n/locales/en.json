@@ -609,6 +609,7 @@
       "statusLabel": "Status",
       "taskTimeline": "Task Timeline",
       "teamMembers": "Team Members",
+      "noBoardsYet": "No boards yet",
       "thisWeek": "This Week",
       "todo": "Todo",
       "total": "Total",
@@ -624,6 +625,20 @@
       "viewAllTasks": "View All",
       "whiteboard": "Whiteboard",
       "withDueDates": "With Due Dates"
+    },
+    "Index": {
+      "autoSaveDescription": "Auto-save and sync status between Kanban, List and Calendar modes.",
+      "cannotLoadTasks": "Cannot load tasks. Please try again in a few minutes.",
+      "createFirstTaskTitle": "Turn ideas into action",
+      "createFirstTaskDescription": "Plan, assign and track your team's progress on a visual task board. Create your first task to kickstart this week's goals.",
+      "createNewTask": "Create new task",
+      "dragDropDescription": "Drag and drop to prioritize and automatically update completion deadlines.",
+      "keyboardShortcutTip": "Tip: press Shift + N to create a task anytime.",
+      "loadingTasks": "Loading task list...",
+      "openSmartParser": "Open Smart Parser",
+      "retryLoad": "Try reload",
+      "smartParserDescription": "Use Smart Parser to create tasks from natural descriptions in just a few seconds.",
+      "toggleSidebar": "Toggle task sidebar"
     }
   },
   "analytics": {

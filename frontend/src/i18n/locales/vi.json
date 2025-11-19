@@ -838,6 +838,7 @@
       "statusLabel": "Trạng thái",
       "taskTimeline": "Dòng Thời Gian Nhiệm Vụ",
       "teamMembers": "Thành Viên Nhóm",
+      "noBoradsYet": "Chưa có bảng",
       "thisWeek": "Tuần Này",
       "todo": "Cần Làm",
       "total": "Tổng Số",
@@ -853,6 +854,20 @@
       "viewAllTasks": "Xem Tất Cả",
       "whiteboard": "Bảng trắng",
       "withDueDates": "Có Hạn Chót"
+    },
+    "Index": {
+      "autoSaveDescription": "Auto-save và đồng bộ trạng thái giữa chế độ Kanban, List và Calendar.",
+      "cannotLoadTasks": "Không thể tải công việc. Vui lòng thử lại sau ít phút.",
+      "createFirstTaskTitle": "Biến ý tưởng thành hành động",
+      "createFirstTaskDescription": "Lập kế hoạch, phân công và theo dõi tiến độ của đội nhóm trên một bảng công việc trực quan. Tạo task đầu tiên để khởi động mục tiêu tuần này.",
+      "createNewTask": "Tạo task mới",
+      "dragDropDescription": "Kéo thả để sắp xếp ưu tiên và tự động cập nhật hạn hoàn thành.",
+      "keyboardShortcutTip": "Mẹo: nhấn Shift + N để tạo task bất cứ lúc nào.",
+      "loadingTasks": "Đang tải danh sách công việc...",
+      "openSmartParser": "Mở Smart Parser",
+      "retryLoad": "Thử tải lại",
+      "smartParserDescription": "Dùng Smart Parser để tạo task từ mô tả tự nhiên chỉ với vài giây.",
+      "toggleSidebar": "Toggle task sidebar"
     },
     "GraphView": {
       "containerNotAvailable": "Container không khả dụng",

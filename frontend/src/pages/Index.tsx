@@ -295,7 +295,7 @@ const handleDragEnd = (event: DragEndEvent) => {
       return (
         <div className="flex min-h-[520px] items-center justify-center gap-3 rounded-3xl border border-border/60 bg-background/80 px-10 py-12 text-sm text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <span>Đang tải danh sách công việc...</span>
+          <span>{t('components.Index.loadingTasks')}</span>
         </div>
       );
     }
@@ -303,10 +303,10 @@ const handleDragEnd = (event: DragEndEvent) => {
     if (error) {
       return (
         <div className="flex min-h-[520px] flex-col items-center justify-center gap-4 rounded-3xl border border-destructive/30 bg-destructive/5 px-10 py-12 text-center text-sm text-destructive">
-          <p>Không thể tải công việc. Vui lòng thử lại sau ít phút.</p>
+          <p>{t('components.Index.cannotLoadTasks')}</p>
           <Button variant="destructive" size="sm" className="gap-2" onClick={() => void loadTasks()}>
             <Sparkles className="h-4 w-4" />
-            Thử tải lại
+            {t('components.Index.retryLoad')}
           </Button>
         </div>
       );
@@ -357,33 +357,32 @@ const handleDragEnd = (event: DragEndEvent) => {
 
           <div className="space-y-3">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              Biến ý tưởng thành hành động
+              {t('components.Index.createFirstTaskTitle')}
             </h2>
             <p className="text-sm leading-relaxed text-muted-foreground/80">
-              Lập kế hoạch, phân công và theo dõi tiến độ của đội nhóm trên một bảng công việc trực quan.
-              Tạo task đầu tiên để khởi động mục tiêu tuần này.
+              {t('components.Index.createFirstTaskDescription')}
             </p>
           </div>
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground/75">
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-              <span>Auto-save và đồng bộ trạng thái giữa chế độ Kanban, List và Calendar.</span>
+              <span>{t('components.Index.autoSaveDescription')}</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
-              <span>Dùng Smart Parser để tạo task từ mô tả tự nhiên chỉ với vài giây.</span>
+              <span>{t('components.Index.smartParserDescription')}</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-              <span>Kéo thả để sắp xếp ưu tiên và tự động cập nhật hạn hoàn thành.</span>
+              <span>{t('components.Index.dragDropDescription')}</span>
             </div>
           </div>
 
           <div className="flex flex-col items-center gap-3 sm:flex-row">
             <Button size="lg" className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all" onClick={() => handleNewTask()}>
               <Sparkles className="h-4 w-4" />
-              Tạo task mới
+              {t('components.Index.createNewTask')}
             </Button>
             <Button
               size="lg"
@@ -392,12 +391,14 @@ const handleDragEnd = (event: DragEndEvent) => {
               onClick={() => setShowSmartParser(true)}
             >
               <Zap className="h-4 w-4" />
-              Mở Smart Parser
+              {t('components.Index.openSmartParser')}
             </Button>
           </div>
 
           <p className="text-xs text-muted-foreground/70">
-            Mẹo: nhấn <span className="rounded-md bg-muted px-1.5 py-0.5 text-foreground">Shift + N</span> để tạo task bất cứ lúc nào.
+            {t('components.Index.keyboardShortcutTip').split('Shift + N')[0]}
+            <span className="rounded-md bg-muted px-1.5 py-0.5 text-foreground">Shift + N</span>
+            {t('components.Index.keyboardShortcutTip').split('Shift + N')[1]}
           </p>
         </div>
       </div>
@@ -433,7 +434,7 @@ const handleDragEnd = (event: DragEndEvent) => {
             <ChevronLeft className="h-4 w-4 text-primary" />
           )}
         </div>
-        <span className="sr-only">Toggle task sidebar</span>
+        <span className="sr-only">{t('components.Index.toggleSidebar')}</span>
       </div>
 
       <div className="relative flex-1 overflow-hidden">
