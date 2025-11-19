@@ -202,7 +202,7 @@ export default function DocumentSidebar({
             style={{ paddingLeft: `${8 + (level + 1) * 16}px` }}
           >
             <span className="opacity-40 transition-opacity group-hover:opacity-60">└──</span>
-            No subdocuments
+            {t('components.DocumentSidebar.noSubdocuments')}
           </div>
         )}
       </div>
@@ -298,7 +298,7 @@ export default function DocumentSidebar({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/60" />
             <Input
-              placeholder="Search docs..."
+              placeholder={t('components.DocumentSidebar.searchDocsPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-8 text-sm bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30 rounded-lg"
@@ -327,7 +327,7 @@ export default function DocumentSidebar({
                       onClick={handleCreateDocument}
                       className="mt-1 h-auto p-0 text-xs text-primary hover:text-primary/90 transition-colors"
                     >
-                      Create your first document
+                      {t('components.DocumentSidebar.createFirstDocument')}
                     </Button>
                   </>
                 )}
@@ -357,7 +357,7 @@ export default function DocumentSidebar({
             className="w-full justify-start h-8 px-2 text-xs gap-2 hover:bg-muted transition-colors"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            {showTrash ? 'Back to Documents' : 'View Trash'}
+            {showTrash ? t('components.DocumentSidebar.backToDocuments') : t('components.DocumentSidebar.viewTrash')}
           </Button>
         </div>
       </div>
@@ -366,17 +366,17 @@ export default function DocumentSidebar({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Document</DialogTitle>
+            <DialogTitle>{t('components.DocumentSidebar.deleteDocument')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this document? It will be moved to trash and can be restored later.
+              {t('components.DocumentSidebar.deleteDocumentDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
+              {t('components.DocumentSidebar.cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Delete
+              {t('components.DocumentSidebar.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -386,17 +386,17 @@ export default function DocumentSidebar({
       <Dialog open={permanentDeleteDialogOpen} onOpenChange={setPermanentDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Permanently</DialogTitle>
+            <DialogTitle>{t('components.DocumentSidebar.deletePermanently')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to permanently delete this document? This action cannot be undone.
+              {t('components.DocumentSidebar.deletePermanentlyDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermanentDeleteDialogOpen(false)}>
-              Cancel
+              {t('components.DocumentSidebar.cancel')}
             </Button>
             <Button variant="destructive" onClick={handlePermanentDeleteConfirm}>
-              Delete Permanently
+              {t('components.DocumentSidebar.deletePermanentlyButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
