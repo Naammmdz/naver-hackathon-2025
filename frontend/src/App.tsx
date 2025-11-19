@@ -6,14 +6,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { apiAuthContext } from "@/lib/api/authContext";
 import { useAuth } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { FocusFlyProvider } from "./features/focusFly/FocusFlyProvider";
-import AppWrapper from "./pages/AppWrapper";
-import Landing from "./pages/Landing";
-import NotFound from "./pages/NotFound";
-import SignInPage from "./pages/SignIn";
-import SignUpPage from "./pages/SignUp";
+
+// Lazy load pages for better performance
+const Landing = lazy(() => import("./pages/Landing"));
+const AppWrapper = lazy(() => import("./pages/AppWrapper"));
+const SignInPage = lazy(() => import("./pages/SignIn"));
+const SignUpPage = lazy(() => import("./pages/SignUp"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -105,21 +107,37 @@ const App = () => {
           <Toaster />
           <Sonner />
           {!isLandingPage && <GlobalChatPanel />}
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route
-              path="/app"
-              element={
-                <ProtectedRoute>
-                  <AppWrapper />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/sign-in/*" element={<SignInPage />} />
-            <Route path="/sign-up/*" element={<SignUpPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-screen bg-background">
+              <div className="flex flex-col items-center gap-4">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              </div>
+            </div>
+          }>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/sign-in/*" element={<SignInPage />} />
+              <Route path="/sign-up/*" element={<SignUpPage />} />
+              
+              {/* Protected App Routes */}
+              <Route
+                path="/app/*"
+                element={
+                  <ProtectedRoute>
+                    <AppWrapper />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Redirect old /app to /app/home for consistency */}
+              <Route path="/app" element={<Navigate to="/app/home" replace />} />
+              
+              {/* 404 - Catch all unmatched routes */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </FocusFlyProvider>
       </TooltipProvider>
     </QueryClientProvider>

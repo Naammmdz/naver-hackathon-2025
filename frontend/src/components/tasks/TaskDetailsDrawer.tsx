@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,15 +17,12 @@ import { Separator } from "@/components/ui/separator";
 import { formatRelativeDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Task } from "@/types/task";
-import { Calendar, CheckSquare, Clock, Edit, Tag, X, Mail } from "lucide-react";
+import { Calendar, CheckSquare, Clock, Edit, Tag, User, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TaskDocLinker } from "./TaskDocLinker";
-import { TaskReminderSettings } from "./TaskReminderSettings";
-import { sendTaskReminder } from "@/services/emailService";
-import { useToast } from "@/hooks/use-toast";
-import { useUser } from "@clerk/clerk-react";
 
 interface TaskDetailsDrawerProps {
   open: boolean;
@@ -43,10 +41,8 @@ export function TaskDetailsDrawer({
 }: TaskDetailsDrawerProps) {
   const { t } = useTranslation();
   const { updateTask, addSubtask, updateSubtask, deleteSubtask } = useTaskStore();
+  const { members } = useWorkspaceStore();
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
-  const [isSendingReminder, setIsSendingReminder] = useState(false);
-  const { toast } = useToast();
-  const { user } = useUser();
 
   if (!task) return null;
 
@@ -60,12 +56,14 @@ export function TaskDetailsDrawer({
   };
 
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-  const isDueToday = task.dueDate && 
+  const isDueToday = task.dueDate &&
     new Date(task.dueDate).toDateString() === new Date().toDateString();
 
   const completedSubtasks = task.subtasks.filter(st => st.done).length;
   const totalSubtasks = task.subtasks.length;
   const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
+
+  const assignee = members.find(m => m.userId === task.assigneeId);
 
   const handleAddSubtask = () => {
     if (newSubtaskTitle.trim()) {
@@ -89,8 +87,8 @@ export function TaskDetailsDrawer({
                   "w-3 h-3 rounded-full flex-shrink-0",
                   getPriorityColor(task.priority)
                 )} />
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={cn(
                     "text-xs",
                     task.status === "Done" && "bg-success/10 text-success border-success",
@@ -121,9 +119,6 @@ export function TaskDetailsDrawer({
         </DrawerHeader>
 
         <div className="px-4 space-y-6 overflow-y-auto flex-1">
-          {/* Reminder Settings - Moved to top for visibility */}
-          <TaskReminderSettings task={task} />
-
           {/* Task Meta Information */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
@@ -133,7 +128,29 @@ export function TaskDetailsDrawer({
                   {task.priority}
                 </Badge>
               </div>
-              
+
+              <div>
+                <h4 className="text-sm font-medium mb-1">{t('taskDetails.assignee')}</h4>
+                {assignee ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={undefined} />
+                      <AvatarFallback className="text-[10px]">
+                        {assignee.fullName?.slice(0, 2).toUpperCase() || assignee.userId.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-muted-foreground">
+                      {assignee.fullName || assignee.userId}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>{t('taskDetails.unassigned')}</span>
+                  </div>
+                )}
+              </div>
+
               {task.dueDate && (
                 <div>
                   <h4 className="text-sm font-medium mb-1">{t('taskDetails.dueDate')}</h4>
@@ -160,7 +177,7 @@ export function TaskDetailsDrawer({
                   <span>{formatRelativeDate(task.createdAt)}</span>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="text-sm font-medium mb-1">{t('taskDetails.lastUpdated')}</h4>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -210,14 +227,14 @@ export function TaskDetailsDrawer({
 
             <div className="space-y-2 mb-3">
               {task.subtasks.map((subtask) => (
-                <div 
-                  key={subtask.id} 
+                <div
+                  key={subtask.id}
                   className="group flex items-center gap-2 p-2 rounded border cursor-pointer hover-surface"
                   onClick={() => handleToggleSubtask(subtask.id, !subtask.done)}
                 >
                   <Checkbox
                     checked={subtask.done}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       handleToggleSubtask(subtask.id, !!checked)
                     }
                     onClick={(e) => e.stopPropagation()} // Prevent double triggering

@@ -22,6 +22,7 @@ export interface WorkspaceMember {
   id: string;
   userId: string;
   workspaceId: string;
+  fullName?: string;
   role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
   joinedAt: string;
   user?: {

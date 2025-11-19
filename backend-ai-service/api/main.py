@@ -19,7 +19,7 @@ if str(Path(__file__).parent.parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.logger import get_logger
-from api.routes import documents, query, workspaces, health, graph, tasks, boards, hitl, indexing
+from api.routes import documents, query, workspaces, health, graph, tasks, boards, hitl, indexing, memories
 
 logger = get_logger(__name__)
 
@@ -82,6 +82,7 @@ app.include_router(graph.router, prefix="/api/v1", tags=["Graph"])
 app.include_router(tasks.router, prefix="/api/v1", tags=["Task Analysis"])
 app.include_router(boards.router, prefix="/api/v1", tags=["Board Visualization"])
 app.include_router(hitl.router, prefix="/api/v1", tags=["HITL"])
+app.include_router(memories.router, prefix="/api/v1", tags=["Memory"])
 
 
 @app.get("/")

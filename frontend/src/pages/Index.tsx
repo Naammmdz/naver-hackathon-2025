@@ -24,6 +24,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CheckSquare, ChevronLeft, ChevronRight, Loader2, Plus, Sparkles, Zap } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 export default function Index({ onViewChange, onSmartCreate }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void; onSmartCreate?: () => void }) {
   const { t } = useTranslation();
@@ -407,34 +408,45 @@ const handleDragEnd = (event: DragEndEvent) => {
   return (
     <div className="flex h-full bg-background">
       <div
-        className={`hidden overflow-hidden transition-all duration-300 ease-out lg:block ${
+        className={`relative hidden overflow-hidden transition-all duration-300 ease-out lg:block ${
           sidebarCollapsed ? "w-0" : "w-64"
         }`}
       >
-        <AppSidebar className="h-full" onSmartCreate={onSmartCreate} />
+        {!sidebarCollapsed && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className={cn(
+              "group flex h-8 w-8 items-center justify-center rounded-full border border-sidebar-border/50 bg-card/85 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all",
+              "absolute top-4 right-3 z-10",
+            )}
+            title="Ẩn sidebar task"
+            aria-label="Hide task sidebar"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
+        {!sidebarCollapsed && (
+          <AppSidebar
+            className="h-full"
+            onSmartCreate={onSmartCreate}
+            onToggleCollapse={toggleSidebar}
+          />
+        )}
       </div>
-      <div
-        className="group relative hidden w-1 flex-shrink-0 cursor-pointer select-none items-center justify-center bg-border transition hover:bg-primary/60 lg:flex"
+      {sidebarCollapsed && (
+        <div className="hidden w-12 items-start justify-center pt-4 lg:flex">
+          <button
+            type="button"
         onClick={toggleSidebar}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            toggleSidebar();
-          }
-        }}
-      >
-        <div className="absolute left-1/2 top-1/2 hidden h-8 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground/40 lg:block" />
-        <div className="absolute right-0 top-1/2 flex h-10 w-6 -translate-y-1/2 items-center justify-center opacity-0 transition-opacity group-hover:opacity-80">
-          {sidebarCollapsed ? (
-            <ChevronRight className="h-4 w-4 text-primary" />
-          ) : (
-            <ChevronLeft className="h-4 w-4 text-primary" />
-          )}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sidebar-border/60 bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+            title="Hiện sidebar task"
+            aria-label="Show task sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-        <span className="sr-only">Toggle task sidebar</span>
-      </div>
+      )}
 
       <div className="relative flex-1 overflow-hidden">
         <FocusFlyModal onComplete={handleFocusComplete} />

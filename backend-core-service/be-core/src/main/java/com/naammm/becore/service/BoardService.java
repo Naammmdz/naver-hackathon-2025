@@ -30,6 +30,7 @@ public class BoardService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper;
+    private final GlobalSearchService globalSearchService;
 
     public List<Board> getAllBoards() {
         return boardRepository.findByUserIdOrderByUpdatedAtDesc(UserContext.requireUserId());
@@ -60,7 +61,9 @@ public class BoardService {
         if (!StringUtils.hasText(board.getTitle())) {
             board.setTitle("Untitled Board");
         }
-        return boardRepository.save(board);
+        Board saved = boardRepository.save(board);
+        globalSearchService.indexBoard(saved);
+        return saved;
     }
 
     public Board updateBoard(String id, Board payload) {
@@ -94,6 +97,7 @@ public class BoardService {
                         publishMetadataUpdate("board", id, "CONTENT_UPDATE", null);
                     }
                     
+                    globalSearchService.indexBoard(saved);
                     return saved;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
@@ -117,6 +121,7 @@ public class BoardService {
                     // Publish metadata update to Redis
                     publishMetadataUpdate("board", id, "CONTENT_UPDATE", null);
                     
+                    globalSearchService.indexBoard(saved);
                     return saved;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
@@ -152,5 +157,6 @@ public class BoardService {
             throw new SecurityException("Access denied");
         }
         boardRepository.delete(board);
+        globalSearchService.deleteBoard(id);
     }
 }

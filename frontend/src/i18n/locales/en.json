@@ -48,7 +48,7 @@
       "medium": "Medium",
       "low": "Low",
       "highPriority": "High Priority",
-      "mediumPriority": "Medium Priority", 
+      "mediumPriority": "Medium Priority",
       "lowPriority": "Low Priority"
     },
     "status": {
@@ -84,7 +84,10 @@
     "addTag": "Add tag",
     "createTask": "Create task to organize your work",
     "updateTask": "Update task details",
-    "traditionalForm": "Traditional Form"
+    "traditionalForm": "Traditional Form",
+    "assignee": "Assignee",
+    "selectAssignee": "Select assignee",
+    "unassigned": "Unassigned"
   },
   "views": {
     "board": "Board",
@@ -125,7 +128,7 @@
   },
   "tableHeaders": {
     "task": "Task",
-    "status": "Status", 
+    "status": "Status",
     "priority": "Priority",
     "dueDate": "Due Date",
     "updated": "Updated",
@@ -134,7 +137,7 @@
     "noTasksYet": "No tasks yet. Create your first task!",
     "clearSort": "Clear sorting",
     "sortBy": "Sort by",
-    "sortAsc": "Click to sort descending", 
+    "sortAsc": "Click to sort descending",
     "sortDesc": "Click to clear sorting"
   },
   "columns": {
@@ -253,7 +256,9 @@
     "add": "Add",
     "taskId": "Task ID",
     "createdOn": "Created on",
-    "edit": "Edit"
+    "edit": "Edit",
+    "assignee": "Assignee",
+    "unassigned": "Unassigned"
   },
   "onlineUsers": {
     "activeNow": "Active now",
@@ -382,7 +387,7 @@
       "subtitle": "Choose your seat for the focus flight experience",
       "seat": "Seat",
       "occupied": "Occupied",
-      "available": "Available", 
+      "available": "Available",
       "selected": "Selected"
     },
     "boardingPass": {
@@ -419,7 +424,7 @@
       "releaseToStart": "Release to start flight"
     },
     "map": {
-      "flying": "Flying", 
+      "flying": "Flying",
       "progress": "Progress",
       "timeRemaining": "Time Remaining",
       "flightInfo": "Flight Info",

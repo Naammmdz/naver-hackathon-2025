@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { SidebarItem } from '@/components/layout/SidebarItem';
 import {
   Dialog,
   DialogContent,
@@ -26,10 +27,21 @@ import {
   Plus,
   Search,
   Trash2,
+  ChevronLeft
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 
-export default function DocumentSidebar() {
+const sidebarSurfaceStyle: CSSProperties = {
+  background: 'linear-gradient(180deg, color-mix(in oklch, var(--sidebar) 98%, transparent) 0%, color-mix(in oklch, var(--sidebar) 88%, transparent) 100%)',
+  borderColor: 'color-mix(in oklch, var(--sidebar-border) 80%, transparent)',
+  boxShadow: '0 20px 45px color-mix(in oklch, var(--shadow-color) 12%, transparent)',
+};
+
+export default function DocumentSidebar({
+  onCollapse,
+}: {
+  onCollapse?: () => void;
+}) {
   const {
     documents,
     activeDocumentId,
@@ -80,7 +92,7 @@ export default function DocumentSidebar() {
     e.stopPropagation();
     const newExpanded = new Set(expandedDocs);
     const newShowNoSubdocs = new Set(showNoSubdocs);
-    
+
     if (hasChildren(docId)) {
       // Document has children - toggle expansion
       if (newExpanded.has(docId)) {
@@ -98,7 +110,7 @@ export default function DocumentSidebar() {
         newShowNoSubdocs.add(docId);
       }
     }
-    
+
     setExpandedDocs(newExpanded);
     setShowNoSubdocs(newShowNoSubdocs);
   };
@@ -110,122 +122,83 @@ export default function DocumentSidebar() {
     const children = getChildDocuments(doc.id);
     const canExpand = hasChildren(doc.id);
 
+    const actions = showTrash ? (
+      <>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            restoreDocument(doc.id);
+          }}
+        >
+          <FileText className="h-4 w-4 mr-2" />
+          Restore
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePermanentDeleteClick(doc.id);
+          }}
+          className="text-destructive"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete Permanently
+        </DropdownMenuItem>
+      </>
+    ) : (
+      <>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            addDocument('Untitled', doc.id);
+          }}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create Subdocument
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRename(doc.id, doc.title);
+          }}
+        >
+          <Edit2 className="h-4 w-4 mr-2" />
+          Rename
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDeleteClick(doc.id);
+          }}
+          className="text-destructive"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </DropdownMenuItem>
+      </>
+    );
+
     return (
       <div key={doc.id}>
-        <div
-          className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all ${
-            activeDocumentId === doc.id 
-              ? 'bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-muted/50 dark:text-muted-foreground dark:ring-muted-foreground/20 hover-surface' 
-              : 'hover-surface text-muted-foreground'
-          }`}
-          style={{ paddingLeft: `${8 + level * 16}px` }}
+        <SidebarItem
+          title={doc.title}
+          isActive={activeDocumentId === doc.id}
+          isExpanded={isExpanded}
+          level={level}
+          onToggleExpand={(e) => toggleExpanded(doc.id, e)}
           onClick={() => setActiveDocument(doc.id)}
-        >
-          <span 
-            className={`flex-shrink-0 text-muted-foreground transition-transform cursor-pointer hover:text-foreground`}
-            onClick={(e) => toggleExpanded(doc.id, e)}
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-3 w-3" />
-            ) : (
-              <ChevronRight className="h-3 w-3" />
-            )}
-          </span>
-          
-          {editingId === doc.id ? (
-            <Input
-              value={editingTitle}
-              onChange={(e) => setEditingTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleRenameSubmit(doc.id);
-                } else if (e.key === 'Escape') {
-                  handleRenameCancel();
-                }
-              }}
-              onBlur={() => handleRenameSubmit(doc.id)}
-              autoFocus
-              className="h-7 flex-1"
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <span className="flex-1 truncate text-sm">{doc.title}</span>
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 opacity-60 hover:opacity-100 transition-opacity"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {showTrash ? (
-                <>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      restoreDocument(doc.id);
-                    }}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Restore
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePermanentDeleteClick(doc.id);
-                    }}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Permanently
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addDocument('Untitled', doc.id);
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Subdocument
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRename(doc.id, doc.title);
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Rename
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(doc.id);
-                    }}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          isEditing={editingId === doc.id}
+          editingValue={editingTitle}
+          onEditChange={setEditingTitle}
+          onEditSubmit={() => handleRenameSubmit(doc.id)}
+          onEditCancel={handleRenameCancel}
+          actions={actions}
+        />
 
         {/* Render children if expanded, or "No subdocuments" message */}
         {isExpanded && children.map(child => renderDocumentItem(child, level + 1))}
         {showNoSubdocsMessage && (
-          <div 
-            className="group flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground/70 italic transition-colors hover:text-primary/80 hover:bg-primary/10 dark:hover:bg-muted/40 dark:hover:text-muted-foreground rounded-md"
+          <div
+            className="group flex items-center gap-2 px-2 py-1 text-xs text-sidebar-foreground/70 italic transition-colors hover:text-primary/80 hover:bg-primary/10 dark:hover:bg-muted/40 dark:hover:text-sidebar-foreground rounded-md"
             style={{ paddingLeft: `${8 + (level + 1) * 16}px` }}
           >
             <span className="opacity-40 transition-opacity group-hover:opacity-60">└──</span>
@@ -286,14 +259,17 @@ export default function DocumentSidebar() {
 
   return (
     <>
-      <div className="w-64 border-r bg-card flex flex-col h-full rounded-tl-lg rounded-bl-lg">
+      <div
+        className="w-64 bg-sidebar/90 text-sidebar-foreground flex flex-col h-full rounded-3xl shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:shadow-[0_28px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+        style={sidebarSurfaceStyle}
+      >
         {/* Header */}
-        <div className="p-4 border-b space-y-4">
+        <div className="p-4 border-b border-sidebar-border/40 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
               {showTrash ? 'Trash' : 'Documents'}
             </h2>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               {!showTrash && (
                 <Button
                   size="sm"
@@ -304,35 +280,46 @@ export default function DocumentSidebar() {
                   <Plus className="h-4 w-4" />
                 </Button>
               )}
+              {onCollapse && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0 border border-sidebar-border/50 rounded-full hover:border-primary/50 hover:text-primary"
+                  onClick={onCollapse}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Ẩn sidebar tài liệu</span>
+                </Button>
+              )}
             </div>
           </div>
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/60" />
             <Input
               placeholder="Search docs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-8 text-sm bg-muted/50 border-0 focus:bg-background rounded-lg"
+              className="pl-9 h-8 text-sm bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30 rounded-lg"
             />
           </div>
         </div>
 
         {/* Document List */}
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0 [&>[data-radix-scroll-area-viewport]]:!overflow-x-hidden">
           <div className="p-2 space-y-1">
             {filteredDocuments.length === 0 ? (
-              <div className="group text-center py-12 px-4 text-muted-foreground/75 text-sm transition-colors hover:text-primary/80 hover:bg-primary/5 dark:hover:bg-muted/40 rounded-xl border border-dashed border-muted-foreground/20 hover:border-primary/30">
+              <div className="group text-center py-12 px-4 text-sidebar-foreground/70 text-sm transition-colors hover:text-primary/80 hover:bg-primary/5 dark:hover:bg-muted/40 rounded-xl border border-dashed border-sidebar-border/30 hover:border-primary/30">
                 {searchQuery ? (
                   <>
-                    <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/60 group-hover:text-primary/70 transition-colors" />
+                    <FileText className="h-10 w-10 mx-auto mb-2 text-sidebar-foreground/50 group-hover:text-primary/70 transition-colors" />
                     <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">No documents found</p>
-                    <p className="text-xs text-muted-foreground/70 group-hover:text-primary/60 transition-colors">Try a different search term</p>
+                    <p className="text-xs text-sidebar-foreground/65 group-hover:text-primary/60 transition-colors">Try a different search term</p>
                   </>
                 ) : (
                   <>
-                    <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground/60 group-hover:text-primary/70 transition-colors" />
+                    <FileText className="h-10 w-10 mx-auto mb-2 text-sidebar-foreground/50 group-hover:text-primary/70 transition-colors" />
                     <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">No documents yet</p>
                     <Button
                       variant="link"
@@ -354,10 +341,10 @@ export default function DocumentSidebar() {
         </ScrollArea>
 
         {/* Footer */}
-        <div className="p-3 border-t space-y-2 flex-shrink-0">
-          <div className="text-xs text-muted-foreground px-2">
+        <div className="p-3 border-t border-sidebar-border/40 space-y-2 flex-shrink-0">
+          <div className="text-xs text-sidebar-foreground/70 px-2">
             <span className="font-medium">
-              {showTrash 
+              {showTrash
                 ? `${getTrashedDocuments().length} ${getTrashedDocuments().length === 1 ? 'item' : 'items'}`
                 : `${documents.filter(doc => !doc.trashed).length} ${documents.filter(doc => !doc.trashed).length === 1 ? 'document' : 'documents'}`
               }

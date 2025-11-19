@@ -2,7 +2,7 @@ import { getColor } from '@/lib/userColors';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { useAuth } from '@clerk/clerk-react';
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface OnlineUser {
   id: string;
@@ -16,10 +16,17 @@ export function useOnlineUsers(): OnlineUser[] {
   const { activeWorkspaceId, members } = useWorkspaceStore();
   const { userId } = useAuth();
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
+  const providerCheckMountedRef = useRef(true);
 
   // Watch for provider changes (reactive)
   useEffect(() => {
+    providerCheckMountedRef.current = true;
+    
     const checkProvider = () => {
+      // Don't update state if component is unmounted
+      if (!providerCheckMountedRef.current) {
+        return;
+      }
       const p = (window as any).__WORKSPACE_PROVIDER as HocuspocusProvider | null;
       setProvider(p);
     };
@@ -35,6 +42,7 @@ export function useOnlineUsers(): OnlineUser[] {
     window.addEventListener('workspace-provider-ready', handleProviderReady);
 
     return () => {
+      providerCheckMountedRef.current = false;
       clearInterval(interval);
       window.removeEventListener('workspace-provider-ready', handleProviderReady);
     };
@@ -43,13 +51,31 @@ export function useOnlineUsers(): OnlineUser[] {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
 
   // Convert awareness states to OnlineUser array with delay to handle sync
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const changeHandlerRef = useRef<(() => void) | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (!provider?.awareness) {
-      setOnlineUsers([]);
+      if (isMountedRef.current) {
+        setOnlineUsers([]);
+      }
       return;
     }
 
     const updateUsers = () => {
+      // Don't update state if component is unmounted
+      if (!isMountedRef.current || !provider?.awareness) {
+        return;
+      }
       const users: OnlineUser[] = [];
       const selfClientId = provider.awareness.clientID;
       const states = provider.awareness.getStates() || new Map();
@@ -143,21 +169,52 @@ export function useOnlineUsers(): OnlineUser[] {
       }
 
       console.log('[useOnlineUsers] Final online users:', users.map(u => ({ id: u.id, name: u.name })));
-      setOnlineUsers(users);
+      
+      // Double check component is still mounted before updating state
+      if (isMountedRef.current) {
+        setOnlineUsers(users);
+      }
     };
 
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
     // Delay update to allow awareness sync
-    const timer = setTimeout(updateUsers, 200);
+    timerRef.current = setTimeout(updateUsers, 200);
     
-    // Also listen for changes
-    provider.awareness.on('change', () => {
-      clearTimeout(timer);
-      setTimeout(updateUsers, 200);
-    });
+    // Create change handler that clears and resets timer
+    const changeHandler = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      timerRef.current = setTimeout(updateUsers, 200);
+    };
+    
+    // Store handler reference for cleanup
+    changeHandlerRef.current = changeHandler;
+    
+    // Listen for changes
+    provider.awareness.on('change', changeHandler);
 
     return () => {
-      clearTimeout(timer);
-      provider.awareness.off('change', updateUsers);
+      // Clear timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      // Remove event listener using stored handler reference
+      if (changeHandlerRef.current && provider?.awareness) {
+        try {
+          provider.awareness.off('change', changeHandlerRef.current);
+        } catch (err) {
+          // Ignore errors during cleanup (provider might be destroyed)
+          console.warn('[useOnlineUsers] Error removing event listener:', err);
+        }
+        changeHandlerRef.current = null;
+      }
     };
   }, [provider, members, userId]);
 

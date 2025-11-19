@@ -14,7 +14,7 @@ import {
   Settings,
   X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ClickupSidebarProps {
@@ -23,6 +23,12 @@ interface ClickupSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const sidebarSurfaceStyle: CSSProperties = {
+  background: 'linear-gradient(180deg, color-mix(in oklch, var(--sidebar) 98%, transparent) 0%, color-mix(in oklch, var(--sidebar) 88%, transparent) 100%)',
+  borderColor: 'color-mix(in oklch, var(--sidebar-border) 80%, transparent)',
+  boxShadow: '0 20px 45px color-mix(in oklch, var(--shadow-color) 12%, transparent)',
+};
 
 export function ClickupSidebar({
   currentView,
@@ -83,14 +89,15 @@ export function ClickupSidebar({
   return (
     <aside
       className={cn(
-        'w-64 border-r bg-card flex flex-col transition-all duration-300 ease-in-out',
+        'w-64 border bg-sidebar/90 text-sidebar-foreground flex flex-col transition-all duration-300 ease-in-out rounded-3xl shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:shadow-[0_28px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl border-sidebar-border/50',
         !isOpen && 'lg:hidden absolute lg:relative left-0 top-0 h-screen z-40'
       )}
+      style={sidebarSurfaceStyle}
     >
       {/* Sidebar Header */}
       <div className="p-4 border-b space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-muted-foreground">WORKSPACE</h2>
+          <h2 className="text-sm font-semibold text-sidebar-foreground/70">WORKSPACE</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -109,10 +116,10 @@ export function ClickupSidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-sidebar-foreground/60" />
           <Input
             placeholder="Search..."
-            className="pl-9 h-8 text-xs bg-muted/50 border-0 focus:bg-background"
+            className="pl-9 h-8 text-xs bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30"
           />
         </div>
       </div>
@@ -123,7 +130,7 @@ export function ClickupSidebar({
         <div className="space-y-2">
           <button
             onClick={() => toggleList('favorites')}
-            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50 rounded transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar/60 rounded transition-colors"
           >
             <span>FAVORITES</span>
             <ChevronDown
@@ -171,7 +178,7 @@ export function ClickupSidebar({
         <div className="space-y-2">
           <button
             onClick={() => toggleList('lists')}
-            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50 rounded transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar/60 rounded transition-colors"
           >
             <span>LISTS</span>
             <ChevronDown
@@ -218,7 +225,7 @@ export function ClickupSidebar({
         <div className="space-y-2">
           <button
             onClick={() => toggleList('views')}
-            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted/50 rounded transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-sidebar-foreground/70 hover:bg-sidebar/60 rounded transition-colors"
           >
             <span>VIEWS</span>
             <ChevronDown
@@ -269,7 +276,7 @@ export function ClickupSidebar({
           <Settings className="h-4 w-4" />
           <span>Settings</span>
         </Button>
-        <p className="text-xs text-muted-foreground text-center py-2 px-2">
+        <p className="text-xs text-sidebar-foreground/70 text-center py-2 px-2">
           DevFlow © 2025
         </p>
       </div>

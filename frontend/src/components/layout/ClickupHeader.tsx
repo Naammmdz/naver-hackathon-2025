@@ -1,39 +1,57 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useBoardStore } from '@/store/boardStore';
 import { useDocumentStore } from '@/store/documentStore';
-import { useTaskStore } from '@/store/taskStore';
-import { Languages, Menu, Moon, Search, Sun } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
+import { useSearchStore } from '@/store/useSearchStore';
+import { Languages, Menu, Monitor, Moon, Palette, Search, Sun } from 'lucide-react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { NotificationBell } from './NotificationBell';
 import { OnlineUsers } from '@/components/board/OnlineUsers';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ClickupHeaderProps {
   onMenuClick?: () => void;
   currentView: 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph';
 }
 
+type ThemeMode = 'light' | 'dark' | 'system';
+
 export const ClickupHeader = memo(function ClickupHeader({
   onMenuClick,
   currentView,
 }: ClickupHeaderProps) {
-  const { filters, setFilters } = useTaskStore();
   const activeDocumentId = useDocumentStore((state) => state.activeDocumentId);
   const getDocument = useDocumentStore((state) => state.getDocument);
   const activeBoardId = useBoardStore((state) => state.activeBoardId);
   const boards = useBoardStore((state) => state.boards);
   const [isDark, setIsDark] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const { t, i18n } = useTranslation();
+  const openSearchModal = useSearchStore((state) => state.openWithPrefill);
+
+  const handleOpenSearch = () => {
+    const typeMap: Record<ClickupHeaderProps["currentView"], 'all' | 'task' | 'doc' | 'board'> = {
+      home: 'all',
+      tasks: 'task',
+      docs: 'doc',
+      board: 'board',
+      teams: 'all',
+    };
+    openSearchModal({ initialType: typeMap[currentView] });
+  };
 
   // Get context for breadcrumb
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
   const activeBoard = activeBoardId ? boards.find((b) => b.id === activeBoardId) : null;
-
-  const handleSearchChange = (value: string) => {
-    setFilters({ search: value });
-  };
 
   const toggleLanguage = () => {
     const currentLang = i18n.language;
@@ -41,44 +59,48 @@ export const ClickupHeader = memo(function ClickupHeader({
     i18n.changeLanguage(newLang);
   };
 
-  const toggleDarkMode = () => {
-    const newIsDark = !isDark;
-    setIsDark(newIsDark);
+  const applyTheme = useCallback((mode: ThemeMode) => {
+    const root = document.documentElement;
+    root.style.transition = 'none';
 
-    // Disable transitions temporarily to prevent yellow flash
-    document.documentElement.style.transition = 'none';
+    const resolvedMode =
+      mode === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : mode;
 
-    if (newIsDark) {
-      document.documentElement.classList.add('dark');
+    if (resolvedMode === 'dark') {
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
     }
 
-    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+    localStorage.setItem('theme', mode);
+    setThemeMode(mode);
+    setIsDark(resolvedMode === 'dark');
 
-    // Force a reflow to apply styles immediately
-    document.documentElement.offsetHeight;
-
-    // Re-enable transitions after a small delay
+    // Force reflow
+    root.offsetHeight;
     setTimeout(() => {
-      document.documentElement.style.transition = '';
+      root.style.transition = '';
     }, 50);
-  };
+  }, []);
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && systemDark);
+    const savedTheme = (localStorage.getItem('theme') as ThemeMode | null) || 'system';
+    applyTheme(savedTheme);
+  }, [applyTheme]);
 
-    if (shouldBeDark) {
-      document.documentElement.classList.add('dark');
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove('dark');
-      setIsDark(false);
-    }
-  }, []);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      if (themeMode === 'system') {
+        applyTheme('system');
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [applyTheme, themeMode]);
 
   return (
     <header
@@ -136,17 +158,18 @@ export const ClickupHeader = memo(function ClickupHeader({
           </div>
         </div>
 
-        {/* Center Section - Search (ClickUp style) */}
-        <div className="flex-1 max-w-lg hidden lg:block flex-shrink-0">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t('header.searchPlaceholder', 'Search everything...')}
-              value={filters.search || ''}
-              onChange={e => handleSearchChange(e.target.value)}
-              className="pl-10 bg-muted/40 border-0 h-9 text-sm rounded-lg hover:bg-primary/5 focus:ring-primary focus:ring-offset-0"
-            />
-          </div>
+        {/* Center Section - Global Search Trigger */}
+        <div className="flex-1 max-w-lg hidden lg:flex flex-shrink-0 justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full max-w-lg justify-start gap-3 text-muted-foreground bg-muted/40 border-border hover:bg-muted/60"
+            onClick={handleOpenSearch}
+          >
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{t('header.searchPlaceholder', 'Search everything...')}</span>
+            <span className="ml-auto text-xs text-muted-foreground">⌘K / Ctrl+K</span>
+          </Button>
         </div>
 
         {/* Right Section - Actions */}
@@ -175,19 +198,39 @@ export const ClickupHeader = memo(function ClickupHeader({
             <Languages className="h-4 w-4" />
           </Button>
 
-          {/* Dark Mode Toggle */}
+          {/* Theme dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            onClick={toggleDarkMode}
             className="hidden sm:flex hover-surface"
-          >
-            {isDark ? (
+                title={t('header.themeSwitcher', 'Chọn giao diện')}
+              >
+                <Palette className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>{t('header.colorMode', 'Chế độ màu')}</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={themeMode}
+                onValueChange={(value) => applyTheme(value as ThemeMode)}
+              >
+                <DropdownMenuRadioItem value="light" className="flex items-center gap-2">
               <Sun className="h-4 w-4" />
-            ) : (
+                  {t('header.lightMode', 'Sáng')}
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dark" className="flex items-center gap-2">
               <Moon className="h-4 w-4" />
-            )}
-          </Button>
+                  {t('header.darkMode', 'Tối')}
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="system" className="flex items-center gap-2">
+                  <Monitor className="h-4 w-4" />
+                  {t('header.systemMode', 'Theo hệ thống')}
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Mobile Menu */}
           <Button

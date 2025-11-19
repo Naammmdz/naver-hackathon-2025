@@ -44,6 +44,7 @@ import {
 import { cn } from "@/lib/utils";
 import { QuickTodoList } from "@/components/dashboard/QuickTodoList";
 import { findOverlappingCards, adjustOverlappingCards, getCardBounds, gridUnitsToPixels } from "@/utils/cardLayout";
+import { getAvatarColor, getInitials } from '@/utils/avatarColors';
 
 export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { t } = useTranslation();
@@ -202,15 +203,15 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Status Breakdown - Compact */}
             <div className="grid grid-cols-3 gap-1.5">
-              <div className="rounded bg-muted/50 p-1.5 text-center">
+              <div className="rounded-md bg-muted/60 border border-border/40 p-1.5 text-center hover:bg-muted/80 hover:border-border/60 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold">{todoTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.todo', 'Todo')}</p>
               </div>
-              <div className="rounded bg-primary/10 p-1.5 text-center">
+              <div className="rounded-md bg-primary/10 border border-primary/20 p-1.5 text-center hover:bg-primary/15 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold text-primary">{inProgressTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.inProgress', 'In Progress')}</p>
               </div>
-              <div className="rounded bg-success/10 p-1.5 text-center">
+              <div className="rounded-md bg-success/10 border border-success/20 p-1.5 text-center hover:bg-success/15 hover:border-success/30 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold text-success">{doneTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.done', 'Done')}</p>
               </div>
@@ -224,7 +225,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   {latestTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center gap-1.5 p-1.5 rounded hover:bg-muted/50 transition-colors text-[11px]"
+                      className="flex items-center gap-1.5 p-1.5 rounded-md hover:bg-accent border border-transparent hover:border-border/40 hover:shadow-sm transition-all text-[11px] cursor-pointer"
                     >
                       <div className={`w-1 h-1 rounded-full flex-shrink-0 ${
                         task.status === 'Done' ? 'bg-success' :
@@ -319,20 +320,20 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 {members.slice(0, 5).map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-accent transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/80 border border-transparent hover:border-border/40 hover:shadow-sm transition-all cursor-pointer"
                   >
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
                       {member.user?.avatarUrl ? (
                         <img
                           src={member.user.avatarUrl}
-                          alt={member.user.fullName || member.user.email}
+                          alt={member.user?.fullName || member.user?.email || member.userId}
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary">
-                            {(member.user?.fullName || member.user?.email || '?')[0].toUpperCase()}
+                        <div className={`h-8 w-8 rounded-full ${getAvatarColor(member.userId).bg} flex items-center justify-center`}>
+                          <span className={`text-xs font-medium ${getAvatarColor(member.userId).text}`}>
+                            {getInitials(member.user?.fullName, member.userId)}
                           </span>
                         </div>
                       )}
@@ -667,7 +668,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                               </div>
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" />
                                   {boardInfo.count} shapes
                                 </span>
                                 <span>•</span>
@@ -956,10 +957,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Key Metrics Row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Completion Rate */}
-              <div className="rounded-lg border bg-card p-3">
+              <div className="rounded-lg border border-border/60 bg-gradient-to-br from-chart-2/5 via-background to-background p-3 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">Completion</p>
-                  <BarChart3 className="h-4 w-4 text-blue-500" />
+                  <p className="text-[10px] font-medium text-muted-foreground">Completion</p>
+                  <BarChart3 className="h-4 w-4 text-[hsl(var(--chart-2))]" />
                 </div>
                 <p className="text-2xl font-bold">{completionRate}%</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
@@ -968,10 +969,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               </div>
 
               {/* Total Tasks */}
-              <div className="rounded-lg border bg-card p-3">
+              <div className="rounded-lg border border-border/60 bg-gradient-to-br from-primary/5 via-background to-background p-3 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] text-muted-foreground">Total Tasks</p>
-                  <CheckSquare className="h-4 w-4 text-purple-500" />
+                  <CheckSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
                 </div>
                 <p className="text-2xl font-bold">{workspaceTasks.length}</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
@@ -1001,14 +1002,14 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--chart-2))]" />
                     <span className="text-[11px] text-muted-foreground">In Progress</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.inProgress}</span>
                     <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-blue-500 rounded-full"
+                        className="h-full bg-[hsl(var(--chart-2))] rounded-full"
                         style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.inProgress / workspaceTasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -1016,14 +1017,14 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--chart-3))]" />
                     <span className="text-[11px] text-muted-foreground">Done</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.done}</span>
                     <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-green-500 rounded-full"
+                        className="h-full bg-[hsl(var(--chart-3))] rounded-full"
                         style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.done / workspaceTasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -1042,7 +1043,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full">
                       <div className="w-full h-full bg-muted rounded-t relative flex items-end" style={{ minHeight: '80px' }}>
                         <div 
-                          className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500"
+                          className="w-full bg-[hsl(var(--chart-3))] rounded-t transition-all hover:opacity-80"
                           style={{ height: `${height}%`, minHeight: height > 0 ? '4px' : '0' }}
                           title={`${day.completed} tasks completed`}
                         />
@@ -1059,16 +1060,16 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div>
               <p className="text-xs font-semibold text-foreground mb-2">By Priority</p>
               <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg border bg-red-500/5 border-red-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{priorityBreakdown.high}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-high))]/5 border-[hsl(var(--priority-high))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-high))]">{priorityBreakdown.high}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">High</p>
                 </div>
-                <div className="rounded-lg border bg-yellow-500/5 border-yellow-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{priorityBreakdown.medium}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-medium))]/5 border-[hsl(var(--priority-medium))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-medium))]">{priorityBreakdown.medium}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">Medium</p>
                 </div>
-                <div className="rounded-lg border bg-gray-500/5 border-gray-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-gray-600 dark:text-gray-400">{priorityBreakdown.low}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-low))]/5 border-[hsl(var(--priority-low))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-low))]">{priorityBreakdown.low}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">Low</p>
                 </div>
               </div>
@@ -1107,7 +1108,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   strokeDasharray={`${2 * Math.PI * 50}`}
                   strokeDashoffset={`${2 * Math.PI * 50 * (1 - completionRateValue / 100)}`}
                   strokeLinecap="round"
-                  className="text-purple-500 transition-all duration-500"
+                  className="text-[hsl(var(--chart-3))] transition-all duration-500"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -1161,17 +1162,17 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
         // Get score color
         const getScoreColor = (score: number) => {
-          if (score >= 80) return 'text-green-500';
-          if (score >= 60) return 'text-yellow-500';
-          if (score >= 40) return 'text-orange-500';
-          return 'text-red-500';
+          if (score >= 80) return 'text-[hsl(var(--success))]';
+          if (score >= 60) return 'text-[hsl(var(--priority-medium))]';
+          if (score >= 40) return 'text-[hsl(var(--warning))]';
+          return 'text-[hsl(var(--destructive))]';
         };
 
         const getScoreBgColor = (score: number) => {
-          if (score >= 80) return 'bg-green-500/10 border-green-500/20';
-          if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/20';
-          if (score >= 40) return 'bg-orange-500/10 border-orange-500/20';
-          return 'bg-red-500/10 border-red-500/20';
+          if (score >= 80) return 'bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20';
+          if (score >= 60) return 'bg-[hsl(var(--priority-medium))]/10 border-[hsl(var(--priority-medium))]/20';
+          if (score >= 40) return 'bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20';
+          return 'bg-[hsl(var(--destructive))]/10 border-[hsl(var(--destructive))]/20';
         };
 
         return (
@@ -1600,9 +1601,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             <div
                               key={idx}
                               className={`h-1 w-1 rounded-full ${
-                                task.priority === 'High' ? 'bg-red-500' :
-                                task.priority === 'Medium' ? 'bg-yellow-500' :
-                                'bg-gray-400'
+                                task.priority === 'High' ? 'bg-[hsl(var(--priority-high))]' :
+                                task.priority === 'Medium' ? 'bg-[hsl(var(--priority-medium))]' :
+                                'bg-[hsl(var(--priority-low))]'
                               }`}
                             />
                           ))}
@@ -1627,9 +1628,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 return todayTasks.slice(0, 2).map((task) => (
                   <div key={task.id} className="flex items-center gap-1 text-[10px]">
                     <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
-                      task.priority === 'High' ? 'bg-red-500' :
-                      task.priority === 'Medium' ? 'bg-yellow-500' :
-                      'bg-gray-400'
+                      task.priority === 'High' ? 'bg-[hsl(var(--priority-high))]' :
+                      task.priority === 'Medium' ? 'bg-[hsl(var(--priority-medium))]' :
+                      'bg-[hsl(var(--priority-low))]'
                     }`} />
                     <span className="truncate">{task.title}</span>
                   </div>
@@ -1649,12 +1650,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
   };
 
   return (
-    <div className="h-full overflow-auto bg-background">
+    <div className="h-full overflow-auto bg-gradient-to-br from-background via-background to-secondary/5">
       <div className="max-w-[1800px] mx-auto p-4 sm:p-6 space-y-4">
         {/* Header - More compact */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-gradient-to-r from-background via-secondary/10 to-background border border-border/40 shadow-sm">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
               {activeWorkspace ? activeWorkspace.name : t('dashboard.home', 'Home')}
             </h1>
             <p className="text-sm text-muted-foreground">
