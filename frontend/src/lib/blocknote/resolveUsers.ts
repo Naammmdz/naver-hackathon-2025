@@ -17,9 +17,16 @@ export function createResolveUsers(): (userIds: string[]) => Promise<User[]> {
 
       // Always return a user object, even if member is not found
       // This prevents BlockNote from throwing errors when user data is missing
+      const displayName =
+        member?.fullName ||
+        member?.user?.fullName ||
+        member?.user?.username ||
+        member?.user?.email ||
+        `User ${userId.slice(0, 8)}`;
+
       const user: User = {
         id: userId,
-        username: member?.user?.fullName || member?.user?.username || `User ${userId.slice(0, 8)}`,
+        username: displayName,
         avatarUrl: member?.user?.imageUrl || "",
       };
       

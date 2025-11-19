@@ -76,21 +76,24 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
 
   // Helper function to get display name for a member
   const getMemberDisplayName = (member: WorkspaceMember) => {
-    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
-    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser?.id);
     
+    if (member.fullName) return member.fullName;
     if (member.user?.fullName) return member.user.fullName;
-    if (member.user?.email) return member.user.email;
-    if (isCurrentUserNormalized && currentUser) {
+
+    if (isCurrentUser && currentUser) {
       if (currentUser.fullName) return currentUser.fullName;
       if (currentUser.firstName || currentUser.lastName) {
-        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(' ').trim();
-      }
-      if (currentUser.primaryEmailAddress?.emailAddress) {
-        return currentUser.primaryEmailAddress.emailAddress;
+        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ").trim();
       }
     }
+
+    if (member.user?.email) return member.user.email;
+    if (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) {
+        return currentUser.primaryEmailAddress.emailAddress;
+      }
+
     // Format userId for display
     if (member.userId.length > 20) {
       return `User ${member.userId.substring(member.userId.length - 8)}`;
@@ -100,12 +103,11 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
 
   // Helper function to get display email for a member
   const getMemberDisplayEmail = (member: WorkspaceMember) => {
-    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
-    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser?.id);
     
     if (member.user?.email) return member.user.email;
-    if (isCurrentUserNormalized && currentUser?.primaryEmailAddress?.emailAddress) {
+    if (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) {
       return currentUser.primaryEmailAddress.emailAddress;
     }
     return undefined;

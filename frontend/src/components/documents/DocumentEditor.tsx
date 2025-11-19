@@ -982,7 +982,7 @@ export function DocumentEditor({
           editor={wrappedEditor}
           onChange={wrappedHandleChange}
         theme={isDark ? "dark" : "light"}
-        className="rounded-lg border border-border/50 shadow-sm"
+        className="bg-background"
         slashMenu={false}
         editable={canEditWorkspace}
         comments={true}
@@ -1002,8 +1002,12 @@ export function DocumentEditor({
   }, [editorConfig, isDark, canEditWorkspace, document.id, onTaskClick, hasError]); // Remove document.title to prevent re-render
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <EditorWrapper key={editorInstanceKey} />
+    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4">
+      <div className="rounded-2xl border border-border/40 bg-card/70 shadow-sm shadow-border/40 backdrop-blur-sm p-4 sm:p-6">
+        <div className="rounded-xl overflow-hidden">
+          <EditorWrapper key={editorInstanceKey} />
+        </div>
+      </div>
     </div>
   );
 }

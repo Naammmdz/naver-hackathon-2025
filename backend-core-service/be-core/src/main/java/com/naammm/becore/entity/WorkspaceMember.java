@@ -40,6 +40,9 @@ public class WorkspaceMember {
     @Column(name = "user_id", nullable = false, length = 160)
     private String userId;
 
+    @Column(name = "full_name", length = 255)
+    private String fullName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private WorkspaceRole role;
