@@ -140,12 +140,12 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
       {loading && (
         <div className={`absolute inset-0 z-50 flex items-center justify-center ${
           isDark 
-            ? "bg-gradient-to-b from-slate-950 via-slate-900 to-black" 
-            : "bg-gradient-to-b from-white via-slate-50 to-slate-100"
+            ? "bg-background/95 backdrop-blur-sm" 
+            : "bg-background/95 backdrop-blur-sm"
         }`}>
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className={`h-8 w-8 animate-spin ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <p className={`text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>Loading graph view...</p>
+            <Loader2 className={`h-8 w-8 animate-spin text-primary`} />
+            <p className={`text-sm text-muted-foreground`}>Loading graph view...</p>
           </div>
         </div>
       )}
@@ -154,11 +154,11 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
       {error && (
         <div className={`absolute inset-0 z-50 flex items-center justify-center ${
           isDark 
-            ? "bg-gradient-to-b from-slate-950 via-slate-900 to-black" 
-            : "bg-gradient-to-b from-white via-slate-50 to-slate-100"
+            ? "bg-background/95 backdrop-blur-sm" 
+            : "bg-background/95 backdrop-blur-sm"
         }`}>
-          <Card className={`p-6 ${isDark ? "bg-slate-900/50 border-slate-700" : "bg-white/90 border-slate-200"}`}>
-            <p className={`text-sm ${isDark ? "text-red-400" : "text-red-600"}`}>{error}</p>
+          <Card className={`p-6 bg-card border-border shadow-elegant`}>
+            <p className={`text-sm text-destructive`}>{error}</p>
           </Card>
         </div>
       )}
@@ -169,8 +169,8 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
           <div className="absolute left-4 top-3 z-10 flex items-center gap-2">
             <div className={`px-3 py-1.5 rounded-full text-xs uppercase tracking-wider ${
               isDark
-                ? "bg-slate-900/90 border border-slate-700/50 text-slate-300"
-                : "bg-white/90 border border-slate-200/50 text-slate-600 shadow-sm"
+                ? "bg-card/90 border border-border text-muted-foreground shadow-sm"
+                : "bg-card/90 border border-border text-muted-foreground shadow-sm"
             }`}>
               Drag · Scroll · Hover · Click
             </div>
@@ -184,11 +184,11 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
               className={`rounded-full text-xs uppercase tracking-wider ${
                 vennMode 
                   ? isDark
-                    ? "bg-slate-900/95 border-teal-400/70 text-cyan-300 hover:bg-slate-800"
-                    : "bg-white/95 border-teal-500/70 text-teal-700 hover:bg-slate-50"
+                    ? "bg-primary/10 border-primary/50 text-primary hover:bg-primary/20"
+                    : "bg-primary/10 border-primary/50 text-primary hover:bg-primary/20"
                   : isDark
-                    ? "bg-slate-900/80 border-slate-600 text-slate-300 hover:bg-slate-800"
-                    : "bg-white/80 border-slate-300 text-slate-600 hover:bg-slate-50"
+                    ? "bg-card/80 border-border text-muted-foreground hover:bg-muted"
+                    : "bg-card/80 border-border text-muted-foreground hover:bg-muted"
               }`}
             >
               Venn mode: {vennMode ? "ON" : "OFF"}

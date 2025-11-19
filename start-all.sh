@@ -196,6 +196,18 @@ echo ""
 echo -e "${YELLOW}Waiting for services to start...${NC}"
 sleep 10
 
+# Detect actual frontend port from log
+FRONTEND_PORT=$(grep -oP "Local:\s+http://localhost:\K\d+" logs/frontend.log | tail -1)
+if [ -z "$FRONTEND_PORT" ]; then
+    FRONTEND_PORT=5173  # fallback to default
+fi
+
+# Detect actual hocuspocus port from log
+HOCUSPOCUS_PORT=$(grep -oP "WebSocket: ws://0\.0\.0\.0:\K\d+" logs/hocuspocus.log | tail -1)
+if [ -z "$HOCUSPOCUS_PORT" ]; then
+    HOCUSPOCUS_PORT=3002  # fallback to default
+fi
+
 # Check services
 echo ""
 echo -e "${BLUE}========================================${NC}"
@@ -212,7 +224,7 @@ check_service() {
 
 check_service "http://localhost:8000/api/v1/health" "200" "AI Service"
 check_service "http://localhost:8989/api/tasks" "200\|401" "Core Service"
-check_service "http://localhost:5173" "200" "Frontend"
+check_service "http://localhost:${FRONTEND_PORT}" "200" "Frontend"
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
@@ -220,11 +232,11 @@ echo -e "${BLUE}All Services Started!${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}Service URLs:${NC}"
-echo -e "  Frontend:     ${YELLOW}http://localhost:5173${NC}"
+echo -e "  Frontend:     ${YELLOW}http://localhost:${FRONTEND_PORT}${NC}"
 echo -e "  Core Backend: ${YELLOW}http://localhost:8989${NC}"
 echo -e "  AI Backend:   ${YELLOW}http://localhost:8000${NC}"
 echo -e "  AI Docs:      ${YELLOW}http://localhost:8000/docs${NC}"
-echo -e "  Hocuspocus:   ${YELLOW}ws://localhost:3002${NC}"
+echo -e "  Hocuspocus:   ${YELLOW}ws://localhost:${HOCUSPOCUS_PORT}${NC}"
 echo ""
 echo -e "${GREEN}Process IDs:${NC}"
 echo -e "  AI Service:   $AI_PID"

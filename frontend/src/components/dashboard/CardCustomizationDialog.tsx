@@ -29,24 +29,22 @@ interface CardCustomizationDialogProps {
 }
 
 const iconOptions = [
-  { value: 'tasks', label: 'Tasks', icon: CheckSquare, color: 'text-blue-500' },
-  { value: 'documents', label: 'Documents', icon: FileText, color: 'text-orange-500' },
-  { value: 'boards', label: 'Boards', icon: Layers, color: 'text-pink-500' },
-  { value: 'team', label: 'Team', icon: Users, color: 'text-green-500' },
-  { value: 'chart', label: 'Chart', icon: BarChart3, color: 'text-purple-500' },
-  { value: 'trending', label: 'Trending', icon: TrendingUp, color: 'text-blue-500' },
-  { value: 'list', label: 'List', icon: ListTodo, color: 'text-gray-500' },
+  { value: 'tasks', label: 'Tasks', icon: CheckSquare, color: 'text-primary' },
+  { value: 'documents', label: 'Documents', icon: FileText, color: 'text-secondary' },
+  { value: 'boards', label: 'Boards', icon: Layers, color: 'text-accent' },
+  { value: 'team', label: 'Team', icon: Users, color: 'text-success' },
+  { value: 'chart', label: 'Chart', icon: BarChart3, color: 'text-primary' },
+  { value: 'trending', label: 'Trending', icon: TrendingUp, color: 'text-primary' },
+  { value: 'list', label: 'List', icon: ListTodo, color: 'text-muted-foreground' },
 ];
 
 const colorOptions = [
-  { value: 'border-l-blue-500', label: 'Blue' },
-  { value: 'border-l-orange-500', label: 'Orange' },
-  { value: 'border-l-pink-500', label: 'Pink' },
-  { value: 'border-l-green-500', label: 'Green' },
-  { value: 'border-l-purple-500', label: 'Purple' },
-  { value: 'border-l-red-500', label: 'Red' },
-  { value: 'border-l-yellow-500', label: 'Yellow' },
-  { value: 'border-l-indigo-500', label: 'Indigo' },
+  { value: 'border-l-primary', label: 'Primary' },
+  { value: 'border-l-secondary', label: 'Secondary' },
+  { value: 'border-l-accent', label: 'Accent' },
+  { value: 'border-l-success', label: 'Success' },
+  { value: 'border-l-destructive', label: 'Destructive' },
+  { value: 'border-l-warning', label: 'Warning' },
 ];
 
 export function CardCustomizationDialog({
@@ -61,7 +59,7 @@ export function CardCustomizationDialog({
     description: '',
     type: 'custom',
     size: 'medium',
-    color: 'border-l-blue-500',
+    color: 'border-l-primary',
     visible: true,
   });
 
@@ -74,7 +72,7 @@ export function CardCustomizationDialog({
         description: '',
         type: 'custom',
         size: 'medium',
-        color: 'border-l-blue-500',
+        color: 'border-l-primary',
         visible: true,
       });
     }
