@@ -115,15 +115,15 @@ export function HITLConfirmationDialog({
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "low":
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-primary/10 text-primary border-primary/20"
       case "medium":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+        return "bg-warning/10 text-warning border-warning/20"
       case "high":
-        return "bg-orange-100 text-orange-800 border-orange-200"
+        return "bg-destructive/10 text-destructive border-destructive/20"
       case "critical":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-destructive text-destructive-foreground border-destructive"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-muted text-muted-foreground border-border"
     }
   }
 
@@ -135,7 +135,7 @@ export function HITLConfirmationDialog({
       case "high":
         return <AlertTriangle className="h-4 w-4" />
       case "critical":
-        return <AlertTriangle className="h-4 w-4 text-red-600" />
+        return <AlertTriangle className="h-4 w-4 text-destructive-foreground" />
       default:
         return <Info className="h-4 w-4" />
     }
@@ -180,8 +180,8 @@ export function HITLConfirmationDialog({
             {/* Estimated Impact */}
             <div className="rounded-lg bg-muted/50 p-4 space-y-2">
               <h3 className="font-semibold text-sm flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                {t("components.HITLConfirmationDialog.estimatedImpact")}
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                Estimated Impact
               </h3>
               <p className="text-sm text-muted-foreground">{request.estimated_impact}</p>
             </div>
@@ -213,7 +213,7 @@ export function HITLConfirmationDialog({
                           {option.severity}
                         </Badge>
                         {option.reversible && (
-                          <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
+                          <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/20">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             {t("components.HITLConfirmationDialog.reversible")}
                           </Badge>

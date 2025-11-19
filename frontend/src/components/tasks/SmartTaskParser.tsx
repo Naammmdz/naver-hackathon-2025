@@ -248,7 +248,7 @@ export function SmartTaskParser({
                   <button
                     key={index}
                     onClick={() => setInput(example)}
-                    className="text-left text-xs text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-primary/10"
+                    className="text-left text-xs text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-accent"
                   >
                     "{example}"
                   </button>
@@ -511,7 +511,7 @@ export function SmartTaskParser({
                         <span className="text-base font-medium text-muted-foreground">
                           {t('form.description')}:
                         </span>
-                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg leading-relaxed">
+                        <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg leading-relaxed">
                           {(editedTask || parsedTask).description}
                         </p>
                       </div>

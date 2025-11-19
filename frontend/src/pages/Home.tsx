@@ -206,13 +206,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <p className="text-sm font-semibold">{todoTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('components.Home.todo')}</p>
               </div>
-              <div className="rounded bg-blue-500/10 p-1.5 text-center">
-                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{inProgressTasks}</p>
-                <p className="text-[9px] text-muted-foreground">{t('components.Home.inProgress')}</p>
+              <div className="rounded bg-primary/10 p-1.5 text-center">
+                <p className="text-sm font-semibold text-primary">{inProgressTasks}</p>
+                <p className="text-[9px] text-muted-foreground">{t('tasks.status.inProgress', 'In Progress')}</p>
               </div>
-              <div className="rounded bg-green-500/10 p-1.5 text-center">
-                <p className="text-sm font-semibold text-green-600 dark:text-green-400">{doneTasks}</p>
-                <p className="text-[9px] text-muted-foreground">{t('components.Home.done')}</p>
+              <div className="rounded bg-success/10 p-1.5 text-center">
+                <p className="text-sm font-semibold text-success">{doneTasks}</p>
+                <p className="text-[9px] text-muted-foreground">{t('tasks.status.done', 'Done')}</p>
               </div>
             </div>
 
@@ -227,9 +227,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       className="flex items-center gap-1.5 p-1.5 rounded hover:bg-muted/50 transition-colors text-[11px]"
                     >
                       <div className={`w-1 h-1 rounded-full flex-shrink-0 ${
-                        task.status === 'Done' ? 'bg-green-500' :
-                        task.status === 'In Progress' ? 'bg-blue-500' :
-                        'bg-gray-400'
+                        task.status === 'Done' ? 'bg-success' :
+                        task.status === 'In Progress' ? 'bg-primary' :
+                        'bg-muted-foreground'
                       }`} />
                       <span className="flex-1 truncate">{task.title}</span>
                     </div>
@@ -257,8 +257,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <p className="text-3xl font-bold">{workspaceDocuments.length}</p>
                 <p className="text-sm text-muted-foreground">{t('components.Home.totalDocuments')}</p>
               </div>
-              <div className="rounded-full bg-orange-500/10 p-3">
-                <FileText className="h-6 w-6 text-orange-500" />
+              <div className="rounded-full bg-secondary/10 p-3">
+                <FileText className="h-6 w-6 text-secondary" />
               </div>
             </div>
             <Button
@@ -280,8 +280,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <p className="text-3xl font-bold">{workspaceBoards.length}</p>
                 <p className="text-sm text-muted-foreground">{t('components.Home.totalBoards')}</p>
               </div>
-              <div className="rounded-full bg-pink-500/10 p-3">
-                <Layers className="h-6 w-6 text-pink-500" />
+              <div className="rounded-full bg-accent/10 p-3">
+                <Layers className="h-6 w-6 text-accent" />
               </div>
             </div>
             <Button
@@ -304,8 +304,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <p className="text-3xl font-bold">{members.length}</p>
                 <p className="text-sm text-muted-foreground">{t('components.Home.teamMembers')}</p>
               </div>
-              <div className="rounded-full bg-green-500/10 p-3">
-                <Users className="h-6 w-6 text-green-500" />
+              <div className="rounded-full bg-success/10 p-3">
+                <Users className="h-6 w-6 text-success" />
               </div>
             </div>
 
@@ -338,12 +338,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       )}
                       {/* Role badge */}
                       {member.role === 'OWNER' && (
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-yellow-500 border border-background flex items-center justify-center">
-                          <span className="text-[6px] text-white font-bold">★</span>
+                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-warning border border-background flex items-center justify-center">
+                          <span className="text-[6px] text-background font-bold">★</span>
                         </div>
                       )}
                       {member.role === 'ADMIN' && (
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-blue-500 border border-background" />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary border border-background" />
                       )}
                     </div>
 
@@ -637,11 +637,11 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                                 {board.title}
                               </p>
                               {/* Preview Image - Larger */}
-                              <div className="relative h-32 rounded border overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
+                              <div className="relative h-32 rounded border overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5">
                                 {isLoading ? (
                                   // Loading state
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <Layers className="h-8 w-8 text-pink-300 dark:text-pink-700 opacity-30 animate-pulse" />
+                                    <Layers className="h-8 w-8 text-accent opacity-30 animate-pulse" />
                                   </div>
                                 ) : previewUrl ? (
                                   // Actual preview image - larger version
@@ -661,7 +661,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                                 ) : (
                                   // Fallback when no preview available
                                   <div className="absolute inset-0 flex items-center justify-center">
-                                    <Layers className="h-8 w-8 text-pink-300 dark:text-pink-700 opacity-30" />
+                                    <Layers className="h-8 w-8 text-accent opacity-30" />
                                   </div>
                                 )}
                               </div>
@@ -697,8 +697,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                                 <span>{t('components.Home.updated')} {new Date(board.updatedAt).toLocaleDateString()}</span>
                                 <span>•</span>
                                 <span className="flex items-center gap-1">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                                  {boardInfo.count} {t('components.Home.shapes')}
+                                  <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                                  {boardInfo.count} {t('components.Home.shapesLabel')}
                                 </span>
                               </div>
                             </div>
@@ -721,8 +721,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                                     className="w-full h-auto object-contain"
                                   />
                                 ) : (
-                                  <div className="h-64 flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20">
-                                    <Layers className="h-12 w-12 text-pink-300 dark:text-pink-700 opacity-30" />
+                                  <div className="h-64 flex items-center justify-center bg-gradient-to-br from-accent/5 to-primary/5">
+                                    <Layers className="h-12 w-12 text-accent opacity-30" />
                                   </div>
                                 )}
                               </div>
@@ -768,11 +768,11 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   const getStatusColor = (status: string) => {
                     switch (status) {
                       case 'Done':
-                        return 'bg-green-500';
+                        return 'bg-success';
                       case 'In Progress':
-                        return 'bg-blue-500';
+                        return 'bg-primary';
                       default:
-                        return 'bg-gray-500';
+                        return 'bg-muted-foreground';
                     }
                   };
 
@@ -780,11 +780,11 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   const getPriorityColor = (priority: string) => {
                     switch (priority) {
                       case 'High':
-                        return 'text-red-500';
+                        return 'text-destructive';
                       case 'Medium':
-                        return 'text-yellow-500';
+                        return 'text-warning';
                       default:
-                        return 'text-gray-500';
+                        return 'text-muted-foreground';
                     }
                   };
 
@@ -1044,7 +1044,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         <div 
                           className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500"
                           style={{ height: `${height}%`, minHeight: height > 0 ? '4px' : '0' }}
-                          title={`${day.completed} tasks completed`}
+                          title={`${day.completed} ${t('components.Home.tasksCompletedTooltip')}`}
                         />
                       </div>
                       <span className="text-[9px] text-muted-foreground font-medium">{day.day}</span>
@@ -1589,7 +1589,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         ${isTodayDate ? 'bg-primary/10 ring-1 ring-primary' : 'hover:bg-accent'}
                         transition-colors cursor-pointer
                       `}
-                      title={`${format(day, 'MMM d')}: ${dayTasks.length} task(s)`}
+                      title={`${format(day, 'MMM d')}: ${dayTasks.length} ${t('components.Home.taskCountTooltip')}`}
                     >
                       <div className="text-[10px] font-medium">
                         {format(day, 'd')}

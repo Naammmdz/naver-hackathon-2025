@@ -2,8 +2,8 @@ export function Header() {
   return (
     <header
       className="lg:tw-px-4 tw-max-w-[100vw] tw-max-w-lg:tw-mr-auto max-lg:tw-top-0 tw-fixed tw-top-4 lg:tw-left-1/2 lg:tw--translate-x-1/2 tw-z-20 tw-flex tw-h-[60px] tw-w-full
-              tw-text-gray-700 tw-bg-white dark:tw-text-gray-200 dark:tw-bg-[#17181b] tw-px-[3%] tw-rounded-md lg:tw-max-w-5xl tw-shadow-md dark:tw-shadow-gray-700
-              lg:tw-justify-around lg:!tw-backdrop-blur-lg lg:tw-opacity-[0.99]"
+              tw-text-foreground tw-bg-card/80 tw-backdrop-blur-md tw-px-[3%] tw-rounded-md lg:tw-max-w-5xl shadow-elegant
+              lg:tw-justify-around lg:tw-opacity-[0.99] border border-border"
     >
       <a className="tw-flex tw-p-[4px] tw-gap-2 tw-place-items-center" href="#">
         <div className="tw-h-[60px] tw-max-w-[160px]">
@@ -34,8 +34,8 @@ export function Header() {
               className="tw-scale-0 tw-opacity-0  lg:tw-fixed tw-flex lg:tw-top-[80px] lg:tw-left-1/2 lg:tw--translate-x-1/2
                               tw-w-[90%] tw-rounded-lg max-lg:tw-h-0 max-lg:tw-w-0
                               lg:tw-h-[450px] tw-overflow-hidden
-                               tw-bg-white dark:tw-bg-[#17181B] tw-duration-300
-                               tw-transition-opacity tw-transition-height tw-shadow-lg tw-p-4"
+                               tw-bg-card tw-duration-300
+                               tw-transition-opacity tw-transition-height shadow-elegant tw-p-4 border border-border"
             >
               <div className="tw-grid max-xl:tw-flex max-xl:tw-flex-col tw-justify-around tw-grid-cols-2 tw-w-full">
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
@@ -43,57 +43,57 @@ export function Header() {
                     <i className="bi bi-list-columns-reverse" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
-                    <div className="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Prompt library </div>
+                    <div className="tw-text-lg tw-text-foreground tw-font-medium">Prompt library </div>
                     <p>Comes packed with pre-made prompt templates</p>
                   </div>
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-foreground">
                     <i className="bi bi-grid-1x2-fill" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
-                    <div className="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Unified Interface </div>
+                    <div className="tw-text-lg tw-text-foreground tw-font-medium">Unified Interface </div>
                     <p >Test multiple AI models in one interface</p>
                   </div>
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-foreground">
                     <i className="bi bi-globe" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
-                    <div className="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Realtime web search </div>
+                    <div className="tw-text-lg tw-text-foreground tw-font-medium">Realtime web search </div>
                     <p >Search the internet in realtime</p>
                   </div>
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-foreground">
                     <i className="bi bi-image-fill" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
-                    <div className="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Image generation</div>
+                    <div className="tw-text-lg tw-text-foreground tw-font-medium">Image generation</div>
                     <p >Generate images from prompts</p>
                   </div>
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-foreground">
                     <i className="bi bi-calendar-range" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
-                    <div className="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">History</div>
+                    <div className="tw-text-lg tw-text-foreground tw-font-medium">History</div>
                     <p >Continue from where you left off</p>
                   </div>
                 </a>
 
                 <a className="header-links tw-flex tw-text-left tw-gap-4 !tw-p-4" href="#">
-                  <div className="tw-font-semibold tw-text-3xl tw-text-black dark:tw-text-white">
+                  <div className="tw-font-semibold tw-text-3xl tw-text-foreground">
                     <i className="bi bi-translate" />
                   </div>
                   <div className="tw-flex tw-flex-col tw-gap-2">
-                    <div className="tw-text-lg tw-text-black dark:tw-text-white tw-font-medium">Multilingual</div>
+                    <div className="tw-text-lg tw-text-foreground tw-font-medium">Multilingual</div>
                     <p >Converse in multiple languages</p>
                   </div>
                 </a>
@@ -119,7 +119,7 @@ export function Header() {
         >
           <button
             type="button"
-            className="header-links tw-text-gray-600 dark:tw-text-gray-300"
+            className="header-links tw-text-muted-foreground hover:tw-text-foreground"
             title="toggle-theme"
             id="theme-toggle"
           >
@@ -128,7 +128,7 @@ export function Header() {
           <a
             href="/app"
             aria-label="Try DevFlow Playground"
-            className="btn tw-flex tw-gap-3 tw-px-3 tw-py-2 tw-transition-transform
+            className="luxury-button tw-flex tw-gap-3 tw-px-3 tw-py-2 tw-transition-transform
                                     tw-duration-[0.3s] hover:tw-translate-x-2"
           >
             <span>Try playground</span>
@@ -137,7 +137,7 @@ export function Header() {
         </div>
       </div>
       <button
-        className="bi bi-list tw-absolute tw-right-3 tw-top-3 tw-z-50 tw-text-3xl tw-text-gray-500 lg:tw-hidden"
+        className="bi bi-list tw-absolute tw-right-3 tw-top-3 tw-z-50 tw-text-3xl tw-text-muted-foreground lg:tw-hidden"
         aria-label="menu"
         id="collapse-btn"
       />

@@ -40,7 +40,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-primary to-accent' },
     { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-accent to-accent-foreground' },
     { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-primary/80 to-accent' },
-    { id: 'graph', icon: Network, label: 'Graph', view: 'graph' as const, gradient: 'from-blue-500 to-cyan-500' },
+    { id: 'graph', icon: Network, label: 'Graph', view: 'graph' as const, gradient: 'from-primary to-secondary' },
     { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-success to-success/80' },
   ];
 
@@ -67,8 +67,8 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
-      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar-primary text-sidebar-primary-foreground border border-sidebar-border/60 shadow-sm">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-primary/10 hover:bg-primary/20 p-1.5" onClick={() => window.location.href = '/'}>
+      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar text-sidebar-foreground border border-sidebar-border/60 shadow-sm">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-sidebar-accent/10 hover:bg-sidebar-accent/20 p-1.5" onClick={() => window.location.href = '/'}>
           <img
             src="/devflow-demo.png"
             alt="DevFlow Logo"
@@ -91,47 +91,27 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
                     : 'opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30'
                 )}
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
-                  activeNav === item.id 
-                    ? 'text-foreground dark:text-white shadow-lg' 
-                    : 'text-sidebar-primary-foreground/70'
-                )}
-                style={
-                  activeNav !== item.id
-                    ? {
-                        // @ts-ignore
-                        '--hover-color-light': '#ffffff',
-                        '--hover-color-dark': '#171717',
-                      }
-                    : undefined
-                }
-                onMouseEnter={(e) => {
-                  if (activeNav !== item.id) {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    e.currentTarget.style.color = isDark ? '#171717' : '#ffffff';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeNav !== item.id) {
-                    e.currentTarget.style.color = '';
-                  }
-                }}
-                onClick={() => {
-                  setActiveNav(item.id as 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph');
-                  if (item.id === 'home' && onViewChange) {
-                    onViewChange('home');
-                  } else if (item.view && onViewChange) {
-                    onViewChange(item.view);
-                  }
-                }}
-                title={item.label}
-              >
-                <item.icon className="h-4 w-4 transition-colors" />
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
+                    activeNav === item.id 
+                      ? 'text-foreground dark:text-white shadow-elegant' 
+                      : 'text-sidebar-foreground/70 hover:text-foreground dark:hover:text-white'
+                  )}
+                  onClick={() => {
+                    setActiveNav(item.id as 'tasks' | 'docs' | 'board' | 'home' | 'teams' | 'graph');
+                    if (item.id === 'home' && onViewChange) {
+                      onViewChange('home');
+                    } else if (item.view && onViewChange) {
+                      onViewChange(item.view);
+                    }
+                  }}
+                  title={item.label}
+                >
+                  <item.icon className="h-4 w-4 transition-colors" />
+                </Button>
             </div>
             
             {/* Small label below icon */}
@@ -140,19 +120,8 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
                 'text-[10px] font-medium text-center leading-tight transition-colors',
                 activeNav === item.id
                   ? 'text-foreground dark:text-white'
-                  : 'text-sidebar-primary-foreground/70'
+                  : 'text-sidebar-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
               )}
-              onMouseEnter={(e) => {
-                if (activeNav !== item.id) {
-                  const isDark = document.documentElement.classList.contains('dark');
-                  e.currentTarget.style.color = isDark ? '#171717' : '#ffffff';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeNav !== item.id) {
-                  e.currentTarget.style.color = '';
-                }
-              }}
             >
               {item.label}
             </span>
@@ -171,7 +140,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
               },
             }}
           />
-          <span className="text-[10px] text-sidebar-primary-foreground font-medium text-center leading-tight">
+          <span className="text-[10px] text-sidebar-foreground font-medium text-center leading-tight">
             Profile
           </span>
         </div>

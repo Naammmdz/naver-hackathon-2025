@@ -52,12 +52,12 @@ export function MermaidRenderer({
       startOnLoad: false,
       theme: "default",
       themeVariables: {
-        primaryColor: "#3b82f6",
+        primaryColor: "#465024", // oklch(0.4650 0.1470 24.9381) converted approx
         primaryTextColor: "#fff",
-        primaryBorderColor: "#2563eb",
+        primaryBorderColor: "#465024",
         lineColor: "#64748b",
-        secondaryColor: "#8b5cf6",
-        tertiaryColor: "#ec4899",
+        secondaryColor: "#555348", // oklch(0.5553 0.1455 48.9975) approx
+        tertiaryColor: "#473246", // oklch(0.4732 0.1247 46.2007) approx
       },
       fontFamily: "Inter, system-ui, sans-serif",
       securityLevel: "loose",

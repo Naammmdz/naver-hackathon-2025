@@ -5,7 +5,7 @@ export function Footer() {
 
   return (
   <footer className="tw-mt-auto tw-flex tw-flex-col tw-w-full tw-gap-4 tw-text-sm tw-pt-[5%] tw-pb-10 tw-px-[10%]
-              tw-text-black dark:tw-text-white max-md:tw-flex-col">
+              tw-text-foreground max-md:tw-flex-col">
     <div className="tw-flex max-md:tw-flex-col max-md:tw-gap-6 tw-gap-3 tw-w-full tw-place-content-around">
       <div className="tw-flex tw-h-full tw-w-[250px] tw-flex-col tw-place-items-center tw-gap-6 max-md:tw-w-full">
         <a href="#" className="tw-w-full tw-place-items-center tw-flex tw-flex-col tw-gap-6">
@@ -59,7 +59,7 @@ export function Footer() {
       </div>
     </div>
     <hr className="tw-mt-8" />
-    <div className="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-gray-700 dark:tw-text-gray-300 tw-place-items-center
+    <div className="tw-mt-2 tw-flex tw-gap-2 tw-flex-col tw-text-muted-foreground tw-place-items-center
               tw-text-[12px] tw-w-full tw-text-center tw-place-content-around">
       <span>{t('components.Footer.copyright')}</span>
       <span>{t('components.Footer.allTrademarksCopyrights')}</span>
