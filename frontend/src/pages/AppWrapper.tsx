@@ -14,19 +14,23 @@ import { useTaskDocStore } from "@/store/taskDocStore";
 import { useTaskStore } from "@/store/taskStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Docs from "./Docs";
-import Home from "./Home";
-import Index from "./Index";
-import Teams from "./Teams";
-import GraphViewPage from "./GraphViewPage";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { startReminderScheduler } from "@/services/reminderScheduler";
 
+// Lazy load page components
+const Home = lazy(() => import("./Home"));
+const Index = lazy(() => import("./Index"));
+const Docs = lazy(() => import("./Docs"));
+const Teams = lazy(() => import("./Teams"));
+const GraphViewPage = lazy(() => import("./GraphViewPage"));
+
 export default function AppWrapper() {
-  const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams" | "graph">("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { isLoaded, isSignedIn, userId, getToken } = useAuth();
   const { user } = useUser();
@@ -72,6 +76,14 @@ export default function AppWrapper() {
   // Manage user identity in awareness (separate from view-specific awareness like boardCursor)
   // This ensures user info is always present for OnlineUsers display in header
   useUserIdentityAwareness();
+
+  // Detect current view from URL
+  const currentView = location.pathname.split('/')[2] || 'home';
+  
+  // Handle view change navigation
+  const handleViewChange = (view: string) => {
+    navigate(`/app/${view}`);
+  };
 
   // Force awareness reseed when switching to home/board/teams views
   useEffect(() => {
@@ -303,22 +315,33 @@ export default function AppWrapper() {
             <ClickupAppSidebar
               isOpen={sidebarOpen}
               onClose={() => setSidebarOpen(false)}
-              currentView={currentView}
-              onViewChange={setCurrentView}
+              currentView={currentView as any}
+              onViewChange={handleViewChange as any}
             />
 
-            {/* Main Content */}
+            {/* Main Content with Nested Routes */}
             <main className="flex-1 overflow-auto">
-              {currentView === 'home' ? <Home onViewChange={setCurrentView} /> :
-               currentView === 'tasks' ? <Index onViewChange={setCurrentView} onSmartCreate={() => {
-                const event = new CustomEvent('openSmartParser');
-                window.dispatchEvent(event);
-              }} /> :
-               currentView === 'docs' ? <Docs /> :
-               currentView === 'board' ? <BoardView /> :
-               currentView === 'graph' ? <GraphViewPage onViewChange={setCurrentView} /> :
-               currentView === 'teams' ? <Teams onViewChange={setCurrentView} /> :
-               <Home onViewChange={setCurrentView} />}
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="h-8 w-8 animate-spin rounded-full border-3 border-primary border-t-transparent"></div>
+                    <p className="text-xs text-muted-foreground">Loading page...</p>
+                  </div>
+                </div>
+              }>
+                <Routes>
+                  <Route path="/" element={<Home onViewChange={handleViewChange} />} />
+                  <Route path="/home" element={<Home onViewChange={handleViewChange} />} />
+                  <Route path="/tasks" element={<Index onViewChange={handleViewChange} onSmartCreate={() => {
+                    const event = new CustomEvent('openSmartParser');
+                    window.dispatchEvent(event);
+                  }} />} />
+                  <Route path="/docs" element={<Docs />} />
+                  <Route path="/board" element={<BoardView />} />
+                  <Route path="/graph" element={<GraphViewPage onViewChange={handleViewChange} />} />
+                  <Route path="/teams" element={<Teams onViewChange={handleViewChange} />} />
+                </Routes>
+              </Suspense>
             </main>
           </div>
         </div>
