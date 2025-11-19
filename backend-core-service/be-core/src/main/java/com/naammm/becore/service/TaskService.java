@@ -100,6 +100,7 @@ public class TaskService {
                     task.setPriority(updatedTask.getPriority());
                     task.setDueDate(updatedTask.getDueDate());
                     task.setTags(updatedTask.getTags());
+                    task.setAssigneeId(updatedTask.getAssigneeId());
                     if (updatedTask.getOrderIndex() != null) {
                         task.setOrderIndex(updatedTask.getOrderIndex());
                     }

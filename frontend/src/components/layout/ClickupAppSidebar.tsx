@@ -35,11 +35,11 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home', gradient: 'from-primary to-primary/80' },
-    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-primary to-accent' },
-    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-accent to-accent-foreground' },
-    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-primary/80 to-accent' },
-    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-success to-success/80' },
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const },
+    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const },
+    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const },
+    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const },
   ];
 
   const spaces = [
@@ -59,9 +59,6 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'pm', name: 'Project management', count: 4 },
     { id: 'doc', name: 'IT Doc' },
   ];
-  const gradientClass = 'bg-primary';
-  const monochromeGradientClass = 'bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50';
-
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
@@ -78,79 +75,36 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
 
         {navItems.map(item => (
           <div key={item.id} className="flex flex-col items-center gap-0.5 relative group">
-            <div className="relative">
-              {/* Background gradient - always visible with item color */}
-              <div
-                className={cn(
-                  'pointer-events-none absolute inset-0 rounded-xl transition-all duration-300 z-0 bg-gradient-to-br',
-                  item.gradient,
-                  activeNav === item.id 
-                    ? 'opacity-100 dark:opacity-50' 
-                    : 'opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30'
-                )}
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
-                  activeNav === item.id 
-                    ? 'text-foreground dark:text-white shadow-lg' 
-                    : 'text-sidebar-primary-foreground/70'
-                )}
-                style={
-                  activeNav !== item.id
-                    ? {
-                        // @ts-ignore
-                        '--hover-color-light': '#ffffff',
-                        '--hover-color-dark': '#171717',
-                      }
-                    : undefined
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                'w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
+                activeNav === item.id
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg'
+                  : 'text-sidebar-primary-foreground/70 hover:text-foreground hover:bg-foreground/10'
+              )}
+              onClick={() => {
+                setActiveNav(item.id);
+                if (item.id === 'home' && onViewChange) {
+                  onViewChange('home');
+                } else if (item.view && onViewChange) {
+                  onViewChange(item.view);
                 }
-                onMouseEnter={(e) => {
-                  if (activeNav !== item.id) {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    e.currentTarget.style.color = isDark ? '#171717' : '#ffffff';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeNav !== item.id) {
-                    e.currentTarget.style.color = '';
-                  }
-                }}
-                onClick={() => {
-                  setActiveNav(item.id);
-                  if (item.id === 'home' && onViewChange) {
-                    onViewChange('home');
-                  } else if (item.view && onViewChange) {
-                    onViewChange(item.view);
-                  }
-                }}
-                title={item.label}
-              >
-                <item.icon className="h-4 w-4 transition-colors" />
-              </Button>
-            </div>
-            
+              }}
+              title={item.label}
+            >
+              <item.icon className="h-4 w-4 transition-colors" />
+            </Button>
+
             {/* Small label below icon */}
             <span
               className={cn(
                 'text-[10px] font-medium text-center leading-tight transition-colors',
                 activeNav === item.id
                   ? 'text-foreground dark:text-white'
-                  : 'text-sidebar-primary-foreground/70'
+                  : 'text-sidebar-primary-foreground/70 group-hover:text-foreground'
               )}
-              onMouseEnter={(e) => {
-                if (activeNav !== item.id) {
-                  const isDark = document.documentElement.classList.contains('dark');
-                  e.currentTarget.style.color = isDark ? '#171717' : '#ffffff';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeNav !== item.id) {
-                  e.currentTarget.style.color = '';
-                }
-              }}
             >
               {item.label}
             </span>

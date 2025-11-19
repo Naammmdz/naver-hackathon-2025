@@ -1,37 +1,39 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -57,6 +59,7 @@ export function TaskFormDialog({
   defaultDate,
 }: TaskFormDialogProps) {
   const { addTask, updateTask } = useTaskStore();
+  const { members } = useWorkspaceStore();
   const { t } = useTranslation();
   const [newTag, setNewTag] = useState("");
 
@@ -67,6 +70,7 @@ export function TaskFormDialog({
     priority: z.enum(["Low", "Medium", "High"] as const),
     dueDate: z.date().optional(),
     tags: z.array(z.string()),
+    assigneeId: z.string().optional(),
   });
 
   type TaskFormData = z.infer<typeof taskSchema>;
@@ -79,6 +83,7 @@ export function TaskFormDialog({
       status: defaultStatus,
       priority: "Medium",
       tags: [],
+      assigneeId: undefined,
     },
   });
 
@@ -91,6 +96,7 @@ export function TaskFormDialog({
         priority: task.priority,
         dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         tags: task.tags,
+        assigneeId: task.assigneeId || undefined,
       });
     } else {
       form.reset({
@@ -100,6 +106,7 @@ export function TaskFormDialog({
         priority: "Medium",
         dueDate: defaultDate,
         tags: [],
+        assigneeId: undefined,
       });
     }
   }, [task, defaultStatus, defaultDate, form]);
@@ -159,19 +166,19 @@ export function TaskFormDialog({
               control={form.control}
               name="title"
               render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('form.title')}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t('form.titlePlaceholder')}
-                  className="hover-surface focus-visible:ring-primary"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormItem>
+                  <FormLabel>{t('form.title')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t('form.titlePlaceholder')}
+                      className="hover-surface focus-visible:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -179,13 +186,13 @@ export function TaskFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('form.description')}</FormLabel>
-            <FormControl>
-                <Textarea
-                  placeholder={t('form.descriptionPlaceholder')}
-                  className="min-h-[80px] hover:bg-primary/5 focus-visible:ring-primary"
-                  {...field}
-                />
-            </FormControl>
+                  <FormControl>
+                    <Textarea
+                      placeholder={t('form.descriptionPlaceholder')}
+                      className="min-h-[80px] hover:bg-primary/5 focus-visible:ring-primary"
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -198,12 +205,12 @@ export function TaskFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('form.status')}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
-                      <SelectValue placeholder={t('form.selectStatus')} />
-                    </SelectTrigger>
-                  </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                          <SelectValue placeholder={t('form.selectStatus')} />
+                        </SelectTrigger>
+                      </FormControl>
                       <SelectContent>
                         <SelectItem value="Todo">{t('tasks.status.todo')}</SelectItem>
                         <SelectItem value="In Progress">{t('tasks.status.inProgress')}</SelectItem>
@@ -223,9 +230,9 @@ export function TaskFormDialog({
                     <FormLabel>{t('form.priority')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                    <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
-                      <SelectValue placeholder={t('form.selectPriority')} />
-                    </SelectTrigger>
+                        <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                          <SelectValue placeholder={t('form.selectPriority')} />
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Low">{t('tasks.priority.low')}</SelectItem>
@@ -238,6 +245,40 @@ export function TaskFormDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="assigneeId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('form.assignee')}</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="hover-surface focus:ring-primary focus:ring-offset-0">
+                        <SelectValue placeholder={t('form.selectAssignee')} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="unassigned">{t('form.unassigned')}</SelectItem>
+                      {members.map((member) => (
+                        <SelectItem key={member.userId} value={member.userId}>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-5 w-5">
+                              <AvatarImage src={undefined} />
+                              <AvatarFallback className="text-[10px]">
+                                {member.fullName?.slice(0, 2).toUpperCase() || member.userId.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{member.fullName || member.userId}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

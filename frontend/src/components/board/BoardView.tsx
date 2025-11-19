@@ -2,10 +2,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import BoardSidebar from './BoardSidebar';
 import { CanvasContainer } from './CanvasContainer';
+import { cn } from '@/lib/utils';
 
 export function BoardView() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [showDragHint, setShowDragHint] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -17,33 +17,30 @@ export function BoardView() {
     >
       {/* Board Sidebar */}
       <div
-        className={`transition-all duration-300 ease-out overflow-hidden ${
+        className={`relative transition-all duration-300 ease-out overflow-hidden ${
           isSidebarOpen ? 'w-64' : 'w-0'
         }`}
       >
-        <BoardSidebar />
+        {isSidebarOpen && (
+          <BoardSidebar
+            onCollapse={toggleSidebar}
+          />
+        )}
       </div>
 
-      {/* Drag Handle - Small indicator bar like iPhone navigation */}
-      <div
+      {!isSidebarOpen && (
+        <div className="flex w-12 items-start justify-center pt-4">
+          <button
+            type="button"
         onClick={toggleSidebar}
-        onMouseEnter={() => setShowDragHint(true)}
-        onMouseLeave={() => setShowDragHint(false)}
-        className={`relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
-        title={isSidebarOpen ? 'Click to hide sidebar' : 'Click to show sidebar'}
-      >
-        {/* Small navigation bar in the middle */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
-        
-        {/* Chevron indicator */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          {isSidebarOpen ? (
-            <ChevronLeft className="w-4 h-4 text-primary" />
-          ) : (
-            <ChevronRight className="w-4 h-4 text-primary" />
-          )}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sidebar-border/60 bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+            title="Hiện sidebar board"
+            aria-label="Show board sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Canvas Area */}
       <div className="flex-1 overflow-hidden relative">

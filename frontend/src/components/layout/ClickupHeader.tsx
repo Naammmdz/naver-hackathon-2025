@@ -25,7 +25,6 @@ interface ClickupHeaderProps {
 }
 
 type ThemeMode = 'light' | 'dark' | 'system';
-type ThemeStyle = 'elegant' | 'mono' | 'northern' | 'softpop';
 
 export const ClickupHeader = memo(function ClickupHeader({
   onMenuClick,
@@ -38,7 +37,6 @@ export const ClickupHeader = memo(function ClickupHeader({
   const boards = useBoardStore((state) => state.boards);
   const [isDark, setIsDark] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
-  const [themeStyle, setThemeStyle] = useState<ThemeStyle>('elegant');
   const { t, i18n } = useTranslation();
 
   // Get context for breadcrumb
@@ -81,29 +79,11 @@ export const ClickupHeader = memo(function ClickupHeader({
     }, 50);
   }, []);
 
-  const applyThemeStyle = useCallback((styleInput: ThemeStyle | 'ocean') => {
-    const style = styleInput === 'ocean' ? 'softpop' : styleInput;
-    const root = document.documentElement;
-    if (style === 'softpop') {
-      delete root.dataset.theme;
-    } else {
-      root.dataset.theme = style;
-    }
-    localStorage.setItem('theme-style', style);
-    setThemeStyle(style);
-  }, []);
-
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = (localStorage.getItem('theme') as ThemeMode | null) || 'system';
     applyTheme(savedTheme);
   }, [applyTheme]);
-
-  useEffect(() => {
-    const savedStyleRaw = (localStorage.getItem('theme-style') as ThemeStyle | 'ocean' | null);
-    const normalizedStyle = savedStyleRaw === 'ocean' ? 'softpop' : savedStyleRaw || 'elegant';
-    applyThemeStyle(normalizedStyle);
-  }, [applyThemeStyle]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -240,29 +220,6 @@ export const ClickupHeader = memo(function ClickupHeader({
                 <DropdownMenuRadioItem value="system" className="flex items-center gap-2">
                   <Monitor className="h-4 w-4" />
                   {t('header.systemMode', 'Theo hệ thống')}
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>{t('header.themeStyle', 'Giao diện')}</DropdownMenuLabel>
-              <DropdownMenuRadioGroup
-                value={themeStyle}
-                onValueChange={(value) => applyThemeStyle(value as ThemeStyle)}
-              >
-                <DropdownMenuRadioItem value="elegant" className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  {t('header.elegantLuxury', 'Elegant Luxury')}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="mono" className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  {t('header.monoTheme', 'Mono')}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="northern" className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  {t('header.northernLights', 'Northern Lights')}
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="softpop" className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  {t('header.softPop', 'Soft Pop')}
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>

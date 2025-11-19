@@ -12,6 +12,8 @@ import '@blocknote/mantine/style.css';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { debounce } from 'lodash';
+import type { DebouncedFunc } from 'lodash';
+import { cn } from '@/lib/utils';
 export default function Docs() {
   const {
     documents,
@@ -43,7 +45,7 @@ export default function Docs() {
   const pendingTitleRef = useRef<string | null>(null);
   
   // Debounced onChange handler to avoid too many updates
-  const onChangeRef = useRef<(content: any[]) => void>();
+  const onChangeRef = useRef<DebouncedFunc<(content: any[]) => void>>();
   useEffect(() => {
     // Backup current content
     if (activeDocumentId && activeDocument?.content) {
@@ -279,30 +281,45 @@ export default function Docs() {
   return (
     <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
       {/* Document Sidebar - Collapsible on larger screens */}
-      <div className={`hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
+      <div
+        className={`relative hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
         isSidebarCollapsed ? 'w-0' : 'w-64'
-      }`}>
-        <DocumentSidebar />
+        }`}
+      >
+        {!isSidebarCollapsed && (
+          <button
+            type="button"
+            onClick={() => setIsSidebarCollapsed(true)}
+            className={cn(
+              'group flex h-8 w-8 items-center justify-center rounded-full border border-sidebar-border/50 bg-card/85 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all',
+              'absolute top-4 right-3 z-10'
+            )}
+            aria-label="Ẩn sidebar tài liệu"
+            title="Ẩn sidebar tài liệu"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
+        {!isSidebarCollapsed && (
+          <DocumentSidebar
+            onCollapse={() => setIsSidebarCollapsed(true)}
+          />
+        )}
       </div>
 
-      {/* Drag Handle - Small indicator bar like iPhone navigation */}
-      <div
-        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        className={`hidden lg:flex relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
-        title={isSidebarCollapsed ? 'Click to show sidebar' : 'Click to hide sidebar'}
-      >
-        {/* Small navigation bar in the middle */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
-        
-        {/* Chevron indicator */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          {isSidebarCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-primary" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-primary" />
-          )}
+      {isSidebarCollapsed && (
+        <div className="hidden lg:flex w-12 items-start justify-center pt-4">
+          <button
+            type="button"
+            onClick={() => setIsSidebarCollapsed(false)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sidebar-border/60 bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+            aria-label="Hiển thị sidebar tài liệu"
+            title="Hiển thị sidebar tài liệu"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Main Content with comments */}
       <div className="flex-1 flex overflow-hidden">

@@ -5,7 +5,8 @@ import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
 import { useCreateBlockNote } from '@blocknote/react';
-import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import type { BlockNoteEditor } from '@blocknote/core';
+import { useCallback, useEffect, useRef, useMemo, useState, ReactNode } from 'react';
 import * as Y from 'yjs';
 import { useDocumentStore } from '@/store/documentStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
@@ -14,6 +15,25 @@ import { useWorkspaceYjs } from '@/hooks/useWorkspaceYjs';
 import { getColor } from '@/lib/userColors';
 import { createThreadStore } from '@/lib/blocknote/threadStore';
 import { createResolveUsers } from '@/lib/blocknote/resolveUsers';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Undo2,
+  Redo2,
+  Quote,
+} from 'lucide-react';
 
 interface DocumentEditorProps {
   document: Document;
@@ -978,10 +998,13 @@ export function DocumentEditor({
 
   return (
       <>
+      {canEditWorkspace && (
+        <DocumentFormattingToolbar editor={wrappedEditor} canEdit={canEditWorkspace} />
+      )}
       <BlockNoteView
           editor={wrappedEditor}
           onChange={wrappedHandleChange}
-        theme={isDark ? "dark" : "light"}
+        theme={isDark ? 'dark' : 'light'}
         className="bg-background"
         slashMenu={false}
         editable={canEditWorkspace}
@@ -1005,9 +1028,233 @@ export function DocumentEditor({
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4">
       <div className="rounded-2xl border border-border/40 bg-card/70 shadow-sm shadow-border/40 backdrop-blur-sm p-4 sm:p-6">
         <div className="rounded-xl overflow-hidden">
-          <EditorWrapper key={editorInstanceKey} />
+      <EditorWrapper key={editorInstanceKey} />
         </div>
       </div>
+    </div>
+  );
+}
+
+type BlockInfo = {
+  type: string;
+  props?: Record<string, any>;
+};
+
+const ToolbarButton = ({
+  label,
+  icon,
+  active,
+  onClick,
+}: {
+  label: string;
+  icon: ReactNode;
+  active?: boolean;
+  onClick: () => void;
+}) => (
+  <Button
+    type="button"
+    size="icon"
+    variant={active ? 'secondary' : 'ghost'}
+    className="h-8 w-8"
+    onClick={onClick}
+    title={label}
+  >
+    {icon}
+  </Button>
+);
+
+function DocumentFormattingToolbar({
+  editor,
+  canEdit,
+}: {
+  editor: BlockNoteEditor<any, any, any>;
+  canEdit: boolean;
+}) {
+  const [activeStyles, setActiveStyles] = useState<Record<string, any>>({});
+  const [blockInfo, setBlockInfo] = useState<BlockInfo>({ type: 'paragraph' });
+
+  useEffect(() => {
+    if (!editor || !canEdit) {
+      return;
+    }
+
+    const updateState = () => {
+      try {
+        setActiveStyles(editor.getActiveStyles() || {});
+        const block = editor.getTextCursorPosition().block;
+        setBlockInfo({ type: block.type, props: block.props });
+      } catch (error) {
+        console.warn('[DocumentToolbar] Failed to update state', error);
+      }
+    };
+
+    updateState();
+    const offSelection = editor.onSelectionChange?.(() => updateState());
+    const offChange = editor.onChange?.(() => updateState());
+
+    return () => {
+      offSelection?.();
+      offChange?.();
+    };
+  }, [editor, canEdit]);
+
+  if (!canEdit || !editor) {
+    return null;
+  }
+
+  const blockValue = (() => {
+    if (blockInfo.type === 'heading') {
+      const level = (blockInfo.props as any)?.level ?? 1;
+      return `heading-${level}`;
+    }
+    if (blockInfo.type === 'quote') {
+      return 'quote';
+    }
+    return 'paragraph';
+  })();
+
+  const getSelectedBlocks = () =>
+    editor.getSelection()?.blocks || [editor.getTextCursorPosition().block];
+
+  const applyBlockType = (type: string, props?: Record<string, any>) => {
+    editor.focus();
+    const blocks = getSelectedBlocks();
+    editor.transact(() => {
+      for (const block of blocks) {
+        editor.updateBlock(block, {
+          type,
+          props: props ? { ...props } : undefined,
+        } as any);
+      }
+    });
+  };
+
+  const toggleList = (type: 'bulletListItem' | 'numberedListItem') => {
+    editor.focus();
+    const blocks = getSelectedBlocks();
+    const isActive = blocks.every((block) => block.type === type);
+    editor.transact(() => {
+      for (const block of blocks) {
+        editor.updateBlock(
+          block,
+          isActive
+            ? { type: 'paragraph', props: undefined }
+            : { type, props: undefined },
+        );
+      }
+    });
+  };
+
+  const toggleStyle = (style: 'bold' | 'italic' | 'underline' | 'strike') => {
+    editor.focus();
+    editor.toggleStyles({ [style]: true } as any);
+  };
+
+  const handleBlockChange = (value: string) => {
+    switch (value) {
+      case 'paragraph':
+        applyBlockType('paragraph');
+        break;
+      case 'quote':
+        applyBlockType('quote');
+        break;
+      case 'heading-1':
+        applyBlockType('heading', { level: 1 });
+        break;
+      case 'heading-2':
+        applyBlockType('heading', { level: 2 });
+        break;
+      case 'heading-3':
+        applyBlockType('heading', { level: 3 });
+        break;
+      default:
+        applyBlockType('paragraph');
+    }
+  };
+
+  const toolbarItems = [
+    { value: 'paragraph', label: 'Paragraph' },
+    { value: 'heading-1', label: 'Heading 1' },
+    { value: 'heading-2', label: 'Heading 2' },
+    { value: 'heading-3', label: 'Heading 3' },
+    { value: 'quote', label: 'Quote' },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 border-b border-border/40 bg-background/80 px-2 py-2">
+      <Select value={blockValue} onValueChange={handleBlockChange}>
+        <SelectTrigger className="h-8 w-[150px] text-sm">
+          <SelectValue placeholder="Paragraph" />
+        </SelectTrigger>
+        <SelectContent>
+          {toolbarItems.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <div className="h-6 w-px bg-border/60 mx-1" />
+
+      <ToolbarButton
+        label="Bold"
+        icon={<Bold className="h-4 w-4" />}
+        active={!!activeStyles.bold}
+        onClick={() => toggleStyle('bold')}
+      />
+      <ToolbarButton
+        label="Italic"
+        icon={<Italic className="h-4 w-4" />}
+        active={!!activeStyles.italic}
+        onClick={() => toggleStyle('italic')}
+      />
+      <ToolbarButton
+        label="Underline"
+        icon={<Underline className="h-4 w-4" />}
+        active={!!activeStyles.underline}
+        onClick={() => toggleStyle('underline')}
+      />
+      <ToolbarButton
+        label="Strikethrough"
+        icon={<Strikethrough className="h-4 w-4" />}
+        active={!!activeStyles.strike}
+        onClick={() => toggleStyle('strike')}
+      />
+
+      <div className="h-6 w-px bg-border/60 mx-1" />
+
+      <ToolbarButton
+        label="Bullet list"
+        icon={<List className="h-4 w-4" />}
+        active={blockInfo.type === 'bulletListItem'}
+        onClick={() => toggleList('bulletListItem')}
+      />
+      <ToolbarButton
+        label="Numbered list"
+        icon={<ListOrdered className="h-4 w-4" />}
+        active={blockInfo.type === 'numberedListItem'}
+        onClick={() => toggleList('numberedListItem')}
+      />
+      <ToolbarButton
+        label="Quote"
+        icon={<Quote className="h-4 w-4" />}
+        active={blockInfo.type === 'quote'}
+        onClick={() => applyBlockType('quote')}
+      />
+
+      <div className="h-6 w-px bg-border/60 mx-1" />
+
+      <ToolbarButton
+        label="Undo"
+        icon={<Undo2 className="h-4 w-4" />}
+        onClick={() => editor.undo()}
+      />
+      <ToolbarButton
+        label="Redo"
+        icon={<Redo2 className="h-4 w-4" />}
+        onClick={() => editor.redo()}
+      />
     </div>
   );
 }
