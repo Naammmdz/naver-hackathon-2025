@@ -145,7 +145,11 @@ export function MemorySidebar({ sessionId, isOpen, onClose }: MemorySidebarProps
   if (!isOpen) return null
 
   return (
-    <div className="fixed right-0 top-0 bottom-0 w-80 bg-background border-l shadow-lg z-[85] flex flex-col">
+    <div className={cn(
+      "fixed top-0 bottom-0 w-80 bg-background border-l shadow-lg z-[85] flex flex-col transition-all duration-300 ease-in-out",
+      "right-0 sm:right-[24rem] lg:right-[26rem]", // Position to the left of the chat panel on desktop
+      isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"
+    )}>
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-3">

@@ -242,7 +242,7 @@ export const GlobalChatPanel = () => {
       {open ? (
         <div
           aria-hidden="true"
-          className="fixed inset-0 z-[70] bg-black/30 backdrop-blur-[1px]"
+          className="fixed inset-0 z-[55] bg-black/30 backdrop-blur-[1px]"
           style={overlayStyle}
           onClick={closePanel}
         />
@@ -252,7 +252,7 @@ export const GlobalChatPanel = () => {
           aria-expanded={open}
           onClick={openPanel}
           className={cn(
-            "fixed right-0 top-1/2 z-[80] flex -translate-y-1/2 translate-x-[calc(100%-1.5rem)] items-center justify-center rounded-l-lg border border-r-0 border-primary bg-primary px-2 py-3 text-xs font-semibold uppercase tracking-wide text-primary-foreground shadow-lg transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary",
+            "fixed right-0 top-1/2 z-[58] flex -translate-y-1/2 translate-x-[calc(100%-1.5rem)] items-center justify-center rounded-l-lg border border-r-0 border-primary bg-primary px-2 py-3 text-xs font-semibold uppercase tracking-wide text-primary-foreground shadow-lg transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary",
             "sm:translate-x-[calc(100%-2rem)]",
           )}
           style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
@@ -265,7 +265,7 @@ export const GlobalChatPanel = () => {
         aria-label={t('components.GlobalChatPanel.panelAriaLabel')}
         id="global-ai-chat-panel"
         className={cn(
-          "fixed right-0 top-0 z-[90] flex h-full max-h-screen flex-col border-l bg-background text-foreground shadow-2xl transition-transform duration-300 ease-in-out",
+          "fixed right-0 top-0 z-[60] flex h-full max-h-screen flex-col border-l bg-background text-foreground shadow-2xl transition-transform duration-300 ease-in-out",
           panelWidthClass,
           open ? "translate-x-0" : "translate-x-full",
         )}
