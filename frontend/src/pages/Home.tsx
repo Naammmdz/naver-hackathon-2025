@@ -44,6 +44,7 @@ import {
 import { cn } from "@/lib/utils";
 import { QuickTodoList } from "@/components/dashboard/QuickTodoList";
 import { findOverlappingCards, adjustOverlappingCards, getCardBounds, gridUnitsToPixels } from "@/utils/cardLayout";
+import { getAvatarColor, getInitials } from '@/utils/avatarColors';
 
 export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { t } = useTranslation();
@@ -326,13 +327,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       {member.user?.avatarUrl ? (
                         <img
                           src={member.user.avatarUrl}
-                          alt={member.user.fullName || member.user.email}
+                          alt={member.user?.fullName || member.user?.email || member.userId}
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary">
-                            {(member.user?.fullName || member.user?.email || '?')[0].toUpperCase()}
+                        <div className={`h-8 w-8 rounded-full ${getAvatarColor(member.userId).bg} flex items-center justify-center`}>
+                          <span className={`text-xs font-medium ${getAvatarColor(member.userId).text}`}>
+                            {getInitials(member.user?.fullName, member.userId)}
                           </span>
                         </div>
                       )}

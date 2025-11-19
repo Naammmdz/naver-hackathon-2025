@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Crown, Mail, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { WorkspaceMember, WorkspaceInvite } from '@/types/workspace';
+import { getAvatarColor, getInitials } from '@/utils/avatarColors';
 
 export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { toast } = useToast();
@@ -42,6 +43,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
   const [isLoading, setIsLoading] = useState(false);
 
   const currentUserMember = members.find((m) => m.userId === currentUser?.id);
+<<<<<<< Updated upstream
   const isOwner = activeWorkspace?.ownerId === currentUser?.id;
   const isAdmin = currentUserMember?.role === 'ADMIN' || isOwner;
 
@@ -64,6 +66,19 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
       setInvites(invitesData);
     } catch (error) {
       console.error('Failed to load workspace data:', error);
+=======
+  
+  const isAdmin = activeWorkspace?.ownerId === currentUser?.id || currentUserMember?.role === 'ADMIN';
+
+  const loadData = async () => {
+    if (!activeWorkspaceId) return;
+    setIsLoading(true);
+    try {
+      const data = await workspaceApi.getMembers(activeWorkspaceId);
+      setMembers(data);
+    } catch (error: any) {
+      console.error('Failed to load members:', error);
+>>>>>>> Stashed changes
       toast({
         title: 'Error',
         description: 'Failed to load team members',
@@ -74,6 +89,12 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
     }
   };
 
+<<<<<<< Updated upstream
+=======
+  useEffect(() => {
+    loadData();
+  }, [activeWorkspaceId]);
+>>>>>>> Stashed changes
   // Helper function to get display name for a member
   const getMemberDisplayName = (member: WorkspaceMember) => {
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
@@ -351,6 +372,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                               className="h-10 w-10 rounded-full object-cover"
                             />
                           ) : (
+<<<<<<< Updated upstream
                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
                               {initials}
                             </div>
@@ -360,9 +382,20 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                               <Crown className="h-3 w-3 text-white" />
                             </div>
                           )}
+=======
+                        <div className={`h-10 w-10 rounded-full ${getAvatarColor(member.userId).bg} flex items-center justify-center ${getAvatarColor(member.userId).text} font-semibold`}>
+                          {getInitials(member.user?.fullName, member.userId)}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                      )}
+                      {(member.role === 'ADMIN' || member.role === 'OWNER') && (
+                        <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-[hsl(var(--warning))] flex items-center justify-center border-2 border-background">
+                          <Crown className="h-3 w-3 text-white" />
+>>>>>>> Stashed changes
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
                             <p className="font-medium truncate">{displayName}</p>
                             {member.userId === activeWorkspace?.ownerId && (
                               <Badge variant="outline">Owner</Badge>
