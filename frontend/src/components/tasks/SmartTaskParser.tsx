@@ -77,8 +77,8 @@ export function SmartTaskParser({
       console.warn('Server AI parsing failed, falling back to local parser:', error);
       
         toast({
-          title: "AI Parser Unavailable", 
-          description: "Using local natural language parser instead.",
+          title: t('components.SmartTaskParser.aiParserUnavailable'), 
+          description: t('components.SmartTaskParser.usingLocalParser'),
           variant: "default",
         });
     }
@@ -95,8 +95,8 @@ export function SmartTaskParser({
       setParsedTask(null);
       setParseMethod(null);
       toast({
-        title: "Parsing Failed",
-        description: "Could not parse the task. Please try rephrasing.",
+        title: t('components.SmartTaskParser.parsingFailed'),
+        description: t('components.SmartTaskParser.parsingFailedDescription'),
         variant: "destructive",
       });
     }
@@ -199,26 +199,26 @@ export function SmartTaskParser({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             {parseMethod === 'server' && (
-              <div title="Powered by DevFlow AI">
+              <div title={t('components.SmartTaskParser.poweredByDevFlow')}>
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
             )}
             {parseMethod === 'local' && (
-              <div title="Local parser">
+              <div title={t('components.SmartTaskParser.localParser')}>
                 <Zap className="h-4 w-4 text-foreground" />
               </div>
             )}
           </div>
           <span className="text-sm text-muted-foreground">
-            {parseMethod === 'server' && 'AI Enhanced'}
-            {parseMethod === 'local' && 'Local Parser'}
-            {isLoading && 'Parsing...'}
+            {parseMethod === 'server' && t('components.SmartTaskParser.aiEnhanced')}
+            {parseMethod === 'local' && t('components.SmartTaskParser.localParser')}
+            {isLoading && t('components.SmartTaskParser.parsing')}
           </span>
         </div>
         
         <div className="flex items-center gap-2">
           <Badge variant={parseMethod === 'server' ? 'outline' : 'secondary'} className="text-xs">
-            {parseMethod === 'server' ? 'AI Ready' : 'Local Only'}
+            {parseMethod === 'server' ? t('components.SmartTaskParser.aiReady') : t('components.SmartTaskParser.localOnly')}
             </Badge>
         </div>
       </div>
@@ -232,7 +232,7 @@ export function SmartTaskParser({
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={placeholder || t('smartParser.placeholder', 'Type your task naturally: "Finish project next Friday 3pm high #work"')}
+              placeholder={placeholder || t('components.SmartTaskParser.placeholder')}
               className="min-h-[80px] max-h-[120px] resize-none"
               rows={3}
               disabled={isLoading}
@@ -241,7 +241,7 @@ export function SmartTaskParser({
             {/* Examples */}
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">
-                {t('smartParser.examples', 'Examples:')}
+                {t('components.SmartTaskParser.examples')}
               </p>
               <div className="grid grid-cols-1 gap-1">
                 {examples.map((example, index) => (
@@ -261,7 +261,7 @@ export function SmartTaskParser({
           {getAllTags().length > 0 && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
-                Available tags:
+                {t('components.SmartTaskParser.availableTags')}
               </p>
               <div className="flex flex-wrap gap-1">
                 {getAllTags().slice(0, 8).map((tag) => (
@@ -298,7 +298,7 @@ export function SmartTaskParser({
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('smartParser.parsing', 'Parsing...')}
+                  {t('components.SmartTaskParser.parsing')}
                 </>
               ) : (
                 <>
@@ -309,7 +309,7 @@ export function SmartTaskParser({
             </Button>
             {parsedTask && (
               <Button onClick={handleCreateTask} className="flex-1">
-                {t('smartParser.createTask', 'Create Task')}
+                {t('components.SmartTaskParser.createTask')}
               </Button>
             )}
           </div>
@@ -323,7 +323,7 @@ export function SmartTaskParser({
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-medium">
-                    {t('smartParser.preview', 'Preview')}
+                    {t('components.SmartTaskParser.preview')}
                   </CardTitle>
                   <Button
                     variant="ghost"
@@ -336,7 +336,7 @@ export function SmartTaskParser({
                     ) : (
                       <Edit3 className="h-4 w-4 mr-1" />
                     )}
-                    {isEditing ? 'Cancel' : 'Edit'}
+                    {isEditing ? t('components.SmartTaskParser.cancel') : t('components.SmartTaskParser.edit')}
                   </Button>
                 </div>
               </CardHeader>
@@ -365,14 +365,14 @@ export function SmartTaskParser({
                         value={editedTask.description || ''}
                         onChange={(e) => handleEditChange('description', e.target.value)}
                         className="min-h-[80px] resize-none"
-                        placeholder="Add a description..."
+                        placeholder={t('components.SmartTaskParser.addDescriptionPlaceholder')}
                       />
                     </div>
 
                     {/* Due Date Edit */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">
-                        Due Date:
+                        {t('components.SmartTaskParser.dueDate')}:
                       </label>
                       <Input
                         type="date"
@@ -389,7 +389,7 @@ export function SmartTaskParser({
                     {/* Priority Edit */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">
-                        Priority:
+                        {t('components.SmartTaskParser.priority')}:
                       </label>
                       <Select
                         value={editedTask.priority}
@@ -399,9 +399,9 @@ export function SmartTaskParser({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Low">Low</SelectItem>
-                          <SelectItem value="Medium">Medium</SelectItem>
-                          <SelectItem value="High">High</SelectItem>
+                          <SelectItem value="Low">{t('components.SmartTaskParser.low')}</SelectItem>
+                          <SelectItem value="Medium">{t('components.SmartTaskParser.medium')}</SelectItem>
+                          <SelectItem value="High">{t('components.SmartTaskParser.high')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -409,7 +409,7 @@ export function SmartTaskParser({
                     {/* Tags Edit */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">
-                        Tags:
+                        {t('components.SmartTaskParser.tags')}:
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {editedTask.tags.map((tag, index) => (
@@ -438,11 +438,11 @@ export function SmartTaskParser({
                     {/* Subtasks Edit */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-muted-foreground">
-                        Subtasks:
+                        {t('components.SmartTaskParser.subtasks')}:
                       </label>
                       <div className="space-y-2">
                         {(editedTask.subtasks ?? []).length === 0 ? (
-                          <p className="text-xs text-muted-foreground">Chưa có subtask. Bạn có thể thêm ở dưới.</p>
+                          <p className="text-xs text-muted-foreground">{t('components.SmartTaskParser.noSubtasksYet')}</p>
                         ) : (
                           <ul className="space-y-1">
                             {(editedTask.subtasks ?? []).map((st, i) => (
@@ -453,7 +453,7 @@ export function SmartTaskParser({
                                   size="icon"
                                   className="h-7 w-7"
                                   onClick={() => handleRemoveSubtask(i)}
-                                  title="Remove subtask"
+                                  title={t('components.SmartTaskParser.removeSubtask')}
                                 >
                                   <X className="h-4 w-4" />
                                 </Button>
@@ -463,7 +463,7 @@ export function SmartTaskParser({
                         )}
                         <div className="flex items-center gap-2">
                           <Input
-                            placeholder="Thêm subtask..."
+                            placeholder={t('components.SmartTaskParser.addSubtaskPlaceholder')}
                             value={newSubtaskTitle}
                             onChange={(e) => setNewSubtaskTitle(e.target.value)}
                             onKeyDown={(e) => {
@@ -474,7 +474,7 @@ export function SmartTaskParser({
                             }}
                           />
                           <Button variant="outline" onClick={handleAddSubtask}>
-                            Thêm
+                            {t('components.SmartTaskParser.addSubtask')}
                           </Button>
                         </div>
                       </div>
@@ -488,7 +488,7 @@ export function SmartTaskParser({
                         size="sm"
                       >
                         <Save className="h-4 w-4 mr-2" />
-                        Save Changes
+                        {t('components.SmartTaskParser.saveChanges')}
                       </Button>
                     </div>
                   </>
@@ -509,7 +509,7 @@ export function SmartTaskParser({
                     {(editedTask || parsedTask).description && (
                       <div className="space-y-2">
                         <span className="text-base font-medium text-muted-foreground">
-                          {t('form.description', 'Description')}:
+                          {t('form.description')}:
                         </span>
                         <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg leading-relaxed">
                           {(editedTask || parsedTask).description}
@@ -529,7 +529,7 @@ export function SmartTaskParser({
                     <div className="flex items-center gap-3">
                       <Flag className="h-5 w-5 text-muted-foreground" />
                       <Badge className={cn("text-sm px-3 py-1", getPriorityColor((editedTask || parsedTask).priority))}>
-                        {(editedTask || parsedTask).priority} Priority
+                        {(editedTask || parsedTask).priority} {t('components.SmartTaskParser.priorityLabel')}
                       </Badge>
                     </div>
 
@@ -551,7 +551,7 @@ export function SmartTaskParser({
                     {(editedTask || parsedTask).subtasks && (editedTask || parsedTask).subtasks!.length > 0 && (
                       <div className="space-y-2">
                         <span className="text-base font-medium text-muted-foreground">
-                          Subtasks:
+                          {t('components.SmartTaskParser.subtasks')}:
                         </span>
                         <ul className="list-disc pl-6 space-y-1">
                           {(editedTask || parsedTask).subtasks!.map((st, i) => (
@@ -570,10 +570,10 @@ export function SmartTaskParser({
                 <div className="text-center space-y-2">
                   <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/50" />
                   <p className="text-base text-muted-foreground">
-                    {t('smartParser.noPreview', 'Type a task and click "Preview" to see the parsed result')}
+                    {t('components.SmartTaskParser.noPreview')}
                   </p>
                   <p className="text-sm text-muted-foreground/70">
-                    The AI will generate a title, description, priority, and tags
+                    {t('components.SmartTaskParser.noPreviewDescription')}
                   </p>
                 </div>
               </CardContent>
@@ -586,7 +586,7 @@ export function SmartTaskParser({
       {onCancel && (
         <div className="flex justify-start">
           <Button variant="outline" onClick={onCancel}>
-            {t('common.cancel', 'Cancel')}
+            {t('components.SmartTaskParser.cancel')}
           </Button>
         </div>
       )}
