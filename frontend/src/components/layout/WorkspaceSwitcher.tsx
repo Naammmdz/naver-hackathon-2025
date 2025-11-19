@@ -18,16 +18,18 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useWorkspaceStore } from "@/store/workspaceStore";
-import { Check, ChevronDown, Plus, Settings, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Plus, Settings, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
 import { WorkspaceSettingsDialog } from "./WorkspaceSettingsDialog";
+import { JoinWorkspaceDialog } from "./JoinWorkspaceDialog";
 
 export function WorkspaceSwitcher() {
   const { workspaces, activeWorkspaceId, setActiveWorkspace, deleteWorkspace } = useWorkspaceStore();
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<string | null>(null);
 
@@ -109,6 +111,13 @@ export function WorkspaceSwitcher() {
           </DropdownMenuItem>
           <DropdownMenuItem 
             className="cursor-pointer"
+            onClick={() => setJoinDialogOpen(true)}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Join Workspace
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            className="cursor-pointer"
             onClick={() => setSettingsDialogOpen(true)}
           >
             <Settings className="mr-2 h-4 w-4" />
@@ -120,6 +129,11 @@ export function WorkspaceSwitcher() {
       <CreateWorkspaceDialog 
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen}
+      />
+
+      <JoinWorkspaceDialog
+        open={joinDialogOpen}
+        onOpenChange={setJoinDialogOpen}
       />
 
       <WorkspaceSettingsDialog
