@@ -36,12 +36,12 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home', gradient: 'from-primary to-primary/80' },
-    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-primary to-accent' },
-    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-accent to-accent-foreground' },
-    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-primary/80 to-accent' },
-    { id: 'graph', icon: Network, label: 'Graph', view: 'graph' as const, gradient: 'from-primary to-secondary' },
-    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-success to-success/80' },
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const },
+    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const },
+    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const },
+    { id: 'graph', icon: Network, label: 'Graph', view: 'graph' as const },
+    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const },
   ];
 
   const spaces = [
@@ -81,14 +81,13 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
         {navItems.map(item => (
           <div key={item.id} className="flex flex-col items-center gap-0.5 relative group">
             <div className="relative">
-              {/* Background gradient - always visible with item color */}
+              {/* Background - using primary/accent colors from CSS variables */}
               <div
                 className={cn(
-                  'pointer-events-none absolute inset-0 rounded-xl transition-all duration-300 z-0 bg-gradient-to-br',
-                  item.gradient,
+                  'pointer-events-none absolute inset-0 rounded-xl transition-all duration-300 z-0',
                   activeNav === item.id 
-                    ? 'opacity-100 dark:opacity-50' 
-                    : 'opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30'
+                    ? 'bg-primary/20 dark:bg-primary/30' 
+                    : 'bg-accent/40 dark:bg-accent/20 group-hover:bg-primary/15 dark:group-hover:bg-primary/25'
                 )}
               />
                 <Button

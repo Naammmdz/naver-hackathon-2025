@@ -332,7 +332,7 @@ export const GlobalChatPanel = () => {
                       "rounded-xl px-4 py-2",
                       message.role === "assistant"
                         ? message.error 
-                          ? "bg-red-50 text-red-900 border border-red-200"
+                          ? "bg-[hsl(var(--destructive-light))] text-[hsl(var(--destructive))] border border-[hsl(var(--destructive))]/20"
                           : "bg-muted text-foreground"
                         : "bg-primary text-primary-foreground",
                     )}

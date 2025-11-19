@@ -667,7 +667,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                               </div>
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" />
                                   {boardInfo.count} shapes
                                 </span>
                                 <span>•</span>
@@ -959,7 +959,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] text-muted-foreground">Completion</p>
-                  <BarChart3 className="h-4 w-4 text-blue-500" />
+                  <BarChart3 className="h-4 w-4 text-[hsl(var(--chart-2))]" />
                 </div>
                 <p className="text-2xl font-bold">{completionRate}%</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
@@ -971,7 +971,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] text-muted-foreground">Total Tasks</p>
-                  <CheckSquare className="h-4 w-4 text-purple-500" />
+                  <CheckSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
                 </div>
                 <p className="text-2xl font-bold">{workspaceTasks.length}</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
@@ -1001,14 +1001,14 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--chart-2))]" />
                     <span className="text-[11px] text-muted-foreground">In Progress</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.inProgress}</span>
                     <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-blue-500 rounded-full"
+                        className="h-full bg-[hsl(var(--chart-2))] rounded-full"
                         style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.inProgress / workspaceTasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -1016,14 +1016,14 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--chart-3))]" />
                     <span className="text-[11px] text-muted-foreground">Done</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.done}</span>
                     <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-green-500 rounded-full"
+                        className="h-full bg-[hsl(var(--chart-3))] rounded-full"
                         style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.done / workspaceTasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -1042,7 +1042,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full">
                       <div className="w-full h-full bg-muted rounded-t relative flex items-end" style={{ minHeight: '80px' }}>
                         <div 
-                          className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500"
+                          className="w-full bg-[hsl(var(--chart-3))] rounded-t transition-all hover:opacity-80"
                           style={{ height: `${height}%`, minHeight: height > 0 ? '4px' : '0' }}
                           title={`${day.completed} tasks completed`}
                         />
@@ -1059,16 +1059,16 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div>
               <p className="text-xs font-semibold text-foreground mb-2">By Priority</p>
               <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg border bg-red-500/5 border-red-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{priorityBreakdown.high}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-high))]/5 border-[hsl(var(--priority-high))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-high))]">{priorityBreakdown.high}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">High</p>
                 </div>
-                <div className="rounded-lg border bg-yellow-500/5 border-yellow-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{priorityBreakdown.medium}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-medium))]/5 border-[hsl(var(--priority-medium))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-medium))]">{priorityBreakdown.medium}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">Medium</p>
                 </div>
-                <div className="rounded-lg border bg-gray-500/5 border-gray-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-gray-600 dark:text-gray-400">{priorityBreakdown.low}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-low))]/5 border-[hsl(var(--priority-low))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-low))]">{priorityBreakdown.low}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">Low</p>
                 </div>
               </div>
@@ -1107,7 +1107,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   strokeDasharray={`${2 * Math.PI * 50}`}
                   strokeDashoffset={`${2 * Math.PI * 50 * (1 - completionRateValue / 100)}`}
                   strokeLinecap="round"
-                  className="text-purple-500 transition-all duration-500"
+                  className="text-[hsl(var(--chart-3))] transition-all duration-500"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -1161,17 +1161,17 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
         // Get score color
         const getScoreColor = (score: number) => {
-          if (score >= 80) return 'text-green-500';
-          if (score >= 60) return 'text-yellow-500';
-          if (score >= 40) return 'text-orange-500';
-          return 'text-red-500';
+          if (score >= 80) return 'text-[hsl(var(--success))]';
+          if (score >= 60) return 'text-[hsl(var(--priority-medium))]';
+          if (score >= 40) return 'text-[hsl(var(--warning))]';
+          return 'text-[hsl(var(--destructive))]';
         };
 
         const getScoreBgColor = (score: number) => {
-          if (score >= 80) return 'bg-green-500/10 border-green-500/20';
-          if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/20';
-          if (score >= 40) return 'bg-orange-500/10 border-orange-500/20';
-          return 'bg-red-500/10 border-red-500/20';
+          if (score >= 80) return 'bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20';
+          if (score >= 60) return 'bg-[hsl(var(--priority-medium))]/10 border-[hsl(var(--priority-medium))]/20';
+          if (score >= 40) return 'bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20';
+          return 'bg-[hsl(var(--destructive))]/10 border-[hsl(var(--destructive))]/20';
         };
 
         return (
@@ -1600,9 +1600,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             <div
                               key={idx}
                               className={`h-1 w-1 rounded-full ${
-                                task.priority === 'High' ? 'bg-red-500' :
-                                task.priority === 'Medium' ? 'bg-yellow-500' :
-                                'bg-gray-400'
+                                task.priority === 'High' ? 'bg-[hsl(var(--priority-high))]' :
+                                task.priority === 'Medium' ? 'bg-[hsl(var(--priority-medium))]' :
+                                'bg-[hsl(var(--priority-low))]'
                               }`}
                             />
                           ))}
@@ -1627,9 +1627,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 return todayTasks.slice(0, 2).map((task) => (
                   <div key={task.id} className="flex items-center gap-1 text-[10px]">
                     <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
-                      task.priority === 'High' ? 'bg-red-500' :
-                      task.priority === 'Medium' ? 'bg-yellow-500' :
-                      'bg-gray-400'
+                      task.priority === 'High' ? 'bg-[hsl(var(--priority-high))]' :
+                      task.priority === 'Medium' ? 'bg-[hsl(var(--priority-medium))]' :
+                      'bg-[hsl(var(--priority-low))]'
                     }`} />
                     <span className="truncate">{task.title}</span>
                   </div>

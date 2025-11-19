@@ -368,15 +368,15 @@ export default function Docs() {
 
               <div className="flex flex-col gap-2 text-sm text-muted-foreground/70">
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
+                  <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" />
                   <span>Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
+                  <Sparkles className="h-4 w-4 text-[hsl(var(--accent-foreground))]" />
                   <span>Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
+                  <Sparkles className="h-4 w-4 text-[hsl(var(--warning))]" />
                   <span>Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.</span>
                 </div>
               </div>
