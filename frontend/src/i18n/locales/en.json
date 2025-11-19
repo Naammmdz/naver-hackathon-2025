@@ -226,6 +226,16 @@
       "nameLabel": "Workspace Name *",
       "namePlaceholder": "My Workspace"
     },
+    "DashboardCard": {
+      "cardSettings": "Card Settings",
+      "customize": "Customize",
+      "dragToReorder": "Drag to reorder",
+      "removeCard": "Remove card",
+      "removeThisCard": "Remove this card",
+      "resizeDiagonal": "Resize diagonal",
+      "resizeHorizontal": "Resize horizontal",
+      "resizeVertical": "Resize vertical"
+    },
     "ChatInput": {
       "addContext": "Add Context",
       "askPlaceholder": "Ask, learn, brainstorm, draw...",
