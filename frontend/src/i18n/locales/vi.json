@@ -143,6 +143,10 @@
     "doneDescription": "Các công việc đã hoàn thành"
   },
   "components": {
+    "Index": {
+      "cannotLoadTasks": "Không thể tải danh sách công việc. Vui lòng thử lại.",
+      "retryLoad": "Thử lại"
+    },
     "BoardSidebar": {
       "boardPlural": "bảng",
       "boardSingular": "bảng",
