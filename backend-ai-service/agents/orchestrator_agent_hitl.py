@@ -375,7 +375,7 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
         if risk is None:
             # Safe operation - execute without HITL
             logger.info("Safe operation detected - executing without HITL")
-            result = self.query(query, workspace_id, conversation_history)
+            result = self.query(workspace_id, query, conversation_history)
             return {
                 **result,
                 'requires_confirmation': False,
@@ -440,10 +440,10 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
         preview = f"📋 Execution Plan ({len(plan.steps)} steps):\n\n"
         
         for i, step in enumerate(plan.steps, 1):
-            preview += f"{i}. **{step.agent_type.value}** - {step.step_type.value}\n"
-            preview += f"   {step.description}\n"
-            if step.depends_on:
-                preview += f"   ⚠️ Depends on step(s): {', '.join(map(str, step.depends_on))}\n"
+            preview += f"{i}. **{step.agent.value}** - {step.type.value}\n"
+            preview += f"   {step.query}\n"
+            if step.dependencies:
+                preview += f"   ⚠️ Depends on step(s): {', '.join(map(str, step.dependencies))}\n"
             preview += "\n"
         
         return preview

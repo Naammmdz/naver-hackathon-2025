@@ -172,6 +172,34 @@ export const GlobalChatPanel = () => {
           localStorage.setItem('global-ai-session-id', response.session_id);
         }
 
+        // Check if HITL confirmation is required for CRUD operations
+        if (response.metadata?.requires_hitl) {
+          // CRUD operation detected - show HITL request
+          const hitlMessage: ChatMessage = {
+            id: `hitl-${timestamp}`,
+            role: "assistant",
+            content: response.answer || "⏳ This operation requires your approval.",
+            timestamp: Date.now(),
+            metadata: {
+              ...response.metadata,
+              is_crud_hitl: true,
+              awaiting_confirmation: true,
+            },
+          };
+
+          setMessages((prev) => [...prev, hitlMessage]);
+
+          // Save to localStorage
+          const chatHistory = [...messages.slice(1), userMessage, hitlMessage];
+          localStorage.setItem('global-ai-chat-history', JSON.stringify(chatHistory));
+
+          // Note: Frontend should implement a HITL confirmation dialog
+          // similar to the existing HITLConfirmationDialog
+          // For now, just display the HITL request info
+          return;
+        }
+
+        // Normal query response (not HITL)
         // Add AI response
         const assistantMessage: ChatMessage = {
           id: `assistant-${timestamp}`,

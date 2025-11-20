@@ -97,6 +97,9 @@ class SessionResponse(BaseModel):
 
 
 # Endpoints
+from agents.task_agent import TaskAgent
+from agents.orchestrator_agent_hitl import OrchestratorAgentWithHITL
+
 @router.post(
     "/workspaces/{workspace_id}/query",
     response_model=QueryResponse,
@@ -131,27 +134,86 @@ async def query_documents(
         # Generate session ID if not provided
         session_id = request.session_id or f"session-{uuid.uuid4().hex[:12]}"
         
-        # Initialize agent
-        agent_kwargs = {
+        # Initialize agents
+        # We need both Document and Task agents for the Orchestrator
+        doc_agent_kwargs = {
             "top_k": request.top_k
         }
         if request.llm_provider:
-            agent_kwargs["llm_provider"] = request.llm_provider
+            doc_agent_kwargs["llm_provider"] = request.llm_provider
+            
+        document_agent = DocumentAgent(**doc_agent_kwargs)
         
-        agent = DocumentAgent(**agent_kwargs)
+        # Initialize Task Agent (uses default provider or same as request)
+        task_agent_kwargs = {}
+        if request.llm_provider:
+            task_agent_kwargs["llm_provider"] = request.llm_provider
+        task_agent = TaskAgent(**task_agent_kwargs)
+        
+        # Initialize Orchestrator with HITL support
+        orchestrator = OrchestratorAgentWithHITL(
+            llm_provider=request.llm_provider or "naver",
+            document_agent=document_agent,
+            task_agent=task_agent
+        )
         
         logger.info(f"Processing query in workspace {workspace_id}, session {session_id}")
         
-        # Execute query
-        result = agent.query(
+        # TODO: Fetch history if needed for conversation_history parameter
+        conversation_history = None 
+
+        # Query with Orchestrator (now supports CRUD operations with HITL)
+        result = orchestrator.query_with_crud(
             query=request.query,
             workspace_id=workspace_id,
             user_id=request.user_id,
-            session_id=session_id
+            conversation_history=conversation_history
         )
         
-        # Store conversation if memory enabled
-        if request.include_memory:
+        # Check if HITL confirmation is required
+        if result.get('requires_confirmation'):
+            # Write operation detected - return HITL request
+            logger.info(f"HITL required for operation: {result.get('operation_type')}")
+            
+            return QueryResponse(
+                query=request.query,
+                answer=result.get('message', '⏳ Confirmation required for this operation'),
+                citations=[],
+                confidence=1.0,
+                session_id=session_id,
+                retrieval_stats={},
+                metadata={
+                    'requires_hitl': True,
+                    'hitl_request': result,
+                    'operation_type': result.get('operation_type'),
+                    'intent_type': result.get('intent_type')
+                }
+            )
+        
+        # Normal query (read operation) - extract citations and prepare response
+        # The orchestrator returns a 'metadata' dict which contains 'step_results'
+        citations = []
+        metadata = result.get('metadata', {})
+        step_results = metadata.get('step_results', [])
+        
+        for step in step_results:
+            if step.get('success') and step.get('result'):
+                step_res = step['result']
+                # Check if this step produced citations (Document Agent)
+                if 'citations' in step_res:
+                    for citation in step_res['citations']:
+                        citations.append(Citation(
+                            chunk_id=citation.get('chunk_id', ''),
+                            document_id=citation.get('document_id', ''),
+                            document_name=citation.get('document_name', 'Unknown'),
+                            page_number=citation.get('page_number'),
+                            chunk_text=citation.get('chunk_text', ''),
+                            score=citation.get('score', 0.0)
+                        ))
+        
+        # Store conversation if memory enabled AND it's not a HITL confirmation request
+        # If it requires confirmation, we don't store it as a completed interaction yet
+        if request.include_memory and not result.get('requires_confirmation'):
             try:
                 memory = create_conversation_memory(db)
                 
@@ -171,9 +233,9 @@ async def query_documents(
                     content=result['answer'],
                     workspace_id=workspace_id,
                     user_id=request.user_id,
-                    agent_used="document_agent",
-                    confidence_score=result.get('confidence', 0.0),
-                    metadata=result.get('generation_metadata', {})
+                    agent_used="orchestrator_agent",
+                    confidence_score=result.get('confidence', 0.0), # Orchestrator might not return top-level confidence
+                    metadata=result # Store full result as metadata
                 )
                 
                 # Extract and store facts
@@ -188,26 +250,14 @@ async def query_documents(
             except Exception as e:
                 logger.warning(f"Failed to store conversation memory: {e}")
         
-        # Format citations
-        citations = []
-        for citation in result.get('citations', []):
-            citations.append(Citation(
-                chunk_id=citation.get('chunk_id', ''),
-                document_id=citation.get('document_id', ''),
-                document_name=citation.get('document_name', 'Unknown'),
-                page_number=citation.get('page_number'),
-                chunk_text=citation.get('chunk_text', ''),
-                score=citation.get('score', 0.0)
-            ))
-        
         return QueryResponse(
             query=request.query,
             answer=result['answer'],
             citations=citations,
-            confidence=result.get('confidence', 0.0),
+            confidence=result.get('confidence', 1.0), # Default to 1.0 if not provided
             session_id=session_id,
             retrieval_stats=result.get('retrieval_stats', {}),
-            metadata=result.get('generation_metadata', {})
+            metadata=result # Pass full result including HITL info
         )
         
     except HTTPException:

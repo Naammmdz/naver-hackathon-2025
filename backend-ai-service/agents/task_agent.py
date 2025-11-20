@@ -25,7 +25,7 @@ Example:
     ```
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 import sys
 from pathlib import Path
 
@@ -83,6 +83,22 @@ class TaskAgent:
         
         # Build workflow graph
         self.graph = self._build_graph()
+        
+        # Initialize CRUD tools for write operations
+        try:
+            from agents.tools import CreateTaskTool, BulkCreateTasksTool, UpdateTaskTool
+            from agents.api_clients import CoreServiceClient
+            
+            api_client = CoreServiceClient()
+            self.tools = {
+                'create_task': CreateTaskTool(api_client),
+                'bulk_create_tasks': BulkCreateTasksTool(api_client),
+                'update_task': UpdateTaskTool(api_client)
+            }
+            logger.info("Task CRUD tools initialized")
+        except ImportError as e:
+            logger.warning(f"CRUD tools not available: {e}")
+            self.tools = {}
         
         logger.info(f"TaskAgent initialized with {llm_provider} provider")
     
@@ -238,3 +254,196 @@ class TaskAgent:
         except Exception as e:
             logger.error(f"Error visualizing graph: {str(e)}")
             raise
+    
+    # ==================== CRUD Operations ====================
+    
+    def create_task(
+        self,
+        workspace_id: str,
+        title: str,
+        description: Optional[str] = None,
+        status: str = "TODO",
+        priority: str = "MEDIUM",
+        assignee_id: Optional[str] = None,
+        due_date: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        with_preview: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Create a new task (with optional preview for HITL).
+        
+        Args:
+            workspace_id: Workspace ID
+            title: Task title
+            description: Task description
+            status: Task status (TODO, IN_PROGRESS, DONE)
+            priority: Priority (LOW, MEDIUM, HIGH)
+            assignee_id: Assignee user ID
+            due_date: Due date (ISO format)
+            metadata: Optional metadata
+            with_preview: If True, return preview instead of executing
+            
+        Returns:
+            If with_preview=True: preview dict
+            If with_preview=False: execution result
+        """
+        if 'create_task' not in self.tools:
+            raise RuntimeError("Create task tool not available")
+        
+        tool = self.tools['create_task']
+        params = {
+            'workspace_id': workspace_id,
+            'title': title,
+            'description': description,
+            'status': status,
+            'priority': priority,
+            'assignee_id': assignee_id,
+            'due_date': due_date,
+            'metadata': metadata
+        }
+        
+        if with_preview:
+            preview = tool.preview(params)
+            return {
+                'requires_confirmation': True,
+                'preview': preview.model_dump(),
+                'params': params,
+                'tool_name': 'create_task'
+            }
+        else:
+            result = tool.execute(params)
+            return result.model_dump()
+    
+    def bulk_create_tasks(
+        self,
+        workspace_id: str,
+        tasks: List[Dict[str, Any]],
+        with_preview: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Create multiple tasks (with optional preview for HITL).
+        
+        Args:
+            workspace_id: Workspace ID
+            tasks: List of task data dicts
+            with_preview: If True, return preview instead of executing
+            
+        Returns:
+            If with_preview=True: preview dict with batch control
+            If with_preview=False: execution result
+        """
+        if 'bulk_create_tasks' not in self.tools:
+            raise RuntimeError("Bulk create tasks tool not available")
+        
+        tool = self.tools['bulk_create_tasks']
+        params = {
+            'workspace_id': workspace_id,
+            'tasks': tasks
+        }
+        
+        if with_preview:
+            preview = tool.preview(params)
+            
+            # Create batch control for granular approval
+            from agents.schemas.batch_control import BatchControl, BatchItem
+            
+            batch_items = []
+            for i, task in enumerate(tasks):
+                batch_items.append(BatchItem(
+                    id=f"task-{i}",
+                    preview=task
+                ))
+            
+            batch_control = BatchControl(
+                total_items=len(tasks),
+                allow_partial=True,
+                individual_approval=len(tasks) > 5,  # Individual approval for >5 tasks
+                items=batch_items
+            )
+            
+            return {
+                'requires_confirmation': True,
+                'preview': preview.model_dump(),
+                'batch_control': batch_control.model_dump(),
+                'params': params,
+                'tool_name': 'bulk_create_tasks'
+            }
+        else:
+            result = tool.execute(params)
+            return result.model_dump()
+    
+    def update_task(
+        self,
+        task_id: str,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        status: Optional[str] = None,
+        priority: Optional[str] = None,
+        assignee_id: Optional[str] = None,
+        due_date: Optional[str] = None,
+        with_preview: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Update an existing task (with optional preview for HITL).
+        
+        Args:
+            task_id: Task ID to update
+            title: New title (optional)
+            description: New description (optional)
+            status: New status (optional)
+            priority: New priority (optional)
+            assignee_id: New assignee (optional)
+            due_date: New due date (optional)
+            with_preview: If True, return preview instead of executing
+            
+        Returns:
+            If with_preview=True: preview dict
+            If with_preview=False: execution result
+        """
+        if 'update_task' not in self.tools:
+            raise RuntimeError("Update task tool not available")
+        
+        tool = self.tools['update_task']
+        params = {
+            'task_id': task_id,
+            'title': title,
+            'description': description,
+            'status': status,
+            'priority': priority,
+            'assignee_id': assignee_id,
+            'due_date': due_date
+        }
+        
+        # Remove None values
+        params = {k: v for k, v in params.items() if v is not None}
+        
+        if with_preview:
+            preview = tool.preview(params)
+            return {
+                'requires_confirmation': True,
+                'preview': preview.model_dump(),
+                'params': params,
+                'tool_name': 'update_task'
+            }
+        else:
+            result = tool.execute(params)
+            return result.model_dump()
+    
+    def execute_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute a tool by name (called after HITL approval).
+        
+        Args:
+            tool_name: Name of tool to execute
+            params: Tool parameters
+            
+        Returns:
+            Execution result
+        """
+        if tool_name not in self.tools:
+            raise ValueError(f"Unknown tool: {tool_name}")
+        
+        tool = self.tools[tool_name]
+        result = tool.execute(params)
+        return result.model_dump()
+
