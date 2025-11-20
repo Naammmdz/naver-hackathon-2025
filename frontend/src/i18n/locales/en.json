@@ -196,7 +196,7 @@
       "panelAriaLabel": "Chat with AI assistant",
       "placeholder": "Enter your question...",
       "sendButtonSr": "Send",
-      "welcomeMessage": "Hello! I am the global AI assistant. How can I help you today?"
+      "welcomeMessage": "Hello! I am the DevHolic AI assistant. How can I help you today?"
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Loading user information..."

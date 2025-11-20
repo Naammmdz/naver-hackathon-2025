@@ -119,7 +119,7 @@ export function ClickupSidebar({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-sidebar-foreground/60" />
           <Input
             placeholder="Search..."
-            className="pl-9 h-8 text-xs bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30"
+            className="pl-9 h-8 text-xs bg-muted border-border/50 focus-visible:ring-primary/30"
           />
         </div>
       </div>

@@ -209,7 +209,7 @@ export default function BoardSidebar({
               placeholder={t('components.BoardSidebar.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-8 text-sm bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30 rounded-lg"
+              className="pl-9 h-8 text-sm bg-muted border-border/50 focus-visible:ring-primary/30 rounded-lg"
             />
             {error && (
               <p className="mt-2 text-xs text-destructive">{error}</p>
