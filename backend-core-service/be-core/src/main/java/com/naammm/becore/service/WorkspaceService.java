@@ -37,6 +37,7 @@ public class WorkspaceService {
     private final TaskRepository taskRepository;
     private final DocumentRepository documentRepository;
     private final BoardRepository boardRepository;
+    private final UserService userService;
     private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
@@ -159,6 +160,13 @@ public class WorkspaceService {
         if (inviteRepository.findByWorkspaceIdAndEmail(workspaceId, request.getEmail()).isPresent()) {
             throw new IllegalStateException("User already invited");
         }
+        
+        // Check if already a member
+        userService.findByEmail(request.getEmail()).ifPresent(user -> {
+            if (memberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
+                throw new IllegalStateException("User is already a member of this workspace");
+            }
+        });
         
         WorkspaceInvite invite = WorkspaceInvite.builder()
             .workspaceId(workspaceId)

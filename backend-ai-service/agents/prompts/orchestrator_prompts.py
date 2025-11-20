@@ -27,6 +27,11 @@ Available Agents:
   - Detects risks and provides recommendations
   - Good for: "How many tasks are overdue?", "Who is working on X?"
 
+- **Board Agent**: Visualizes tasks and workflows
+  - Generates Mermaid.js charts (flowcharts, gantt, pie charts)
+  - Visualizes task dependencies and status distribution
+  - Good for: "Draw a flowchart of tasks", "Show me a gantt chart of the project"
+
 **IMPORTANT RULES:**
 1. Always detect intent BEFORE routing
 2. For simple queries, route to ONE agent
@@ -37,6 +42,7 @@ Available Agents:
 **Intent Types:**
 - document_query: Asking about document content
 - task_query: Asking about tasks
+- board_query: Asking for visualizations
 - hybrid_query: Requires both documents and tasks
 - workspace_overview: High-level summary
 - task_risk: Risk analysis
@@ -108,7 +114,7 @@ Analyze the user's query and detect:
 {{
   "type": "intent_type_here",
   "confidence": 0.95,
-  "agent": "document|task|both",
+  "agent": "document|task|board|both",
   "reasoning": "Explanation here",
   "entities": {{}},
   "requires_decomposition": false
@@ -141,7 +147,7 @@ def create_planning_prompt(
     """
     
     # Determine if planning is needed
-    if agent == AgentType.DOCUMENT or agent == AgentType.TASK:
+    if agent == AgentType.DOCUMENT or agent == AgentType.TASK or agent == AgentType.BOARD:
         needs_planning = False
         planning_note = "**Note:** This is a simple query that can be handled by a single agent. Create a single-step plan."
     else:
@@ -174,14 +180,16 @@ def create_planning_prompt(
 
 ## Step Types Available
 1. **query_document**: Query the Document Agent
-2. **query_task**: Query the Task Agent  
-3. **synthesize**: Combine results from multiple steps
+2. **query_task**: Query the Task Agent
+3. **query_board**: Query the Board Agent
+4. **synthesize**: Combine results from multiple steps
 
 ## IMPORTANT: Agent Field Rules
-- Each step's "agent" field must be one of: "document", "task", or "both"
+- Each step's "agent" field must be one of: "document", "task", "board", or "both"
 - NEVER use "orchestrator" as an agent value
 - Use "document" for document queries
 - Use "task" for task queries
+- Use "board" for board queries
 - Use "both" only for synthesis steps that combine results
 
 ## Your Task
@@ -193,18 +201,19 @@ Create an execution plan with these fields:
 
 Each step should have:
 - **step_id**: Unique identifier (e.g., "step1", "step2")
-- **type**: Step type (query_document, query_task, or synthesize)
-- **agent**: MUST be "document", "task", or "both" (NEVER "orchestrator")
+- **type**: Step type (query_document, query_task, query_board, or synthesize)
+- **agent**: MUST be "document", "task", "board", or "both" (NEVER "orchestrator")
 - **query**: What to query
 - **dependencies**: Step IDs that must complete first
 - **reasoning**: Why this step is needed
 
-**CRITICAL VALIDATION RULES:**
-1. Agent field MUST be exactly one of: "document", "task", "both"
+## CRITICAL VALIDATION RULES:
+1. Agent field MUST be exactly one of: "document", "task", "board", "both"
 2. For query_document steps: agent = "document"
-3. For query_task steps: agent = "task"  
-4. For synthesize steps: agent = "both"
-5. NEVER use "orchestrator" as an agent value
+3. For query_task steps: agent = "task"
+4. For query_board steps: agent = "board"
+5. For synthesize steps: agent = "both"
+6. NEVER use "orchestrator" as an agent value
 
 ## Output Format (JSON)
 ```json
@@ -246,7 +255,7 @@ Each step should have:
 }}
 ```
 
-**REMEMBER:** agent field must be "document", "task", or "both" - never any other value!
+**REMEMBER:** agent field must be "document", "task", "board", or "both" - never any other value!
 
 Create the execution plan now:
 """

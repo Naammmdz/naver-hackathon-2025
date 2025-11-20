@@ -141,4 +141,38 @@ public class WorkspaceController {
         workspaceService.leaveWorkspace(id, userId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/invites/me")
+    @Operation(summary = "Get my pending invites")
+    public ResponseEntity<List<WorkspaceInvite>> getMyInvites() {
+        String email = UserContext.getEmail();
+        if (email == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<WorkspaceInvite> invites = workspaceService.getMyInvites(email);
+        return ResponseEntity.ok(invites);
+    }
+
+    @PostMapping("/invites/{inviteId}/accept")
+    @Operation(summary = "Accept workspace invite")
+    public ResponseEntity<WorkspaceMember> acceptInvite(@PathVariable String inviteId) {
+        String userId = UserContext.requireUserId();
+        String email = UserContext.getEmail();
+        if (email == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        WorkspaceMember member = workspaceService.acceptInvite(inviteId, userId, email);
+        return ResponseEntity.ok(member);
+    }
+
+    @PostMapping("/invites/{inviteId}/decline")
+    @Operation(summary = "Decline workspace invite")
+    public ResponseEntity<Void> declineInvite(@PathVariable String inviteId) {
+        String email = UserContext.getEmail();
+        if (email == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        workspaceService.declineInvite(inviteId, email);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -12,14 +12,27 @@ from enum import Enum
 
 class ActionType(str, Enum):
     """Types of actions requiring confirmation"""
+    # Task operations
+    TASK_CREATE = "task_create"
+    TASK_BULK_CREATE = "task_bulk_create"
     TASK_UPDATE = "task_update"
     TASK_DELETE = "task_delete"
     TASK_REASSIGN = "task_reassign"
     DEADLINE_CHANGE = "deadline_change"
     PRIORITY_CHANGE = "priority_change"
     STATUS_CHANGE = "status_change"
-    NOTIFICATION_SEND = "notification_send"
+    
+    # Document operations
+    DOCUMENT_CREATE = "document_create"
+    DOCUMENT_UPDATE = "document_update"
     DOCUMENT_DELETE = "document_delete"
+    
+    # Board operations
+    BOARD_CREATE = "board_create"
+    BOARD_UPDATE = "board_update"
+    
+    # Other operations
+    NOTIFICATION_SEND = "notification_send"
     BULK_OPERATION = "bulk_operation"
     CUSTOM = "custom"
 
@@ -66,6 +79,22 @@ class ActionOption(BaseModel):
     reversible: bool = Field(
         default=True,
         description="Whether action can be reversed"
+    )
+    
+    # Enhanced for CRUD operations
+    preview_data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Preview of what will be created/updated"
+    )
+    
+    diff: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Before/after diff for updates"
+    )
+    
+    keyboard_shortcut: Optional[str] = Field(
+        None,
+        description="Keyboard shortcut (e.g., 'Enter', 'Ctrl+E')"
     )
 
 

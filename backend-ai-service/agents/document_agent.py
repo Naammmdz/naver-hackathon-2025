@@ -99,6 +99,21 @@ class DocumentAgent:
         # Build workflow graph
         self.graph = self._build_graph()
         
+        # Initialize CRUD tools for write operations
+        try:
+            from agents.tools import CreateDocumentTool, UpdateDocumentTool
+            from agents.api_clients import CoreServiceClient
+            
+            api_client = CoreServiceClient()
+            self.tools = {
+                'create_document': CreateDocumentTool(api_client),
+                'update_document': UpdateDocumentTool(api_client)
+            }
+            logger.info("Document CRUD tools initialized")
+        except ImportError as e:
+            logger.warning(f"CRUD tools not available: {e}")
+            self.tools = {}
+        
         logger.info(f"DocumentAgent initialized with {embedder_type} embedder and {llm_provider} LLM")
     
     def _build_graph(self) -> StateGraph:
@@ -329,8 +344,124 @@ class DocumentAgent:
             # Save to file
             img = Image.open(io.BytesIO(graph_image))
             img.save(output_path)
-            
             logger.info(f"Graph visualization saved to {output_path}")
             
         except Exception as e:
             logger.warning(f"Could not create visualization: {str(e)}")
+    
+    # ==================== CRUD Operations ====================
+    
+    def create_document(
+        self,
+        workspace_id: str,
+        title: str,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None,
+        with_preview: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Create a new document (with optional preview for HITL).
+        
+        Args:
+            workspace_id: Workspace ID
+            title: Document title
+            content: Document content (markdown)
+            metadata: Optional metadata
+            with_preview: If True, return preview instead of executing
+            
+        Returns:
+            If with_preview=True: preview dict
+            If with_preview=False: execution result
+        """
+        if 'create_document' not in self.tools:
+            raise RuntimeError("Create document tool not available")
+        
+        tool = self.tools['create_document']
+        params = {
+            'workspace_id': workspace_id,
+            'title': title,
+            'content': content,
+            'metadata': metadata
+        }
+        
+        if with_preview:
+            # Return preview for HITL
+            preview = tool.preview(params)
+            return {
+                'requires_confirmation': True,
+                'preview': preview.model_dump(),
+                'params': params,
+                'tool_name': 'create_document'
+            }
+        else:
+            # Execute directly
+            result = tool.execute(params)
+            return result.model_dump()
+    
+    def update_document(
+        self,
+        document_id: str,
+        title: Optional[str] = None,
+        content: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        with_preview: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Update an existing document (with optional preview for HITL).
+        
+        Args:
+            document_id: Document ID to update
+            title: New title (optional)
+            content: New content (optional)
+            metadata: New metadata (optional)
+            with_preview: If True, return preview instead of executing
+            
+        Returns:
+            If with_preview=True: preview dict
+            If with_preview=False: execution result
+        """
+        if 'update_document' not in self.tools:
+            raise RuntimeError("Update document tool not available")
+        
+        tool = self.tools['update_document']
+        params = {
+            'document_id': document_id,
+            'title': title,
+            'content': content,
+            'metadata': metadata
+        }
+        
+        # Remove None values
+        params = {k: v for k, v in params.items() if v is not None}
+        
+        if with_preview:
+            # Return preview for HITL
+            preview = tool.preview(params)
+            return {
+                'requires_confirmation': True,
+                'preview': preview.model_dump(),
+                'params': params,
+                'tool_name': 'update_document'
+            }
+        else:
+            # Execute directly
+            result = tool.execute(params)
+            return result.model_dump()
+    
+    def execute_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute a tool by name (called after HITL approval).
+        
+        Args:
+            tool_name: Name of tool to execute
+            params: Tool parameters
+            
+        Returns:
+            Execution result
+        """
+        if tool_name not in self.tools:
+            raise ValueError(f"Unknown tool: {tool_name}")
+        
+        tool = self.tools[tool_name]
+        result = tool.execute(params)
+        return result.model_dump()

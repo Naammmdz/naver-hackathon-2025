@@ -83,14 +83,21 @@ echo ""
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}1. Starting Docker Containers${NC}"
 echo -e "${BLUE}========================================${NC}"
-$DOCKER_CMD up -d postgres redis
-echo -e "${GREEN}✓ PostgreSQL and Redis started${NC}"
+$DOCKER_CMD up -d postgres redis elasticsearch
+echo -e "${GREEN}✓ PostgreSQL, Redis, and Elasticsearch started${NC}"
 echo ""
 
 # Wait for databases
 echo -e "${YELLOW}Waiting for databases to be ready...${NC}"
 sleep 5
-echo -e "${GREEN}✓ Databases ready${NC}"
+
+# Wait for Elasticsearch
+echo -e "${YELLOW}Waiting for Elasticsearch to be ready (status=yellow)...${NC}"
+until curl -s "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null; do
+    echo -e "${YELLOW}  Elasticsearch is initializing...${NC}"
+    sleep 5
+done
+echo -e "${GREEN}✓ Elasticsearch ready${NC}"
 echo ""
 
 # Create logs directory

@@ -12,16 +12,28 @@ from pydantic import BaseModel, Field
 class IntentType(str, Enum):
     """Types of user intents"""
     
-    # Document-related intents
+    # Document-related intents (READ)
     DOCUMENT_QUERY = "document_query"  # Ask about document content
     DOCUMENT_SEARCH = "document_search"  # Search across documents
     DOCUMENT_SUMMARY = "document_summary"  # Summarize documents
     
-    # Task-related intents
+    # Document-related intents (WRITE)
+    DOCUMENT_CREATE = "document_create"  # Create new document
+    DOCUMENT_UPDATE = "document_update"  # Update existing document
+    
+    # Task-related intents (READ)
     TASK_QUERY = "task_query"  # Ask about tasks
     TASK_ANALYSIS = "task_analysis"  # Analyze task data
     TASK_RISK = "task_risk"  # Identify risks
     
+    # Task-related intents (WRITE)
+    TASK_CREATE = "task_create"  # Create new task(s)
+    TASK_UPDATE = "task_update"  # Update existing task(s)
+    
+    # Board-related intents
+    BOARD_QUERY = "board_query"  # Ask for visualizations
+    BOARD_CREATE = "board_create"  # Save visualization
+
     # Multi-agent intents
     HYBRID_QUERY = "hybrid_query"  # Requires both agents
     WORKSPACE_OVERVIEW = "workspace_overview"  # Overview of workspace
@@ -34,6 +46,7 @@ class AgentType(str, Enum):
     """Available agents"""
     DOCUMENT = "document"
     TASK = "task"
+    BOARD = "board"
     BOTH = "both"
 
 

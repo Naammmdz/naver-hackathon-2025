@@ -15,6 +15,7 @@ class StepType(str, Enum):
     """Types of execution steps"""
     QUERY_DOCUMENT = "query_document"
     QUERY_TASK = "query_task"
+    QUERY_BOARD = "query_board"
     SYNTHESIZE = "synthesize"
     VALIDATE = "validate"
 
