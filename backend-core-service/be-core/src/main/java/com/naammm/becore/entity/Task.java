@@ -11,6 +11,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -62,13 +63,13 @@ public class Task {
     @Column(name = "assignee_id", length = 160)
     private String assigneeId;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "task_tags", joinColumns = @JoinColumn(name = "task_id"))
     @Column(name = "tag")
     @Builder.Default
     private List<String> tags = new ArrayList<>();
 
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("id ASC")
     @Builder.Default
     @com.fasterxml.jackson.annotation.JsonManagedReference

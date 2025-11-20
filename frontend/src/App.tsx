@@ -23,15 +23,21 @@ const App = () => {
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
 
-  // Initialize theme on app load
+  // Initialize theme on app load and route changes
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "system" | null;
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
-    // Main app always uses dark mode
     const isMainApp = location.pathname.startsWith("/app");
-    const shouldBeDark = isMainApp || savedTheme !== "light" && (savedTheme === "dark" || systemDark || !savedTheme);
-    
+
+    const resolvedTheme =
+      savedTheme === "system"
+        ? (systemDark ? "dark" : "light")
+        : savedTheme;
+
+    const shouldBeDark = resolvedTheme
+      ? resolvedTheme === "dark"
+      : (isMainApp ? true : systemDark);
+
     if (shouldBeDark) {
       document.documentElement.classList.add("dark");
     } else {
