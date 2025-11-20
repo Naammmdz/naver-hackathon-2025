@@ -165,7 +165,8 @@ export function initGraph(container, graphData, options = {}) {
   function makeClusterNotesForce(strength) {
     function force(alpha) {
       graphData.nodes.forEach(n => {
-        if (n.type === "note" && n.folder && strength > 0) {
+        // Cluster both notes and subfolders into their parent folder's venn
+        if (n.folder && strength > 0 && (n.type === "note" || n.type === "folder")) {
           const f = nodeById[n.folder];
           if (!f || f.x == null || f.y == null) return;
           const k = strength * alpha;
@@ -211,20 +212,6 @@ export function initGraph(container, graphData, options = {}) {
     .force("titleX", d3.forceX(d => titleTarget(d).x).strength(0.02))
     .force("titleY", d3.forceY(d => titleTarget(d).y).strength(0.02))
     .on("tick", ticked);
-
-  // Folder bubbles
-  const folderNodes = graphData.nodes.filter(n => n.type === "folder");
-
-  const folderBubble = zoomLayer.append("g")
-    .selectAll("circle.folderBubble")
-    .data(folderNodes)
-    .enter()
-    .append("circle")
-    .attr("class", "folderBubble")
-    .attr("fill", currentTheme.folderBubble)
-    .attr("fill-opacity", currentTheme.folderBubbleOpacity)
-    .attr("stroke", currentTheme.folderStroke)
-    .attr("stroke-width", theme === 'dark' ? 1.2 : 1);
 
   // Links
   const link = zoomLayer.append("g")
@@ -361,16 +348,6 @@ export function initGraph(container, graphData, options = {}) {
       .attr("y2", d => d.target.y);
 
     nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
-
-    folderBubble
-      .attr("cx", d => d.x)
-      .attr("cy", d => d.y)
-      .attr("r", d => {
-        const count = graphData.nodes.filter(n => n.folder === d.id).length;
-        return 60 + count * 6;
-      })
-      .attr("display", vennEnabled ? null : "none")
-      .lower();
   }
 
   // Apply Venn forces
@@ -470,11 +447,6 @@ export function initGraph(container, graphData, options = {}) {
       }
       
       // Update colors
-      folderBubble
-        .attr("fill", newColors.folderBubble)
-        .attr("fill-opacity", newColors.folderBubbleOpacity)
-        .attr("stroke", newColors.folderStroke);
-      
       link
         .attr("stroke", newColors.link)
         .attr("stroke-opacity", newColors.linkOpacity);

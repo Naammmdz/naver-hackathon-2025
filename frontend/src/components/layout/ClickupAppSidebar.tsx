@@ -18,7 +18,7 @@ interface ClickupAppSidebarProps {
 }
 
 export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView = 'home' }: ClickupAppSidebarProps) {
-  const [activeNav, setActiveNav] = useState(currentView || 'home');
+  const [activeNav, setActiveNav] = useState<'tasks' | 'docs' | 'board' | 'home' | 'teams'>(currentView || 'home');
   const [expandedSpaces, setExpandedSpaces] = useState<string[]>(['workspace-1']);
 
   // Update activeNav when currentView changes
@@ -35,11 +35,11 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
   };
 
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const },
-    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const },
-    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const },
-    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const },
+    { id: 'home', icon: Home, label: 'Home', gradient: 'from-primary to-primary/80' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks', view: 'tasks' as const, gradient: 'from-primary to-accent' },
+    { id: 'docs', icon: FileText, label: 'Docs', view: 'docs' as const, gradient: 'from-accent to-accent-foreground' },
+    { id: 'board', icon: Kanban, label: 'Board', view: 'board' as const, gradient: 'from-primary/80 to-accent' },
+    { id: 'teams', icon: Users, label: 'Teams', view: 'teams' as const, gradient: 'from-success to-success/80' },
   ];
 
   const spaces = [
@@ -75,28 +75,40 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
 
         {navItems.map(item => (
           <div key={item.id} className="flex flex-col items-center gap-0.5 relative group">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                'w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
-                activeNav === item.id
-                  ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg'
-                  : 'text-sidebar-primary-foreground/70 hover:text-foreground hover:bg-foreground/10'
-              )}
-              onClick={() => {
-                setActiveNav(item.id);
-                if (item.id === 'home' && onViewChange) {
-                  onViewChange('home');
-                } else if (item.view && onViewChange) {
-                  onViewChange(item.view);
-                }
-              }}
-              title={item.label}
-            >
-              <item.icon className="h-4 w-4 transition-colors" />
-            </Button>
-
+            <div className="relative">
+              {/* Background gradient - always visible with item color */}
+              <div
+                className={cn(
+                  'pointer-events-none absolute inset-0 rounded-xl transition-all duration-300 z-0 bg-gradient-to-br',
+                  item.gradient,
+                  activeNav === item.id 
+                    ? 'opacity-100 dark:opacity-50' 
+                    : 'opacity-30 dark:opacity-15 group-hover:opacity-50 dark:group-hover:opacity-30'
+                )}
+              />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    'relative z-10 w-10 h-10 p-0 flex items-center justify-center rounded-xl transition-all',
+                    activeNav === item.id 
+                      ? 'text-foreground dark:text-white shadow-elegant' 
+                      : 'text-sidebar-foreground/70 hover:text-foreground dark:hover:text-white'
+                  )}
+                  onClick={() => {
+                    setActiveNav(item.id as 'tasks' | 'docs' | 'board' | 'home' | 'teams');
+                    if (item.id === 'home' && onViewChange) {
+                      onViewChange('home');
+                    } else if (item.view && onViewChange) {
+                      onViewChange(item.view);
+                    }
+                  }}
+                  title={item.label}
+                >
+                  <item.icon className="h-4 w-4 transition-colors" />
+                </Button>
+            </div>
+            
             {/* Small label below icon */}
             <span
               className={cn(

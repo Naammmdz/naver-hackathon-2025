@@ -21,6 +21,7 @@ import Docs from "./Docs";
 import Home from "./Home";
 import Index from "./Index";
 import Teams from "./Teams";
+import { startReminderScheduler } from "@/services/reminderScheduler";
 import type { SearchResult } from "@/types/search";
 
 export default function AppWrapper() {
