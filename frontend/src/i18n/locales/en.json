@@ -146,6 +146,10 @@
     "doneDescription": "Completed tasks"
   },
   "components": {
+    "Index": {
+      "cannotLoadTasks": "Cannot load tasks. Please try again.",
+      "retryLoad": "Retry"
+    },
     "BoardSidebar": {
       "boardPlural": "boards",
       "boardSingular": "board",
