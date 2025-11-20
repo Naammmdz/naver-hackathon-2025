@@ -300,7 +300,7 @@ export default function Docs() {
       <div
         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         className={`hidden lg:flex relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
-        title={isSidebarCollapsed ? t('components.Docs.showSidebar') : t('components.Docs.hideSidebar')}
+        title={isSidebarCollapsed ? t('components.Docs.showSidebar', 'Show Sidebar') : t('components.Docs.hideSidebar', 'Hide Sidebar')}
       >
         {/* Small navigation bar in the middle */}
         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
@@ -362,40 +362,40 @@ export default function Docs() {
 
               <div className="space-y-3">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  {t('components.Home.knowledgeWaiting', 'Kho kiến thức của bạn đang chờ được viết')}
+                  {t('components.Docs.knowledgeWaiting', 'Kho kiến thức của bạn đang chờ được viết')}
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground/80">
-                  {t('components.Home.documentDescription', 'Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.')}
+                  {t('components.Docs.documentDescription', 'Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.')}
                 </p>
               </div>
 
               <div className="flex flex-col gap-2 text-sm text-muted-foreground/70">
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                  <span>{t('components.Home.autoSaveFeature', 'Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.')}</span>
+                  <span>{t('components.Docs.autoSaveFeature', 'Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.')}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
-                  <span>{t('components.Home.embedFeature', 'Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.')}</span>
+                  <span>{t('components.Docs.embedFeature', 'Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.')}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-                  <span>{t('components.Home.slashMenuFeature', 'Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.')}</span>
+                  <span>{t('components.Docs.slashMenuFeature', 'Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.')}</span>
                 </div>
               </div>
 
               <Button
-                onClick={() => void addDocument(t('components.Docs.newDocumentTitle'))}
+                onClick={() => void addDocument(t('components.Docs.newDocumentTitle', 'New Document'))}
                 size="lg"
                 className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
                 disabled={isLoading}
               >
                 <Sparkles className="h-4 w-4" />
-                {t('components.Home.createFirstDocument', 'Tạo tài liệu đầu tiên')}
+                {t('components.Docs.createFirstDocument', 'Tạo tài liệu đầu tiên')}
               </Button>
 
               <p className="text-xs text-muted-foreground/70">
-                {t('components.Home.dragDocumentHint', 'Hoặc kéo tài liệu đã có vào đây để tiếp tục biên soạn cùng đội ngũ.')}
+                {t('components.Docs.dragDocumentHint', 'Hoặc kéo tài liệu đã có vào đây để tiếp tục biên soạn cùng đội ngũ.')}
               </p>
             </div>
           </div>
@@ -412,10 +412,10 @@ export default function Docs() {
                   </div>
                 </div>
                 <h2 className="text-3xl font-bold mb-4 text-foreground">
-                  {t('components.Home.documentInTrash', 'Document in Trash')}
+                  {t('components.Docs.documentInTrash', 'Document in Trash')}
                 </h2>
                 <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
-                  {t('components.Home.documentTrashDescription', 'This document has been moved to trash. You can restore it or permanently delete it from the sidebar.')}
+                  {t('components.Docs.documentTrashDescription', 'This document has been moved to trash. You can restore it or permanently delete it from the sidebar.')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button
@@ -425,15 +425,15 @@ export default function Docs() {
                     className="gap-2 border-border hover:bg-muted/60 dark:border-border dark:hover:bg-muted/40"
                   >
                     <FileText className="h-5 w-5" />
-                    {t('components.Home.restoreDocument', 'Restore Document')}
+                    {t('components.Docs.restoreDocument', 'Restore Document')}
                   </Button>
                   <Button
-                    onClick={() => addDocument(t('components.Docs.untitledDocument'))}
+                    onClick={() => addDocument(t('components.Docs.untitledDocument', 'Untitled Document'))}
                     size="lg"
                     className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >
                     <Plus className="h-5 w-5" />
-                    {t('components.Home.createNew', 'Create New')}
+                    {t('components.Docs.createNew', 'Create New')}
                   </Button>
                 </div>
               </div>
@@ -446,7 +446,7 @@ export default function Docs() {
                   <div className="flex items-center gap-3">
                     <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
                     <div className="text-xs text-muted-foreground">
-                      {activeDocument.updatedAt && `${t('components.Home.modified', 'Modified')} ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                      {activeDocument.updatedAt && `${t('components.Docs.modified', 'Modified')} ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -464,7 +464,7 @@ export default function Docs() {
                         )}
                       >
                         <Edit className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{t('components.Home.editor', 'Editor')}</span>
+                        <span className="hidden sm:inline">{t('components.Docs.editor', 'Editor')}</span>
                       </Button>
                       <Button
                         variant={viewMode === 'graph' ? 'default' : 'ghost'}
@@ -478,14 +478,14 @@ export default function Docs() {
                         )}
                       >
                         <Network className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{t('components.Home.graph', 'Graph')}</span>
+                        <span className="hidden sm:inline">{t('components.Docs.graph', 'Graph')}</span>
                       </Button>
                     </div>
                     
                     {viewMode === 'editor' && (
                       <Button variant="ghost" size="sm" className="gap-2">
                         <FileText className="h-4 w-4" />
-                        {t('components.Home.share', 'Share')}
+                        {t('components.Docs.share', 'Share')}
                       </Button>
                     )}
                   </div>
@@ -541,10 +541,10 @@ export default function Docs() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  {t('components.Home.selectDocumentFromSidebar', 'Chọn tài liệu từ sidebar')}
+                  {t('components.Docs.selectDocumentFromSidebar', 'Chọn tài liệu từ sidebar')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t('components.Home.selectOrCreateDocument', 'Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới')}
+                  {t('components.Docs.selectOrCreateDocument', 'Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới')}
                 </p>
               </div>
             </div>

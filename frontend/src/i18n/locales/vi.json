@@ -241,9 +241,13 @@
       "withDueDates": "Có ngày hết hạn",
       "completedOnTime": "Hoàn thành đúng hạn",
       "pending": "Đang chờ",
-      "unknown": "Không rõ",
+      "unknown": "Không rõ"
+    },
+    "AppWrapper": {
       "clerkTokenError": "Không thể tải trước token Clerk trước khi tải dữ liệu",
-      "tokenRefreshError": "Không thể làm mới token trước khi tải lại",
+      "tokenRefreshError": "Không thể làm mới token trước khi tải lại"
+    },
+    "Docs": {
       "knowledgeWaiting": "Kho kiến thức của bạn đang chờ được viết",
       "documentDescription": "Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.",
       "autoSaveFeature": "Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.",
@@ -255,19 +259,15 @@
       "documentTrashDescription": "Tài liệu này đã được chuyển vào thùng rác. Bạn có thể khôi phục hoặc xóa vĩnh viễn từ thanh bên.",
       "restoreDocument": "Khôi phục tài liệu",
       "createNew": "Tạo mới",
+      "untitledDocument": "Tài liệu chưa đặt tên",
       "modified": "Đã chỉnh sửa",
       "editor": "Trình soạn thảo",
       "graph": "Biểu đồ",
       "share": "Chia sẻ",
       "selectDocumentFromSidebar": "Chọn tài liệu từ sidebar",
-      "selectOrCreateDocument": "Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới",
-      "hideSidebarTask": "Ẩn sidebar task",
-      "hideTaskSidebar": "Ẩn sidebar task",
-      "showSidebarTask": "Hiện sidebar task",
-      "showTaskSidebar": "Hiện sidebar task",
-      "notFoundError": "Lỗi 404: Người dùng cố gắng truy cập tuyến đường không tồn tại:",
-      "pageNotFound": "Oops! Không tìm thấy trang",
-      "returnToHome": "Quay về trang chủ",
+      "selectOrCreateDocument": "Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới"
+    },
+    "Teams": {
       "teamMembers": "Thành viên nhóm",
       "manageTeamDescription": "Quản lý thành viên nhóm và quyền hạn trong không gian làm việc",
       "inviteMember": "Mời thành viên",
@@ -306,6 +306,28 @@
       "failedToSendInvite": "Không thể gửi lời mời",
       "failedToRemoveMember": "Không thể xóa thành viên",
       "failedToChangeRole": "Không thể thay đổi vai trò"
+    },
+    "Index": {
+      "loadingTasks": "Đang tải công việc...",
+      "cannotLoadTasks": "Không thể tải công việc",
+      "retryLoad": "Thử lại",
+      "createFirstTaskTitle": "Tạo công việc đầu tiên của bạn",
+      "createFirstTaskDescription": "Bắt đầu tổ chức công việc với quản lý công việc thông minh",
+      "autoSaveDescription": "Tự động lưu và đồng bộ trên các thiết bị",
+      "smartParserDescription": "Phân tích ngôn ngữ tự nhiên bằng AI",
+      "dragDropDescription": "Kéo và thả để tổ chức",
+      "createNewTask": "Tạo công việc mới",
+      "openSmartParser": "Mở trình phân tích thông minh",
+      "keyboardShortcutTip": "Mẹo: Nhấn Shift + N ở bất kỳ đâu để tạo công việc mới",
+      "hideSidebarTask": "Ẩn sidebar task",
+      "hideTaskSidebar": "Ẩn sidebar task",
+      "showSidebarTask": "Hiện sidebar task",
+      "showTaskSidebar": "Hiện sidebar task"
+    },
+    "NotFound": {
+      "notFoundError": "Lỗi 404: Người dùng cố gắng truy cập tuyến đường không tồn tại:",
+      "pageNotFound": "Oops! Không tìm thấy trang",
+      "returnToHome": "Quay về trang chủ"
     }
   },
   "analytics": {

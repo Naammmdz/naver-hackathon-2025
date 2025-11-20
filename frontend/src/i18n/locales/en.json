@@ -244,9 +244,13 @@
       "withDueDates": "With Due Dates",
       "completedOnTime": "Completed on Time",
       "pending": "Pending",
-      "unknown": "Unknown",
+      "unknown": "Unknown"
+    },
+    "AppWrapper": {
       "clerkTokenError": "Failed to prefetch Clerk token before data load",
-      "tokenRefreshError": "Failed to refresh token before reload",
+      "tokenRefreshError": "Failed to refresh token before reload"
+    },
+    "Docs": {
       "knowledgeWaiting": "Your knowledge base awaits to be written",
       "documentDescription": "Meeting notes, project summaries, or ideas that come up – create documents for everyone to follow and update.",
       "autoSaveFeature": "Auto-save every line you write, no worries about lost content.",
@@ -258,19 +262,15 @@
       "documentTrashDescription": "This document has been moved to trash. You can restore it or permanently delete it from the sidebar.",
       "restoreDocument": "Restore Document",
       "createNew": "Create New",
+      "untitledDocument": "Untitled Document",
       "modified": "Modified",
       "editor": "Editor",
       "graph": "Graph",
       "share": "Share",
       "selectDocumentFromSidebar": "Select document from sidebar",
-      "selectOrCreateDocument": "Select a document from the left list or create a new document",
-      "hideSidebarTask": "Hide task sidebar",
-      "hideTaskSidebar": "Hide task sidebar",
-      "showSidebarTask": "Show task sidebar",
-      "showTaskSidebar": "Show task sidebar",
-      "notFoundError": "404 Error: User attempted to access non-existent route:",
-      "pageNotFound": "Oops! Page not found",
-      "returnToHome": "Return to Home",
+      "selectOrCreateDocument": "Select a document from the left list or create a new document"
+    },
+    "Teams": {
       "teamMembers": "Team Members",
       "manageTeamDescription": "Manage your workspace team members and permissions",
       "inviteMember": "Invite Member",
@@ -309,6 +309,28 @@
       "failedToSendInvite": "Failed to send invite",
       "failedToRemoveMember": "Failed to remove member",
       "failedToChangeRole": "Failed to change role"
+    },
+    "Index": {
+      "loadingTasks": "Loading tasks...",
+      "cannotLoadTasks": "Cannot load tasks",
+      "retryLoad": "Retry Load",
+      "createFirstTaskTitle": "Create your first task",
+      "createFirstTaskDescription": "Start organizing your work with intelligent task management",
+      "autoSaveDescription": "Auto-save and sync across devices",
+      "smartParserDescription": "AI-powered natural language parsing",
+      "dragDropDescription": "Drag and drop to organize",
+      "createNewTask": "Create New Task",
+      "openSmartParser": "Open Smart Parser",
+      "keyboardShortcutTip": "Pro tip: Press Shift + N anywhere to create a new task",
+      "hideSidebarTask": "Hide task sidebar",
+      "hideTaskSidebar": "Hide task sidebar",
+      "showSidebarTask": "Show task sidebar",
+      "showTaskSidebar": "Show task sidebar"
+    },
+    "NotFound": {
+      "notFoundError": "404 Error: User attempted to access non-existent route:",
+      "pageNotFound": "Oops! Page not found",
+      "returnToHome": "Return to Home"
     }
   },
   "analytics": {
