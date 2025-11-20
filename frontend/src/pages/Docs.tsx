@@ -297,7 +297,7 @@ export default function Docs() {
       <div
         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         className={`hidden lg:flex relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
-        title={isSidebarCollapsed ? 'Click to show sidebar' : 'Click to hide sidebar'}
+        title={isSidebarCollapsed ? t('components.Docs.showSidebar') : t('components.Docs.hideSidebar')}
       >
         {/* Small navigation bar in the middle */}
         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
@@ -382,7 +382,7 @@ export default function Docs() {
               </div>
 
               <Button
-                onClick={() => void addDocument('Tài liệu mới')}
+                onClick={() => void addDocument(t('components.Docs.newDocumentTitle'))}
                 size="lg"
                 className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
                 disabled={isLoading}
@@ -425,7 +425,7 @@ export default function Docs() {
                     Restore Document
                   </Button>
                   <Button
-                    onClick={() => addDocument('Untitled')}
+                    onClick={() => addDocument(t('components.Docs.untitledDocument'))}
                     size="lg"
                     className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >

@@ -169,6 +169,8 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
         ref={cardRef}
         className={cn(
           "h-full hover:shadow-lg transition-all duration-200 flex flex-col group cursor-pointer relative",
+          "bg-gradient-to-br from-background via-background to-secondary/10",
+          "border border-border/60 hover:border-border",
           "border-l-2 hover:border-l-4",
           config.color || "border-l-primary",
           (isDragging || isSortableDragging) && "shadow-2xl ring-2 ring-primary/50",

@@ -59,14 +59,11 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
     { id: 'pm', name: 'Project management', count: 4 },
     { id: 'doc', name: 'IT Doc' },
   ];
-  const gradientClass = 'bg-primary';
-  const monochromeGradientClass = 'bg-gradient-to-br from-foreground/90 via-foreground/70 to-foreground/50';
-
   return (
     <div className="flex h-full bg-background shrink-0">
       {/* Icon Sidebar (Left) - Like ClickUp */}
-      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar text-sidebar-foreground border border-sidebar-border/60 shadow-sm">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-sidebar-accent/10 hover:bg-sidebar-accent/20 p-1.5" onClick={() => window.location.href = '/'}>
+      <div className="w-16 rounded-lg flex flex-col items-center py-3 gap-2 h-full overflow-y-auto shrink-0 ml-1 bg-sidebar-primary text-sidebar-primary-foreground border border-sidebar-border/60 shadow-sm">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center hover:opacity-80 transition-all cursor-pointer bg-primary/10 hover:bg-primary/20 p-1.5" onClick={() => window.location.href = '/'}>
           <img
             src="/devflow-demo.png"
             alt="DevFlow Logo"
@@ -118,7 +115,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
                 'text-[10px] font-medium text-center leading-tight transition-colors',
                 activeNav === item.id
                   ? 'text-foreground dark:text-white'
-                  : 'text-sidebar-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
+                  : 'text-sidebar-primary-foreground/70 group-hover:text-foreground'
               )}
             >
               {item.label}
@@ -138,7 +135,7 @@ export function ClickupAppSidebar({ isOpen, onClose, onViewChange, currentView =
               },
             }}
           />
-          <span className="text-[10px] text-sidebar-foreground font-medium text-center leading-tight">
+          <span className="text-[10px] text-sidebar-primary-foreground font-medium text-center leading-tight">
             Profile
           </span>
         </div>

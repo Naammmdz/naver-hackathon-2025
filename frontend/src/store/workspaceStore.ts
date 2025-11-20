@@ -51,10 +51,18 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         try {
           await get().loadWorkspaces();
           
+          const stateAfterLoad = get();
+          let workspaceIdToLoad = stateAfterLoad.activeWorkspaceId;
+
           // Set first workspace as active if none selected
-          const { workspaces, activeWorkspaceId } = get();
-          if (!activeWorkspaceId && workspaces.length > 0) {
-            set({ activeWorkspaceId: workspaces[0].id });
+          if (!workspaceIdToLoad && stateAfterLoad.workspaces.length > 0) {
+            workspaceIdToLoad = stateAfterLoad.workspaces[0].id;
+            set({ activeWorkspaceId: workspaceIdToLoad });
+          }
+
+          // Ensure members are loaded for the active workspace so resolveUsers has data
+          if (workspaceIdToLoad) {
+            await get().loadMembers(workspaceIdToLoad);
           }
           
           set({ isInitialized: true });

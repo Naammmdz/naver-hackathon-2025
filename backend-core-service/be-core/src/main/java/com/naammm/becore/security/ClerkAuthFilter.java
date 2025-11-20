@@ -99,6 +99,7 @@ public class ClerkAuthFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(plan)) {
                 UserContext.setPlan(plan);
             }
+            log.info("Authenticated user: {}", userId);
             filterChain.doFilter(request, response);
         } catch (JwtVerificationException ex) {
             if (log.isDebugEnabled()) {

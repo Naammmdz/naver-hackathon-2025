@@ -1,6 +1,5 @@
 import type { CreateTaskInput, Subtask, Task, TaskStatus, UpdateTaskInput } from "@/types/task";
 import { apiAuthContext } from "./authContext";
-import { reminderStorage } from "@/utils/reminderStorage";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8989";
@@ -28,6 +27,7 @@ interface TaskApiResponse {
   updatedAt: string;
   userId?: string | null;
   workspaceId?: string | null;
+  assigneeId?: string | null;
 }
 
 interface TaskApiRequest {
@@ -43,6 +43,7 @@ interface TaskApiRequest {
   updatedAt?: string | null;
   userId?: string | null;
   workspaceId?: string | null;
+  assigneeId?: string | null;
 }
 
 const toDate = (value?: string | null): Date | undefined => {
@@ -65,29 +66,22 @@ const mapSubtaskFromApi = (subtask: SubtaskApiResponse): Subtask => ({
   done: Boolean(subtask.done),
 });
 
-const mapTaskFromApi = (task: TaskApiResponse): Task => {
-  // Load reminder settings from localStorage (since backend may not support it yet)
-  const reminderSettings = reminderStorage.get(task.id);
-
-  return {
-    id: task.id,
-    title: task.title,
-    description: task.description ?? undefined,
-    status: mapStatusFromApi(task.status),
-    priority: task.priority,
-    dueDate: toDate(task.dueDate),
-    tags: task.tags ?? [],
-    subtasks: (task.subtasks ?? []).map(mapSubtaskFromApi),
-    order: task.orderIndex ?? 0,
-    createdAt: toDate(task.createdAt) ?? new Date(),
-    updatedAt: toDate(task.updatedAt) ?? new Date(),
-    userId: task.userId ?? apiAuthContext.getCurrentUserId() ?? "",
-    workspaceId: task.workspaceId ?? undefined,
-    reminderEnabled: reminderSettings?.enabled ?? false,
-    reminderTimeBefore: reminderSettings?.timeBefore,
-    reminderSent: reminderSettings?.sent ?? false,
-  };
-};
+const mapTaskFromApi = (task: TaskApiResponse): Task => ({
+  id: task.id,
+  title: task.title,
+  description: task.description ?? undefined,
+  status: mapStatusFromApi(task.status),
+  priority: task.priority,
+  dueDate: toDate(task.dueDate),
+  tags: task.tags ?? [],
+  subtasks: (task.subtasks ?? []).map(mapSubtaskFromApi),
+  order: task.orderIndex ?? 0,
+  createdAt: toDate(task.createdAt) ?? new Date(),
+  updatedAt: toDate(task.updatedAt) ?? new Date(),
+  userId: task.userId ?? apiAuthContext.getCurrentUserId() ?? "",
+  workspaceId: task.workspaceId ?? undefined,
+  assigneeId: task.assigneeId ?? undefined,
+});
 
 const serializeSubtasks = (subtasks: Subtask[]): Array<{ id?: string; title: string; done: boolean }> =>
   subtasks.map((subtask) => ({
@@ -111,6 +105,7 @@ const serializeTaskPayload = (
   updatedAt: payload.updatedAt ? payload.updatedAt.toISOString() : undefined,
   userId: payload.userId ?? apiAuthContext.getCurrentUserId() ?? undefined,
   workspaceId: payload.workspaceId ?? undefined,
+  assigneeId: payload.assigneeId ?? undefined,
 });
 
 const request = async <T>(input: RequestInfo, init?: RequestInit, parseJson = true): Promise<T> => {

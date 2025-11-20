@@ -2,6 +2,7 @@ import { BoardView } from "@/components/board/BoardView";
 import { ClickupAppSidebar } from "@/components/layout/ClickupAppSidebar";
 import { ClickupHeader } from "@/components/layout/ClickupHeader";
 import { WorkspaceOnboarding } from "@/components/layout/WorkspaceOnboarding";
+import { GlobalSearchModal } from "@/components/search/GlobalSearchModal";
 import { useBoardYjsSync } from "@/hooks/useBoardYjsSync";
 import { useDocumentYjsSync } from "@/hooks/useDocumentYjsSync";
 import { useTaskYjsSync } from "@/hooks/useTaskYjsSync";
@@ -21,6 +22,7 @@ import Home from "./Home";
 import Index from "./Index";
 import Teams from "./Teams";
 import { startReminderScheduler } from "@/services/reminderScheduler";
+import type { SearchResult } from "@/types/search";
 
 export default function AppWrapper() {
   const [currentView, setCurrentView] = useState<"tasks" | "docs" | "board" | "home" | "teams">("home");
@@ -253,32 +255,31 @@ export default function AppWrapper() {
     previousWorkspaceRef.current = newWorkspace;
   };
 
-  // Start reminder scheduler when user is signed in
   useEffect(() => {
-    if (!isSignedIn || !user) {
-      return;
-    }
-
-    // Store user email and name in localStorage for reminder scheduler
-    const userEmail = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
-    const userName = user.fullName || user.firstName || user.username || 'User';
-    
-    if (userEmail) {
-      localStorage.setItem('userEmail', userEmail);
-      localStorage.setItem('userName', userName);
-    }
-
-    // Start reminder scheduler
-    const stopScheduler = startReminderScheduler();
-
-    // Cleanup on unmount
-    return () => {
-      stopScheduler();
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<SearchResult>).detail;
+      if (!detail) {
+        return;
+      }
+      setSidebarOpen(true);
+      if (detail.type === "task") {
+        setCurrentView("tasks");
+        useTaskStore.getState().setFilters({ search: detail.title });
+      } else if (detail.type === "doc") {
+        setCurrentView("docs");
+        useDocumentStore.getState().setActiveDocument(detail.id);
+      } else if (detail.type === "board") {
+        setCurrentView("board");
+        useBoardStore.getState().setActiveBoard(detail.id);
+      }
     };
-  }, [isSignedIn, user]);
+    window.addEventListener("globalSearchNavigate", handler as EventListener);
+    return () => window.removeEventListener("globalSearchNavigate", handler as EventListener);
+  }, [setCurrentView]);
 
   return (
     <>
+      <GlobalSearchModal />
       {/* Workspace Onboarding Modal */}
       {showOnboarding && (
         <WorkspaceOnboarding

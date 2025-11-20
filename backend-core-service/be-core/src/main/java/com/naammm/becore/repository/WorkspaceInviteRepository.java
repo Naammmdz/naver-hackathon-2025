@@ -18,6 +18,8 @@ public interface WorkspaceInviteRepository extends JpaRepository<WorkspaceInvite
 
     List<WorkspaceInvite> findByEmail(String email);
 
+    void deleteByWorkspaceId(String workspaceId);
+
     // Delete expired invites
     void deleteByExpiresAtBefore(LocalDateTime dateTime);
 }

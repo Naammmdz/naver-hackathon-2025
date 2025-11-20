@@ -48,7 +48,7 @@
       "medium": "Medium",
       "low": "Low",
       "highPriority": "High Priority",
-      "mediumPriority": "Medium Priority", 
+      "mediumPriority": "Medium Priority",
       "lowPriority": "Low Priority"
     },
     "status": {
@@ -84,7 +84,10 @@
     "addTag": "Add tag",
     "createTask": "Create task to organize your work",
     "updateTask": "Update task details",
-    "traditionalForm": "Traditional Form"
+    "traditionalForm": "Traditional Form",
+    "assignee": "Assignee",
+    "selectAssignee": "Select assignee",
+    "unassigned": "Unassigned"
   },
   "views": {
     "board": "Board",
@@ -125,7 +128,7 @@
   },
   "tableHeaders": {
     "task": "Task",
-    "status": "Status", 
+    "status": "Status",
     "priority": "Priority",
     "dueDate": "Due Date",
     "updated": "Updated",
@@ -134,7 +137,7 @@
     "noTasksYet": "No tasks yet. Create your first task!",
     "clearSort": "Clear sorting",
     "sortBy": "Sort by",
-    "sortAsc": "Click to sort descending", 
+    "sortAsc": "Click to sort descending",
     "sortDesc": "Click to clear sorting"
   },
   "columns": {
@@ -193,6 +196,55 @@
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Loading user information..."
+    },
+    "QuickTodoList": {
+      "addOneAbove": "Add one above to get started",
+      "addTodoPlaceholder": "Add a todo...",
+      "noTodosYet": "No todos yet"
+    },
+    "Home": {
+      "recent": "Recent",
+      "emptyDocument": "Empty document",
+      "noChatHistory": "No chat history",
+      "startConversation": "Start a conversation with AI Chat",
+      "openAiChat": "Open AI Chat",
+      "recentConversations": "Recent Conversations",
+      "viewAll": "View All",
+      "continueChat": "Continue Chat",
+      "newTask": "New Task",
+      "newDoc": "New Doc",
+      "newBoard": "New Board",
+      "aiChat": "AI Chat",
+      "embedPlaceholder": "Paste YouTube, Google Docs, Figma, or any URL...",
+      "clear": "Clear",
+      "embedExternalContent": "Embed External Content",
+      "embedDescription": "Paste a link to preview YouTube videos, Google Docs, Figma designs, and more",
+      "todaysTasks": "Today's Tasks",
+      "noTasksToday": "No tasks for today",
+      "totalTasks": "Total Tasks",
+      "inWorkspace": "In workspace",
+      "statusBreakdown": "Status Breakdown",
+      "todo": "Todo",
+      "inProgress": "In Progress",
+      "done": "Done",
+      "completed": "Completed",
+      "total": "Total",
+      "remaining": "Remaining",
+      "productivityScore": "Productivity Score",
+      "outOf100": "out of 100",
+      "thisWeek": "This Week",
+      "tasks": "tasks",
+      "overdue": "Overdue",
+      "completion": "Completion",
+      "avgTaskAge": "Avg Task Age",
+      "averageHours": "Average hours",
+      "totalEstimated": "Total Estimated",
+      "allTasks": "All tasks",
+      "taskTimeline": "Task Timeline",
+      "withDueDates": "With Due Dates",
+      "completedOnTime": "Completed on Time",
+      "pending": "Pending",
+      "unknown": "Unknown"
     }
   },
   "analytics": {
@@ -248,7 +300,9 @@
     "add": "Add",
     "taskId": "Task ID",
     "createdOn": "Created on",
-    "edit": "Edit"
+    "edit": "Edit",
+    "assignee": "Assignee",
+    "unassigned": "Unassigned"
   },
   "onlineUsers": {
     "activeNow": "Active now",
@@ -377,7 +431,7 @@
       "subtitle": "Choose your seat for the focus flight experience",
       "seat": "Seat",
       "occupied": "Occupied",
-      "available": "Available", 
+      "available": "Available",
       "selected": "Selected"
     },
     "boardingPass": {
@@ -414,7 +468,7 @@
       "releaseToStart": "Release to start flight"
     },
     "map": {
-      "flying": "Flying", 
+      "flying": "Flying",
       "progress": "Progress",
       "timeRemaining": "Time Remaining",
       "flightInfo": "Flight Info",

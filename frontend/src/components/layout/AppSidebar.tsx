@@ -7,15 +7,17 @@ import { useWorkspaceFilter } from "@/hooks/use-workspace-filter";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/taskStore";
 import type { TaskStatus } from "@/types/task";
-import { AlertCircle, Calendar, CheckSquare, Clock, Filter, Search, Tag, Zap } from "lucide-react";
+import { AlertCircle, Calendar, CheckSquare, ChevronLeft, Clock, Filter, Search, Tag, Zap } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AppSidebarProps {
   className?: string;
   onSmartCreate?: () => void;
+  onToggleCollapse?: () => void;
 }
 
-export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
+export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSidebarProps) {
   const {
     tasks,
     filters,
@@ -139,7 +141,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
     () => [
       {
         id: "all",
-        label: "Tất cả công việc",
+        label: t("components.AppSidebar.allTasks"),
         icon: CheckSquare,
         count: counts.total,
         active: !filters.status && !filters.priority && !filters.tags && filters.dueDateFilter === "all",
@@ -150,7 +152,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
       },
       {
         id: "overdue",
-        label: "Quá hạn",
+        label: t("components.AppSidebar.overdue"),
         icon: AlertCircle,
         count: counts.overdue,
         active: filters.dueDateFilter === "overdue",
@@ -159,7 +161,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
       },
       {
         id: "today",
-        label: "Hôm nay",
+        label: t("components.AppSidebar.today"),
         icon: Calendar,
         count: counts.today,
         active: filters.dueDateFilter === "today",
@@ -168,7 +170,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
       },
       {
         id: "week",
-        label: "7 ngày tới",
+        label: t("components.AppSidebar.thisWeek"),
         icon: Clock,
         count: counts.thisWeek,
         active: filters.dueDateFilter === "thisWeek",
@@ -181,9 +183,9 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
 
   const priorityPalette = useMemo(
     () => [
-      { id: "High", label: "Cao", token: "--priority-high", count: counts.high },
-      { id: "Medium", label: "Trung bình", token: "--priority-medium", count: counts.medium },
-      { id: "Low", label: "Thấp", token: "--priority-low", count: counts.low },
+      { id: "High", label: t("components.AppSidebar.high"), token: "--priority-high", count: counts.high },
+      { id: "Medium", label: t("components.AppSidebar.medium"), token: "--priority-medium", count: counts.medium },
+      { id: "Low", label: t("components.AppSidebar.low"), token: "--priority-low", count: counts.low },
     ],
     [counts.high, counts.low, counts.medium],
   );
@@ -194,7 +196,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
     () => [
       {
         id: "Todo",
-        label: "Đang lên kế hoạch",
+        label: t("components.AppSidebar.planning"),
         count: counts.todo,
         colors: {
           base: "hsl(215 16% 47%)",
@@ -204,7 +206,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
       },
       {
         id: "In Progress",
-        label: "Đang thực hiện",
+        label: t("components.AppSidebar.inProgress"),
         count: counts.progress,
         colors: {
           base: "hsl(38 92% 52%)",
@@ -214,7 +216,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
       },
       {
         id: "Done",
-        label: "Hoàn thành",
+        label: t("components.AppSidebar.done"),
         count: counts.done,
         colors: {
           base: "hsl(142 72% 38%)",
@@ -233,34 +235,46 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
   return (
     <div
       className={cn(
-        "relative z-10 hidden w-64 flex-col border-r bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/50 lg:flex",
+        "relative z-10 hidden h-full w-64 flex-col bg-sidebar/90 text-sidebar-foreground rounded-3xl shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:shadow-[0_28px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl lg:flex",
         className,
       )}
     >
-      <div className="border-b px-3 py-3">
+      <div className="border-b border-sidebar-border/40 px-3 py-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Task</h2>
+          <h2 className="text-lg font-semibold text-sidebar-foreground">Task</h2>
           <div className="flex items-center gap-2">
+            {onToggleCollapse && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 rounded-full border border-sidebar-border/50 bg-card/80 p-0 text-muted-foreground shadow-sm hover:text-primary hover:border-primary/50"
+                onClick={onToggleCollapse}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Ẩn sidebar task</span>
+              </Button>
+            )}
             <Button
               size="sm"
               variant="ghost"
-              className="h-7 w-7 rounded-full p-0"
+              className="h-8 w-8 rounded-full p-0"
               onClick={onSmartCreate}
               disabled={isLoading}
             >
               <Zap className="h-4 w-4" />
-              <span className="sr-only">Smart Create</span>
+              <span className="sr-only">{t("components.AppSidebar.smartCreate")}</span>
             </Button>
           </div>
         </div>
 
         <div className="relative mt-3">
-          <Search className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-sidebar-foreground/60" />
           <Input
-            placeholder="Tìm kiếm task..."
+            placeholder={t("components.AppSidebar.searchPlaceholder")}
             value={filters.search ?? ""}
             onChange={(event) => setFilters({ search: event.target.value })}
-            className="h-8 rounded-lg border-0 bg-muted/60 pl-8 pr-3 text-xs focus:bg-background"
+            className="h-8 rounded-lg border border-transparent bg-sidebar/40 pl-8 pr-3 text-xs focus-visible:ring-sidebar-ring/30 focus-visible:border-sidebar-ring/40"
           />
         </div>
 
@@ -275,8 +289,8 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
         <div className="space-y-4 px-3 py-4">
           <section>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-foreground">Trạng thái nhanh</h3>
+              <Filter className="h-4 w-4 text-sidebar-foreground/60" />
+              <h3 className="text-sm font-medium text-sidebar-foreground">Trạng thái nhanh</h3>
             </div>
             <div className="mt-2 space-y-1.5">
               {quickFilters.map((item) => {
@@ -293,7 +307,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
                     )}
                   >
                     <span className="flex items-center gap-2 text-left">
-                      <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground group-hover:text-primary" />
+                      <Icon className="h-4 w-4 flex-shrink-0 text-sidebar-foreground/60 group-hover:text-primary" />
                       <span className="whitespace-normal text-left leading-relaxed">
                         {item.label}
                       </span>
@@ -313,7 +327,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
           <Separator />
 
           <section>
-            <h3 className="mb-2 text-sm font-medium text-foreground">Theo tình trạng</h3>
+            <h3 className="mb-2 text-sm font-medium text-foreground">{t("components.AppSidebar.byStatus")}</h3>
             <div className="space-y-1.5 text-xs">
               {statusPalette.map((status) => {
                 const isActive = filters.status?.includes(status.id as TaskStatus);
@@ -370,7 +384,7 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
           <Separator />
 
           <section>
-            <h3 className="mb-2 text-sm font-medium text-foreground">Theo độ ưu tiên</h3>
+            <h3 className="mb-2 text-sm font-medium text-foreground">{t("components.AppSidebar.byPriority")}</h3>
             <div className="space-y-1.5 text-xs">
               {priorityPalette.map((priority) => {
                 const isActive = filters.priority?.includes(priority.id as "High" | "Medium" | "Low");
@@ -432,23 +446,23 @@ export function AppSidebar({ className, onSmartCreate }: AppSidebarProps) {
 
               <section>
                 <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-medium text-foreground">Theo thẻ</h3>
+                  <Tag className="h-4 w-4 text-sidebar-foreground/60" />
+                  <h3 className="text-sm font-medium text-sidebar-foreground">Theo thẻ</h3>
                 </div>
                 {tagCounts.length > 5 && (
                   <div className="relative mt-3">
-                    <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-sidebar-foreground/60" />
                     <Input
-                      placeholder="Tìm thẻ..."
+                      placeholder={t("components.AppSidebar.searchTagsPlaceholder")}
                       value={tagSearch}
                       onChange={(event) => setTagSearch(event.target.value)}
-                      className="h-8 rounded-lg bg-muted/50 pl-7 pr-2 text-[11px]"
+                      className="h-8 rounded-lg border border-transparent bg-sidebar/35 pl-7 pr-2 text-[11px] focus-visible:ring-sidebar-ring/30 focus-visible:border-sidebar-ring/40"
                     />
                   </div>
                 )}
                 <div className="mt-2 space-y-1 pr-0.5 text-[11px]">
                   {filteredTags.length === 0 ? (
-                    <p className="py-3 text-center text-xs text-muted-foreground">Không tìm thấy thẻ phù hợp.</p>
+                    <p className="py-3 text-center text-xs text-sidebar-foreground/60">Không tìm thấy thẻ phù hợp.</p>
                   ) : (
                     displayedTags.map(([tag, count]) => {
                       const isActive = filters.tags?.includes(tag);

@@ -44,15 +44,19 @@ public class Workspace {
     private String ownerId;
 
     @Column(name = "is_public")
+    @Builder.Default
     private Boolean isPublic = false;
 
     @Column(name = "allow_invites")
+    @Builder.Default
     private Boolean allowInvites = true;
 
     @Column(name = "default_task_view", length = 50)
+    @Builder.Default
     private String defaultTaskView = "list";
 
     @Column(name = "default_document_view", length = 50)
+    @Builder.Default
     private String defaultDocumentView = "list";
 
     @Column(name = "created_at", nullable = false, updatable = false)

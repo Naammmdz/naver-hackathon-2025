@@ -18,15 +18,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { workspaceApi } from '@/lib/api/workspaceApi';
-import { useAuth } from '@clerk/clerk-react';
+import { useUser } from '@clerk/clerk-react';
 import { useToast } from '@/hooks/use-toast';
 import { Crown, Mail, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { WorkspaceMember, WorkspaceInvite } from '@/types/workspace';
+import { getAvatarColor, getInitials } from '@/utils/avatarColors';
 
 export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { toast } = useToast();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser } = useUser();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const { inviteMember, removeMember, updateMemberRole } = useWorkspaceStore();
@@ -73,24 +74,26 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
       setIsLoading(false);
     }
   };
-
   // Helper function to get display name for a member
   const getMemberDisplayName = (member: WorkspaceMember) => {
-    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
-    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser?.id);
     
+    if (member.fullName) return member.fullName;
     if (member.user?.fullName) return member.user.fullName;
-    if (member.user?.email) return member.user.email;
-    if (isCurrentUserNormalized && currentUser) {
+
+    if (isCurrentUser && currentUser) {
       if (currentUser.fullName) return currentUser.fullName;
       if (currentUser.firstName || currentUser.lastName) {
-        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(' ').trim();
-      }
-      if (currentUser.primaryEmailAddress?.emailAddress) {
-        return currentUser.primaryEmailAddress.emailAddress;
+        return [currentUser.firstName, currentUser.lastName].filter(Boolean).join(" ").trim();
       }
     }
+
+    if (member.user?.email) return member.user.email;
+    if (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) {
+        return currentUser.primaryEmailAddress.emailAddress;
+      }
+
     // Format userId for display
     if (member.userId.length > 20) {
       return `User ${member.userId.substring(member.userId.length - 8)}`;
@@ -100,12 +103,11 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
 
   // Helper function to get display email for a member
   const getMemberDisplayEmail = (member: WorkspaceMember) => {
-    const isCurrentUser = currentUser?.id && member.userId === currentUser.id;
     const normalizeId = (id: string | undefined) => id?.trim().toLowerCase();
-    const isCurrentUserNormalized = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser.id);
+    const isCurrentUser = currentUser?.id && normalizeId(member.userId) === normalizeId(currentUser?.id);
     
     if (member.user?.email) return member.user.email;
-    if (isCurrentUserNormalized && currentUser?.primaryEmailAddress?.emailAddress) {
+    if (isCurrentUser && currentUser?.primaryEmailAddress?.emailAddress) {
       return currentUser.primaryEmailAddress.emailAddress;
     }
     return undefined;
@@ -349,12 +351,12 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                               className="h-10 w-10 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                              {initials}
+                            <div className={`h-10 w-10 rounded-full ${getAvatarColor(member.userId).bg} flex items-center justify-center ${getAvatarColor(member.userId).text} font-semibold`}>
+                              {getInitials(member.user?.fullName, member.userId)}
                             </div>
                           )}
                           {(member.role === 'ADMIN' || member.role === 'OWNER') && (
-                            <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-yellow-500 flex items-center justify-center border-2 border-background">
+                            <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-[hsl(var(--warning))] flex items-center justify-center border-2 border-background">
                               <Crown className="h-3 w-3 text-white" />
                             </div>
                           )}

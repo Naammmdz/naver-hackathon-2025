@@ -44,6 +44,7 @@ import {
 import { cn } from "@/lib/utils";
 import { QuickTodoList } from "@/components/dashboard/QuickTodoList";
 import { findOverlappingCards, adjustOverlappingCards, getCardBounds, gridUnitsToPixels } from "@/utils/cardLayout";
+import { getAvatarColor, getInitials } from '@/utils/avatarColors';
 
 export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 'docs' | 'board' | 'home' | 'teams') => void }) {
   const { t } = useTranslation();
@@ -202,15 +203,15 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Status Breakdown - Compact */}
             <div className="grid grid-cols-3 gap-1.5">
-              <div className="rounded bg-muted/50 p-1.5 text-center">
+              <div className="rounded-md bg-muted/60 border border-border/40 p-1.5 text-center hover:bg-muted/80 hover:border-border/60 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold">{todoTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.todo', 'Todo')}</p>
               </div>
-              <div className="rounded bg-primary/10 p-1.5 text-center">
+              <div className="rounded-md bg-primary/10 border border-primary/20 p-1.5 text-center hover:bg-primary/15 hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold text-primary">{inProgressTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.inProgress', 'In Progress')}</p>
               </div>
-              <div className="rounded bg-success/10 p-1.5 text-center">
+              <div className="rounded-md bg-success/10 border border-success/20 p-1.5 text-center hover:bg-success/15 hover:border-success/30 hover:shadow-sm transition-all cursor-pointer">
                 <p className="text-sm font-semibold text-success">{doneTasks}</p>
                 <p className="text-[9px] text-muted-foreground">{t('tasks.status.done', 'Done')}</p>
               </div>
@@ -219,12 +220,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Latest Tasks Preview - Compact */}
             {latestTasks.length > 0 && (
               <div className="space-y-1 flex-1 overflow-hidden">
-                <p className="text-[10px] font-medium text-muted-foreground">Recent</p>
+                <p className="text-[10px] font-medium text-muted-foreground">{t('components.Home.recent', 'Recent')}</p>
                 <div className="space-y-0.5">
                   {latestTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex items-center gap-1.5 p-1.5 rounded hover:bg-muted/50 transition-colors text-[11px]"
+                      className="flex items-center gap-1.5 p-1.5 rounded-md hover:bg-accent border border-transparent hover:border-border/40 hover:shadow-sm transition-all text-[11px] cursor-pointer"
                     >
                       <div className={`w-1 h-1 rounded-full flex-shrink-0 ${
                         task.status === 'Done' ? 'bg-success' :
@@ -319,20 +320,20 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 {members.slice(0, 5).map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-accent transition-colors"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-accent/80 border border-transparent hover:border-border/40 hover:shadow-sm transition-all cursor-pointer"
                   >
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
                       {member.user?.avatarUrl ? (
                         <img
                           src={member.user.avatarUrl}
-                          alt={member.user.fullName || member.user.email}
+                          alt={member.user?.fullName || member.user?.email || member.userId}
                           className="h-8 w-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary">
-                            {(member.user?.fullName || member.user?.email || '?')[0].toUpperCase()}
+                        <div className={`h-8 w-8 rounded-full ${getAvatarColor(member.userId).bg} flex items-center justify-center`}>
+                          <span className={`text-xs font-medium ${getAvatarColor(member.userId).text}`}>
+                            {getInitials(member.user?.fullName, member.userId)}
                           </span>
                         </div>
                       )}
@@ -350,7 +351,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">
-                        {member.user?.fullName || member.user?.email || 'Unknown'}
+                        {member.user?.fullName || member.user?.email || t('components.Home.unknown', 'Unknown')}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">
                         {member.role === 'OWNER' ? '👑 Owner' : 
@@ -401,7 +402,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   // Extract preview text from BlockNote content
                   const getPreviewText = (content: any[]): string => {
                     try {
-                      if (!content || content.length === 0) return 'Empty document';
+                      if (!content || content.length === 0) return t('components.Home.emptyDocument', 'Empty document');
                       
                       // Try to extract text from more blocks for better preview
                       let text = '';
@@ -429,10 +430,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         if (text.length > 200) break;
                       }
                       
-                      return text.trim() || 'Empty document';
+                      return text.trim() || t('components.Home.emptyDocument', 'Empty document');
                     } catch (error) {
                       console.error('Error extracting preview text:', error);
-                      return 'Empty document';
+                      return t('components.Home.emptyDocument', 'Empty document');
                     }
                   };
 
@@ -441,7 +442,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   // Get more text for hover preview (up to 500 chars)
                   const getFullPreviewText = (content: any[]): string => {
                     try {
-                      if (!content || content.length === 0) return 'Empty document';
+                      if (!content || content.length === 0) return t('components.Home.emptyDocument', 'Empty document');
                       
                       let text = '';
                       for (let i = 0; i < content.length; i++) {
@@ -467,9 +468,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                         if (text.length > 500) break;
                       }
                       
-                      return text.trim() || 'Empty document';
+                      return text.trim() || t('components.Home.emptyDocument', 'Empty document');
                     } catch (error) {
-                      return 'Empty document';
+                      return t('components.Home.emptyDocument', 'Empty document');
                     }
                   };
                   
@@ -667,7 +668,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                               </div>
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--primary))]" />
                                   {boardInfo.count} shapes
                                 </span>
                                 <span>•</span>
@@ -956,10 +957,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Key Metrics Row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Completion Rate */}
-              <div className="rounded-lg border bg-card p-3">
+              <div className="rounded-lg border border-border/60 bg-gradient-to-br from-chart-2/5 via-background to-background p-3 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">Completion</p>
-                  <BarChart3 className="h-4 w-4 text-blue-500" />
+                  <p className="text-[10px] font-medium text-muted-foreground">Completion</p>
+                  <BarChart3 className="h-4 w-4 text-[hsl(var(--chart-2))]" />
                 </div>
                 <p className="text-2xl font-bold">{completionRate}%</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
@@ -968,26 +969,26 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               </div>
 
               {/* Total Tasks */}
-              <div className="rounded-lg border bg-card p-3">
+              <div className="rounded-lg border border-border/60 bg-gradient-to-br from-primary/5 via-background to-background p-3 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">Total Tasks</p>
-                  <CheckSquare className="h-4 w-4 text-purple-500" />
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.totalTasks', 'Total Tasks')}</p>
+                  <CheckSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
                 </div>
                 <p className="text-2xl font-bold">{workspaceTasks.length}</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
-                  In workspace
+                  {t('components.Home.inWorkspace', 'In workspace')}
                 </p>
               </div>
             </div>
 
             {/* Status Breakdown */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2">Status Breakdown</p>
+              <p className="text-xs font-semibold text-foreground mb-2">{t('components.Home.statusBreakdown', 'Status Breakdown')}</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-gray-500" />
-                    <span className="text-[11px] text-muted-foreground">Todo</span>
+                    <span className="text-[11px] text-muted-foreground">{t('components.Home.todo', 'Todo')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.todo}</span>
@@ -1001,14 +1002,14 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span className="text-[11px] text-muted-foreground">In Progress</span>
+                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--chart-2))]" />
+                    <span className="text-[11px] text-muted-foreground">{t('components.Home.inProgress', 'In Progress')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.inProgress}</span>
                     <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-blue-500 rounded-full"
+                        className="h-full bg-[hsl(var(--chart-2))] rounded-full"
                         style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.inProgress / workspaceTasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -1016,14 +1017,14 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-[11px] text-muted-foreground">Done</span>
+                    <div className="w-2 h-2 rounded-full bg-[hsl(var(--chart-3))]" />
+                    <span className="text-[11px] text-muted-foreground">{t('components.Home.done', 'Done')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold">{statusBreakdown.done}</span>
                     <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-green-500 rounded-full"
+                        className="h-full bg-[hsl(var(--chart-3))] rounded-full"
                         style={{ width: `${workspaceTasks.length > 0 ? (statusBreakdown.done / workspaceTasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -1042,7 +1043,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full">
                       <div className="w-full h-full bg-muted rounded-t relative flex items-end" style={{ minHeight: '80px' }}>
                         <div 
-                          className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500"
+                          className="w-full bg-[hsl(var(--chart-3))] rounded-t transition-all hover:opacity-80"
                           style={{ height: `${height}%`, minHeight: height > 0 ? '4px' : '0' }}
                           title={`${day.completed} tasks completed`}
                         />
@@ -1059,16 +1060,16 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div>
               <p className="text-xs font-semibold text-foreground mb-2">By Priority</p>
               <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg border bg-red-500/5 border-red-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{priorityBreakdown.high}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-high))]/5 border-[hsl(var(--priority-high))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-high))]">{priorityBreakdown.high}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">High</p>
                 </div>
-                <div className="rounded-lg border bg-yellow-500/5 border-yellow-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{priorityBreakdown.medium}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-medium))]/5 border-[hsl(var(--priority-medium))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-medium))]">{priorityBreakdown.medium}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">Medium</p>
                 </div>
-                <div className="rounded-lg border bg-gray-500/5 border-gray-500/20 p-2.5 text-center">
-                  <p className="text-lg font-bold text-gray-600 dark:text-gray-400">{priorityBreakdown.low}</p>
+                <div className="rounded-lg border bg-[hsl(var(--priority-low))]/5 border-[hsl(var(--priority-low))]/20 p-2.5 text-center">
+                  <p className="text-lg font-bold text-[hsl(var(--priority-low))]">{priorityBreakdown.low}</p>
                   <p className="text-[10px] text-muted-foreground font-medium">Low</p>
                 </div>
               </div>
@@ -1107,7 +1108,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   strokeDasharray={`${2 * Math.PI * 50}`}
                   strokeDashoffset={`${2 * Math.PI * 50 * (1 - completionRateValue / 100)}`}
                   strokeLinecap="round"
-                  className="text-purple-500 transition-all duration-500"
+                  className="text-[hsl(var(--chart-3))] transition-all duration-500"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -1121,15 +1122,15 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Stats */}
             <div className="w-full space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Completed</span>
+                <span className="text-muted-foreground">{t('components.Home.completed', 'Completed')}</span>
                 <span className="font-semibold">{doneTasks}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Total</span>
+                <span className="text-muted-foreground">{t('components.Home.total', 'Total')}</span>
                 <span className="font-semibold">{workspaceTasks.length}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Remaining</span>
+                <span className="text-muted-foreground">{t('components.Home.remaining', 'Remaining')}</span>
                 <span className="font-semibold">{workspaceTasks.length - doneTasks}</span>
               </div>
             </div>
@@ -1161,17 +1162,17 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
         // Get score color
         const getScoreColor = (score: number) => {
-          if (score >= 80) return 'text-green-500';
-          if (score >= 60) return 'text-yellow-500';
-          if (score >= 40) return 'text-orange-500';
-          return 'text-red-500';
+          if (score >= 80) return 'text-[hsl(var(--success))]';
+          if (score >= 60) return 'text-[hsl(var(--priority-medium))]';
+          if (score >= 40) return 'text-[hsl(var(--warning))]';
+          return 'text-[hsl(var(--destructive))]';
         };
 
         const getScoreBgColor = (score: number) => {
-          if (score >= 80) return 'bg-green-500/10 border-green-500/20';
-          if (score >= 60) return 'bg-yellow-500/10 border-yellow-500/20';
-          if (score >= 40) return 'bg-orange-500/10 border-orange-500/20';
-          return 'bg-red-500/10 border-red-500/20';
+          if (score >= 80) return 'bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20';
+          if (score >= 60) return 'bg-[hsl(var(--priority-medium))]/10 border-[hsl(var(--priority-medium))]/20';
+          if (score >= 40) return 'bg-[hsl(var(--warning))]/10 border-[hsl(var(--warning))]/20';
+          return 'bg-[hsl(var(--destructive))]/10 border-[hsl(var(--destructive))]/20';
         };
 
         return (
@@ -1179,28 +1180,28 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Score Display */}
             <div className={`rounded-lg border p-6 ${getScoreBgColor(productivityScore)}`}>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-2">Productivity Score</p>
+                <p className="text-xs text-muted-foreground mb-2">{t('components.Home.productivityScore', 'Productivity Score')}</p>
                 <p className={`text-5xl font-bold ${getScoreColor(productivityScore)}`}>
                   {productivityScore}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">out of 100</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('components.Home.outOf100', 'out of 100')}</p>
               </div>
             </div>
 
             {/* Breakdown */}
             <div className="w-full space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">This Week</span>
-                <span className="font-semibold">{tasksCompletedThisWeek} tasks</span>
+                <span className="text-muted-foreground">{t('components.Home.thisWeek', 'This Week')}</span>
+                <span className="font-semibold">{tasksCompletedThisWeek} {t('components.Home.tasks', 'tasks')}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Overdue</span>
+                <span className="text-muted-foreground">{t('components.Home.overdue', 'Overdue')}</span>
                 <span className={`font-semibold ${overdueTasksCount > 0 ? 'text-red-500' : 'text-green-500'}`}>
                   {overdueTasksCount}
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Completion</span>
+                <span className="text-muted-foreground">{t('components.Home.completion', 'Completion')}</span>
                 <span className="font-semibold">{Math.round(completionRateForScore)}%</span>
               </div>
             </div>
@@ -1230,37 +1231,37 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             <div className="space-y-3">
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] text-muted-foreground">Avg Task Age</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.avgTaskAge', 'Avg Task Age')}</p>
                   <Clock className="h-4 w-4 text-orange-500" />
                 </div>
                 <p className="text-xl font-bold">{averageTaskAge}h</p>
-                <p className="text-[9px] text-muted-foreground">Average hours</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.averageHours', 'Average hours')}</p>
               </div>
 
               <div className="rounded-lg border bg-card p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] text-muted-foreground">Total Estimated</p>
+                  <p className="text-[10px] text-muted-foreground">{t('components.Home.totalEstimated', 'Total Estimated')}</p>
                   <TrendingUp className="h-4 w-4 text-blue-500" />
                 </div>
                 <p className="text-xl font-bold">{totalEstimatedHours}h</p>
-                <p className="text-[9px] text-muted-foreground">All tasks</p>
+                <p className="text-[9px] text-muted-foreground">{t('components.Home.allTasks', 'All tasks')}</p>
               </div>
             </div>
 
             {/* Task Status Timeline */}
             <div>
-              <p className="text-xs font-semibold text-foreground mb-2">Task Timeline</p>
+              <p className="text-xs font-semibold text-foreground mb-2">{t('components.Home.taskTimeline', 'Task Timeline')}</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">With Due Dates</span>
+                  <span className="text-muted-foreground">{t('components.Home.withDueDates', 'With Due Dates')}</span>
                   <span className="font-semibold">{tasksWithDueDate.length}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Completed on Time</span>
+                  <span className="text-muted-foreground">{t('components.Home.completedOnTime', 'Completed on Time')}</span>
                   <span className="font-semibold text-green-500">{completedWithDueDate.length}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Pending</span>
+                  <span className="text-muted-foreground">{t('components.Home.pending', 'Pending')}</span>
                   <span className="font-semibold">{tasksWithDueDate.length - completedWithDueDate.length}</span>
                 </div>
               </div>
@@ -1294,10 +1295,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
               <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
                 <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-3" />
                 <p className="text-sm font-medium text-muted-foreground mb-1">
-                  No chat history
+                  {t('components.Home.noChatHistory', 'No chat history')}
                 </p>
                 <p className="text-xs text-muted-foreground/70">
-                  Start a conversation with AI Chat
+                  {t('components.Home.startConversation', 'Start a conversation with AI Chat')}
                 </p>
                 <Button
                   variant="outline"
@@ -1310,13 +1311,13 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   }}
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Open AI Chat
+                  {t('components.Home.openAiChat', 'Open AI Chat')}
                 </Button>
               </div>
             ) : (
               <>
                 <div className="flex items-center justify-between px-2 pb-2 border-b">
-                  <p className="text-xs font-semibold text-foreground">Recent Conversations</p>
+                  <p className="text-xs font-semibold text-foreground">{t('components.Home.recentConversations', 'Recent Conversations')}</p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1326,7 +1327,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                       if (button) button.click();
                     }}
                   >
-                    View All
+                    {t('components.Home.viewAll', 'View All')}
                   </Button>
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto">
@@ -1363,7 +1364,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     }}
                   >
                     <MessageSquare className="h-3 w-3 mr-2" />
-                    Continue Chat
+                    {t('components.Home.continueChat', 'Continue Chat')}
                   </Button>
                 </div>
               </>
@@ -1384,7 +1385,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 onClick={() => onViewChange('tasks')}
               >
                 <CheckSquare className="h-5 w-5 text-blue-500" />
-                <span className="text-xs font-medium">New Task</span>
+                <span className="text-xs font-medium">{t('components.Home.newTask', 'New Task')}</span>
               </Button>
               
               <Button
@@ -1393,7 +1394,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 onClick={() => onViewChange('docs')}
               >
                 <FileText className="h-5 w-5 text-orange-500" />
-                <span className="text-xs font-medium">New Doc</span>
+                <span className="text-xs font-medium">{t('components.Home.newDoc', 'New Doc')}</span>
               </Button>
               
               <Button
@@ -1402,7 +1403,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 onClick={() => onViewChange('board')}
               >
                 <Layers className="h-5 w-5 text-pink-500" />
-                <span className="text-xs font-medium">New Board</span>
+                <span className="text-xs font-medium">{t('components.Home.newBoard', 'New Board')}</span>
               </Button>
               
               <Button
@@ -1414,7 +1415,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 }}
               >
                 <Sparkles className="h-5 w-5 text-purple-500" />
-                <span className="text-xs font-medium">AI Chat</span>
+                <span className="text-xs font-medium">{t('components.Home.aiChat', 'AI Chat')}</span>
               </Button>
             </div>
           </div>
@@ -1478,7 +1479,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <Link2 className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="url"
-                  placeholder="Paste YouTube, Google Docs, Figma, or any URL..."
+                  placeholder={t('components.Home.embedPlaceholder', 'Paste YouTube, Google Docs, Figma, or any URL...')}
                   value={embedUrl}
                   onChange={(e) => setEmbedUrl(e.target.value)}
                   className="pl-8 text-xs"
@@ -1491,7 +1492,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   onClick={() => setEmbedUrl('')}
                   className="flex-shrink-0"
                 >
-                  Clear
+                  {t('components.Home.clear', 'Clear')}
                 </Button>
               )}
             </div>
@@ -1504,10 +1505,10 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 <div className="h-full flex flex-col items-center justify-center text-center p-4">
                   <ExternalLink className="h-12 w-12 text-muted-foreground/50 mb-3" />
                   <p className="text-sm font-medium text-muted-foreground mb-1">
-                    Embed External Content
+                    {t('components.Home.embedExternalContent', 'Embed External Content')}
                   </p>
                   <p className="text-xs text-muted-foreground/70">
-                    Paste a link to preview YouTube videos, Google Docs, Figma designs, and more
+                    {t('components.Home.embedDescription', 'Paste a link to preview YouTube videos, Google Docs, Figma designs, and more')}
                   </p>
                 </div>
               )}
@@ -1600,9 +1601,9 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                             <div
                               key={idx}
                               className={`h-1 w-1 rounded-full ${
-                                task.priority === 'High' ? 'bg-red-500' :
-                                task.priority === 'Medium' ? 'bg-yellow-500' :
-                                'bg-gray-400'
+                                task.priority === 'High' ? 'bg-[hsl(var(--priority-high))]' :
+                                task.priority === 'Medium' ? 'bg-[hsl(var(--priority-medium))]' :
+                                'bg-[hsl(var(--priority-low))]'
                               }`}
                             />
                           ))}
@@ -1616,20 +1617,20 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
 
             {/* Today's Tasks Summary */}
             <div className="pt-2 border-t space-y-1">
-              <p className="text-[10px] font-medium text-muted-foreground">Today's Tasks</p>
+              <p className="text-[10px] font-medium text-muted-foreground">{t('components.Home.todaysTasks', 'Today\'s Tasks')}</p>
               {(() => {
                 const todayTasks = getTasksForDate(new Date());
                 if (todayTasks.length === 0) {
                   return (
-                    <p className="text-[10px] text-muted-foreground/60 italic">No tasks for today</p>
+                    <p className="text-[10px] text-muted-foreground/60 italic">{t('components.Home.noTasksToday', 'No tasks for today')}</p>
                   );
                 }
                 return todayTasks.slice(0, 2).map((task) => (
                   <div key={task.id} className="flex items-center gap-1 text-[10px]">
                     <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${
-                      task.priority === 'High' ? 'bg-red-500' :
-                      task.priority === 'Medium' ? 'bg-yellow-500' :
-                      'bg-gray-400'
+                      task.priority === 'High' ? 'bg-[hsl(var(--priority-high))]' :
+                      task.priority === 'Medium' ? 'bg-[hsl(var(--priority-medium))]' :
+                      'bg-[hsl(var(--priority-low))]'
                     }`} />
                     <span className="truncate">{task.title}</span>
                   </div>
@@ -1649,12 +1650,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
   };
 
   return (
-    <div className="h-full overflow-auto bg-background">
+    <div className="h-full overflow-auto bg-gradient-to-br from-background via-background to-secondary/5">
       <div className="max-w-[1800px] mx-auto p-4 sm:p-6 space-y-4">
         {/* Header - More compact */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-gradient-to-r from-background via-secondary/10 to-background border border-border/40 shadow-sm">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
               {activeWorkspace ? activeWorkspace.name : t('dashboard.home', 'Home')}
             </h1>
             <p className="text-sm text-muted-foreground">

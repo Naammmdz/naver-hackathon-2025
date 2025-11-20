@@ -31,6 +31,7 @@ public class DocumentService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper;
+    private final GlobalSearchService globalSearchService;
 
     public List<Document> getAllDocuments() {
         String userId = UserContext.requireUserId();
@@ -69,7 +70,9 @@ public class DocumentService {
     public Document createDocument(Document document) {
         String userId = UserContext.requireUserId();
         document.setUserId(userId);
-        return documentRepository.save(document);
+        Document saved = documentRepository.save(document);
+        globalSearchService.indexDocument(saved);
+        return saved;
     }
 
     public Document updateDocument(String id, Document updatedDocument) {
@@ -104,6 +107,7 @@ public class DocumentService {
                         publishMetadataUpdate(id, "RENAME", updatedDocument.getTitle());
                     }
                     
+                    globalSearchService.indexDocument(saved);
                     return saved;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
@@ -139,6 +143,7 @@ public class DocumentService {
         document.setTrashed(true);
         document.setTrashedAt(LocalDateTime.now());
         documentRepository.save(document);
+        globalSearchService.indexDocument(document);
     }
 
     public void permanentlyDeleteDocument(String id) {
@@ -154,6 +159,7 @@ public class DocumentService {
             throw new SecurityException("Access denied");
         }
         documentRepository.delete(document);
+        globalSearchService.deleteDocument(document.getId());
     }
 
     public void restoreDocument(String id) {
@@ -170,7 +176,8 @@ public class DocumentService {
         }
         document.setTrashed(false);
         document.setTrashedAt(null);
-        documentRepository.save(document);
+        Document saved = documentRepository.save(document);
+        globalSearchService.indexDocument(saved);
     }
 
     public List<Document> searchDocuments(String search) {

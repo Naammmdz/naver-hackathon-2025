@@ -32,6 +32,8 @@ public interface TaskRepository extends JpaRepository<Task, String> {
 
     void deleteByIdAndUserId(String id, String userId);
 
+    void deleteByWorkspaceId(String workspaceId);
+
     @Query("SELECT t FROM Task t WHERE " +
            "t.userId = :userId AND " +
            "(:status IS NULL OR t.status = :status) AND " +

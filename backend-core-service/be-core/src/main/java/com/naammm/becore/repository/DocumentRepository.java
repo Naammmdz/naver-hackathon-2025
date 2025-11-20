@@ -24,6 +24,8 @@ public interface DocumentRepository extends JpaRepository<Document, String> {
 
     void deleteByIdAndUserId(String id, String userId);
 
+    void deleteByWorkspaceId(String workspaceId);
+
     @Query("SELECT d FROM Document d WHERE d.userId = :userId AND d.trashed = false AND " +
            "(LOWER(d.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(d.content) LIKE LOWER(CONCAT('%', :search, '%')))")
