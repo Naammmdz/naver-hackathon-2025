@@ -435,6 +435,28 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             }
         }
     
+    def query_with_crud(
+        self,
+        query: str,
+        workspace_id: str,
+        user_id: str = "default-user",
+        conversation_history: Optional[List[Dict[str, str]]] = None
+    ) -> Dict[str, Any]:
+        """
+        Alias for query_with_hitl for API compatibility.
+        Process query with HITL confirmation for risky operations including CRUD.
+        
+        Args:
+            query: User query
+            workspace_id: Workspace ID
+            user_id: User ID
+            conversation_history: Conversation context
+            
+        Returns:
+            Result with requires_confirmation flag
+        """
+        return self.query_with_hitl(query, workspace_id, user_id, conversation_history)
+    
     def _format_plan_preview(self, plan: ExecutionPlan) -> str:
         """Format execution plan for preview"""
         preview = f"📋 Execution Plan ({len(plan.steps)} steps):\n\n"
