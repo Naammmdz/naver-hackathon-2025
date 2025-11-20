@@ -18,6 +18,7 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSidebarProps) {
+  const { t } = useTranslation();
   const {
     tasks,
     filters,
@@ -170,7 +171,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
       },
       {
         id: "week",
-        label: t("components.AppSidebar.thisWeek"),
+        label: t("components.AppSidebar.sevenDays"),
         icon: Clock,
         count: counts.thisWeek,
         active: filters.dueDateFilter === "thisWeek",
@@ -178,16 +179,16 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
         badgeVariant: counts.thisWeek > 0 ? "default" : "secondary",
       },
     ],
-    [clearFilters, counts, filters.dueDateFilter, filters.priority, filters.status, filters.tags, setFilters],
+    [clearFilters, counts, filters.dueDateFilter, filters.priority, filters.status, filters.tags, setFilters, t],
   );
 
   const priorityPalette = useMemo(
     () => [
-      { id: "High", label: t("components.AppSidebar.high"), token: "--priority-high", count: counts.high },
-      { id: "Medium", label: t("components.AppSidebar.medium"), token: "--priority-medium", count: counts.medium },
-      { id: "Low", label: t("components.AppSidebar.low"), token: "--priority-low", count: counts.low },
+      { id: "High", label: t("components.AppSidebar.priorityHigh"), token: "--priority-high", count: counts.high },
+      { id: "Medium", label: t("components.AppSidebar.priorityMedium"), token: "--priority-medium", count: counts.medium },
+      { id: "Low", label: t("components.AppSidebar.priorityLow"), token: "--priority-low", count: counts.low },
     ],
-    [counts.high, counts.low, counts.medium],
+    [counts.high, counts.low, counts.medium, t],
   );
 
   const getPriorityColor = useCallback((token: string) => `hsl(var(${token}))`, []);
@@ -196,7 +197,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
     () => [
       {
         id: "Todo",
-        label: t("components.AppSidebar.planning"),
+        label: t("components.AppSidebar.statusPlanning"),
         count: counts.todo,
         colors: {
           base: "hsl(215 16% 47%)",
@@ -206,7 +207,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
       },
       {
         id: "In Progress",
-        label: t("components.AppSidebar.inProgress"),
+        label: t("components.AppSidebar.statusInProgress"),
         count: counts.progress,
         colors: {
           base: "hsl(38 92% 52%)",
@@ -216,7 +217,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
       },
       {
         id: "Done",
-        label: t("components.AppSidebar.done"),
+        label: t("components.AppSidebar.statusDone"),
         count: counts.done,
         colors: {
           base: "hsl(142 72% 38%)",
@@ -225,7 +226,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
         },
       },
     ],
-    [counts.done, counts.progress, counts.todo],
+    [counts.done, counts.progress, counts.todo, t],
   );
 
   if (sidebarCollapsed) {
@@ -241,7 +242,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
     >
       <div className="border-b border-sidebar-border/40 px-3 py-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-sidebar-foreground">Task</h2>
+          <h2 className="text-lg font-semibold text-sidebar-foreground">{t("components.AppSidebar.title")}</h2>
           <div className="flex items-center gap-2">
             {onToggleCollapse && (
               <Button
@@ -252,7 +253,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
                 onClick={onToggleCollapse}
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only">Ẩn sidebar task</span>
+                <span className="sr-only">{t("components.AppSidebar.hideSidebar")}</span>
               </Button>
             )}
             <Button
@@ -271,7 +272,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
         <div className="relative mt-3">
           <Search className="absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-sidebar-foreground/60" />
           <Input
-            placeholder={t("components.AppSidebar.searchPlaceholder")}
+            placeholder={t("components.AppSidebar.searchTaskPlaceholder")}
             value={filters.search ?? ""}
             onChange={(event) => setFilters({ search: event.target.value })}
             className="h-8 rounded-lg border border-transparent bg-sidebar/40 pl-8 pr-3 text-xs focus-visible:ring-sidebar-ring/30 focus-visible:border-sidebar-ring/40"
@@ -290,7 +291,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
           <section>
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-sidebar-foreground/60" />
-              <h3 className="text-sm font-medium text-sidebar-foreground">Trạng thái nhanh</h3>
+              <h3 className="text-sm font-medium text-sidebar-foreground">{t("components.AppSidebar.quickStatus")}</h3>
             </div>
             <div className="mt-2 space-y-1.5">
               {quickFilters.map((item) => {
@@ -447,7 +448,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
               <section>
                 <div className="flex items-center gap-2">
                   <Tag className="h-4 w-4 text-sidebar-foreground/60" />
-                  <h3 className="text-sm font-medium text-sidebar-foreground">Theo thẻ</h3>
+                  <h3 className="text-sm font-medium text-sidebar-foreground">{t("components.AppSidebar.byTags")}</h3>
                 </div>
                 {tagCounts.length > 5 && (
                   <div className="relative mt-3">
@@ -462,7 +463,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
                 )}
                 <div className="mt-2 space-y-1 pr-0.5 text-[11px]">
                   {filteredTags.length === 0 ? (
-                    <p className="py-3 text-center text-xs text-sidebar-foreground/60">Không tìm thấy thẻ phù hợp.</p>
+                    <p className="py-3 text-center text-xs text-sidebar-foreground/60">{t("components.AppSidebar.noTagsFound")}</p>
                   ) : (
                     displayedTags.map(([tag, count]) => {
                       const isActive = filters.tags?.includes(tag);

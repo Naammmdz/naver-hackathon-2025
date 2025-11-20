@@ -20,11 +20,13 @@ import {
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Check, ChevronDown, Plus, Settings, Trash2, Users } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog";
 import { WorkspaceSettingsDialog } from "./WorkspaceSettingsDialog";
 import { JoinWorkspaceDialog } from "./JoinWorkspaceDialog";
 
 export function WorkspaceSwitcher() {
+  const { t } = useTranslation();
   const { workspaces, activeWorkspaceId, setActiveWorkspace, deleteWorkspace } = useWorkspaceStore();
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -60,14 +62,14 @@ export function WorkspaceSwitcher() {
                 {activeWorkspace?.name.charAt(0).toUpperCase() || "W"}
               </div>
               <span className="truncate font-medium">
-                {activeWorkspace?.name || "Select Workspace"}
+                {activeWorkspace?.name || t("workspace.selectWorkspace")}
               </span>
             </div>
             <ChevronDown className="h-4 w-4 flex-shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[280px]">
-          <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("workspace.workspaces")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {workspaces.map((workspace) => (
             <div key={workspace.id} className="relative group">
@@ -107,21 +109,21 @@ export function WorkspaceSwitcher() {
             onClick={() => setCreateDialogOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
-            Create Workspace
+            {t("workspace.createWorkspace")}
           </DropdownMenuItem>
           <DropdownMenuItem 
             className="cursor-pointer"
             onClick={() => setJoinDialogOpen(true)}
           >
             <Users className="mr-2 h-4 w-4" />
-            Join Workspace
+            {t("workspace.joinWorkspace")}
           </DropdownMenuItem>
           <DropdownMenuItem 
             className="cursor-pointer"
             onClick={() => setSettingsDialogOpen(true)}
           >
             <Settings className="mr-2 h-4 w-4" />
-            Workspace Settings
+            {t("workspace.workspaceSettings")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -144,19 +146,18 @@ export function WorkspaceSwitcher() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xóa workspace?</AlertDialogTitle>
+            <AlertDialogTitle>{t("workspace.deleteWorkspaceTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa workspace này? Tất cả tasks, documents và boards trong workspace sẽ bị xóa vĩnh viễn.
-              Hành động này không thể hoàn tác.
+              {t("workspace.deleteWorkspaceDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Xóa workspace
+              {t("workspace.deleteWorkspace")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

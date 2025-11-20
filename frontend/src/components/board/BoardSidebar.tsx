@@ -29,6 +29,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const sidebarSurfaceStyle: CSSProperties = {
   background: 'linear-gradient(180deg, color-mix(in oklch, var(--sidebar) 98%, transparent) 0%, color-mix(in oklch, var(--sidebar) 88%, transparent) 100%)',
@@ -41,6 +42,7 @@ export default function BoardSidebar({
 }: {
   onCollapse?: () => void;
 }) {
+  const { t } = useTranslation();
   const {
     boards,
     activeBoardId,
@@ -89,7 +91,7 @@ export default function BoardSidebar({
           }}
         >
           <Edit2 className="h-4 w-4 mr-2" />
-          Rename
+          {t('components.BoardSidebar.rename')}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
@@ -99,7 +101,7 @@ export default function BoardSidebar({
           className="text-destructive"
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Delete
+          {t('components.BoardSidebar.delete')}
         </DropdownMenuItem>
       </>
     );
@@ -174,7 +176,7 @@ export default function BoardSidebar({
         <div className="p-4 border-b border-sidebar-border/40 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
-              Boards
+              {t('components.BoardSidebar.headerTitle')}
             </h2>
             <div className="flex items-center gap-2">
               <Button
@@ -194,7 +196,7 @@ export default function BoardSidebar({
                   onClick={onCollapse}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="sr-only">Ẩn sidebar board</span>
+                  <span className="sr-only">{t('components.BoardView.hideSidebarTitle')}</span>
                 </Button>
               )}
             </div>
@@ -204,7 +206,7 @@ export default function BoardSidebar({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/60" />
             <Input
-              placeholder="Search boards..."
+              placeholder={t('components.BoardSidebar.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-8 text-sm bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30 rounded-lg"
@@ -222,7 +224,7 @@ export default function BoardSidebar({
             {showNewBoardInput && (
               <div className="px-2 py-2">
                 <Input
-                  placeholder="Board name..."
+                  placeholder={t('components.BoardSidebar.newBoardPlaceholder')}
                   value={newBoardTitle}
                   onChange={(e) => setNewBoardTitle(e.target.value)}
                   onKeyDown={(e) => {
@@ -249,20 +251,20 @@ export default function BoardSidebar({
 
             {isLoading && boards.length === 0 ? (
               <div className="text-center py-12 px-4 text-sidebar-foreground/70 text-sm">
-                Loading boards...
+                {t('components.BoardSidebar.loadingBoards')}
               </div>
             ) : filteredBoards.length === 0 ? (
               <div className="text-center py-12 px-4 text-sidebar-foreground/70 text-sm">
                 {searchQuery ? (
                   <>
                     <Layers className="h-10 w-10 mx-auto mb-2 text-sidebar-foreground/50" />
-                    <p className="mb-1 font-medium">No boards found</p>
-                    <p className="text-xs">Try a different search term</p>
+                    <p className="mb-1 font-medium">{t('components.BoardSidebar.noBoardsFound')}</p>
+                    <p className="text-xs">{t('components.BoardSidebar.tryDifferentSearch')}</p>
                   </>
                 ) : (
                   <>
                     <Layers className="h-10 w-10 mx-auto mb-2 text-sidebar-foreground/50" />
-                    <p className="mb-1 font-medium">No boards yet</p>
+                    <p className="mb-1 font-medium">{t('components.BoardSidebar.noBoardsYet')}</p>
                     <Button
                       variant="link"
                       size="sm"
@@ -270,7 +272,7 @@ export default function BoardSidebar({
                       className="mt-1 h-auto p-0 text-xs"
                       disabled={isLoading}
                     >
-                      Create your first board
+                      {t('components.BoardSidebar.createFirstBoard')}
                     </Button>
                   </>
                 )}
@@ -285,7 +287,7 @@ export default function BoardSidebar({
         <div className="p-3 border-t border-sidebar-border/40 space-y-2 flex-shrink-0">
           <div className="text-xs text-sidebar-foreground/70 px-2">
             <span className="font-medium">
-              {boards.length} {boards.length === 1 ? 'board' : 'boards'}
+              {boards.length} {boards.length === 1 ? t('components.BoardSidebar.boardSingular') : t('components.BoardSidebar.boardPlural')}
             </span>
           </div>
         </div>
@@ -295,17 +297,17 @@ export default function BoardSidebar({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Board</DialogTitle>
+            <DialogTitle>{t('components.BoardSidebar.deleteBoardTitle')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this board? This action cannot be undone.
+              {t('components.BoardSidebar.deleteBoardDescription')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
+              {t('components.BoardSidebar.cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Delete
+              {t('components.BoardSidebar.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

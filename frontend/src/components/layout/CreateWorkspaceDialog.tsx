@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CreateWorkspaceDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface CreateWorkspaceDialogProps {
 }
 
 export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDialogProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,18 +51,18 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Workspace</DialogTitle>
+          <DialogTitle>{t("workspace.createNewWorkspace")}</DialogTitle>
           <DialogDescription>
-            Create a new workspace to organize your tasks, documents, and boards.
+            {t("workspace.createNewWorkspaceDescription")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Workspace Name *</Label>
+              <Label htmlFor="name">{t("workspace.workspaceNameRequired")}</Label>
               <Input
                 id="name"
-                placeholder="My Workspace"
+                placeholder={t("workspace.workspaceNamePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -68,10 +70,10 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">{t("workspace.descriptionOptional")}</Label>
               <Textarea
                 id="description"
-                placeholder="Describe what this workspace is for..."
+                placeholder={t("workspace.descriptionPlaceholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -85,11 +87,11 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Workspace
+              {t("workspace.createWorkspace")}
             </Button>
           </DialogFooter>
         </form>

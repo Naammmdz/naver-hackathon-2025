@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
 import { SidebarItem } from '@/components/layout/SidebarItem';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,27 +9,22 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuItem
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
 import {
-  ChevronDown,
-  ChevronRight,
+  ChevronLeft,
   Edit2,
   FileText,
-  MoreHorizontal,
   Plus,
   Search,
-  Trash2,
-  ChevronLeft
+  Trash2
 } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const sidebarSurfaceStyle: CSSProperties = {
   background: 'linear-gradient(180deg, color-mix(in oklch, var(--sidebar) 98%, transparent) 0%, color-mix(in oklch, var(--sidebar) 88%, transparent) 100%)',
@@ -42,6 +37,7 @@ export default function DocumentSidebar({
 }: {
   onCollapse?: () => void;
 }) {
+  const { t } = useTranslation();
   const {
     documents,
     activeDocumentId,
@@ -131,7 +127,7 @@ export default function DocumentSidebar({
           }}
         >
           <FileText className="h-4 w-4 mr-2" />
-          Restore
+          {t("components.DocumentSidebar.restore")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
@@ -141,7 +137,7 @@ export default function DocumentSidebar({
           className="text-destructive"
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Delete Permanently
+          {t("components.DocumentSidebar.deletePermanently")}
         </DropdownMenuItem>
       </>
     ) : (
@@ -149,11 +145,11 @@ export default function DocumentSidebar({
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
-            addDocument('Untitled', doc.id);
+            addDocument(t("components.DocumentSidebar.untitled"), doc.id);
           }}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Create Subdocument
+          {t("components.DocumentSidebar.createSubdocument")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
@@ -162,7 +158,7 @@ export default function DocumentSidebar({
           }}
         >
           <Edit2 className="h-4 w-4 mr-2" />
-          Rename
+          {t("components.DocumentSidebar.rename")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
@@ -172,7 +168,7 @@ export default function DocumentSidebar({
           className="text-destructive"
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Delete
+          {t("components.DocumentSidebar.delete")}
         </DropdownMenuItem>
       </>
     );
@@ -202,7 +198,7 @@ export default function DocumentSidebar({
             style={{ paddingLeft: `${8 + (level + 1) * 16}px` }}
           >
             <span className="opacity-40 transition-opacity group-hover:opacity-60">└──</span>
-            {t('components.DocumentSidebar.noSubdocuments')}
+            {t("components.DocumentSidebar.noSubdocuments")}
           </div>
         )}
       </div>
@@ -210,7 +206,7 @@ export default function DocumentSidebar({
   };
 
   const handleCreateDocument = () => {
-    addDocument('Untitled');
+    addDocument(t("components.DocumentSidebar.untitled"));
   };
 
   const handleDeleteClick = (id: string) => {
@@ -267,7 +263,7 @@ export default function DocumentSidebar({
         <div className="p-4 border-b border-sidebar-border/40 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
-              {showTrash ? 'Trash' : 'Documents'}
+              {showTrash ? t("components.DocumentSidebar.headerTitleTrash") : t("components.DocumentSidebar.headerTitle")}
             </h2>
             <div className="flex items-center gap-2">
               {!showTrash && (
@@ -288,7 +284,7 @@ export default function DocumentSidebar({
                   onClick={onCollapse}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="sr-only">Ẩn sidebar tài liệu</span>
+                  <span className="sr-only">{t("components.DocumentSidebar.hideSidebar")}</span>
                 </Button>
               )}
             </div>
@@ -298,7 +294,7 @@ export default function DocumentSidebar({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/60" />
             <Input
-              placeholder={t('components.DocumentSidebar.searchDocsPlaceholder')}
+              placeholder={t("components.DocumentSidebar.searchDocsPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-8 text-sm bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30 rounded-lg"
@@ -314,20 +310,20 @@ export default function DocumentSidebar({
                 {searchQuery ? (
                   <>
                     <FileText className="h-10 w-10 mx-auto mb-2 text-sidebar-foreground/50 group-hover:text-primary/70 transition-colors" />
-                    <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">No documents found</p>
-                    <p className="text-xs text-sidebar-foreground/65 group-hover:text-primary/60 transition-colors">Try a different search term</p>
+                    <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">{t("components.DocumentSidebar.noDocumentsFound")}</p>
+                    <p className="text-xs text-sidebar-foreground/65 group-hover:text-primary/60 transition-colors">{t("components.DocumentSidebar.tryDifferentSearch")}</p>
                   </>
                 ) : (
                   <>
                     <FileText className="h-10 w-10 mx-auto mb-2 text-sidebar-foreground/50 group-hover:text-primary/70 transition-colors" />
-                    <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">No documents yet</p>
+                    <p className="mb-1 font-medium text-foreground/80 group-hover:text-primary transition-colors">{t("components.DocumentSidebar.noDocumentsYet")}</p>
                     <Button
                       variant="link"
                       size="sm"
                       onClick={handleCreateDocument}
                       className="mt-1 h-auto p-0 text-xs text-primary hover:text-primary/90 transition-colors"
                     >
-                      {t('components.DocumentSidebar.createFirstDocument')}
+                      {t("components.DocumentSidebar.createFirstDocument")}
                     </Button>
                   </>
                 )}
@@ -345,8 +341,8 @@ export default function DocumentSidebar({
           <div className="text-xs text-sidebar-foreground/70 px-2">
             <span className="font-medium">
               {showTrash
-                ? `${getTrashedDocuments().length} ${getTrashedDocuments().length === 1 ? 'item' : 'items'}`
-                : `${documents.filter(doc => !doc.trashed).length} ${documents.filter(doc => !doc.trashed).length === 1 ? 'document' : 'documents'}`
+                ? `${getTrashedDocuments().length} ${getTrashedDocuments().length === 1 ? t("components.DocumentSidebar.item") : t("components.DocumentSidebar.items")}`
+                : `${documents.filter(doc => !doc.trashed).length} ${documents.filter(doc => !doc.trashed).length === 1 ? t("components.DocumentSidebar.document") : t("components.DocumentSidebar.documents")}`
               }
             </span>
           </div>
@@ -357,7 +353,7 @@ export default function DocumentSidebar({
             className="w-full justify-start h-8 px-2 text-xs gap-2 hover:bg-muted transition-colors"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            {showTrash ? t('components.DocumentSidebar.backToDocuments') : t('components.DocumentSidebar.viewTrash')}
+            {showTrash ? t("components.DocumentSidebar.backToDocuments") : t("components.DocumentSidebar.viewTrash")}
           </Button>
         </div>
       </div>
@@ -366,17 +362,17 @@ export default function DocumentSidebar({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('components.DocumentSidebar.deleteDocument')}</DialogTitle>
+            <DialogTitle>{t("components.DocumentSidebar.deleteDocumentTitle")}</DialogTitle>
             <DialogDescription>
-              {t('components.DocumentSidebar.deleteDocumentDescription')}
+              {t("components.DocumentSidebar.deleteDocumentDescription")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              {t('components.DocumentSidebar.cancel')}
+              {t("common.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>
-              {t('components.DocumentSidebar.delete')}
+              {t("components.DocumentSidebar.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -386,17 +382,17 @@ export default function DocumentSidebar({
       <Dialog open={permanentDeleteDialogOpen} onOpenChange={setPermanentDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('components.DocumentSidebar.deletePermanently')}</DialogTitle>
+            <DialogTitle>{t("components.DocumentSidebar.deletePermanentlyTitle")}</DialogTitle>
             <DialogDescription>
-              {t('components.DocumentSidebar.deletePermanentlyDescription')}
+              {t("components.DocumentSidebar.deletePermanentlyDescription")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermanentDeleteDialogOpen(false)}>
-              {t('components.DocumentSidebar.cancel')}
+              {t("common.cancel")}
             </Button>
             <Button variant="destructive" onClick={handlePermanentDeleteConfirm}>
-              {t('components.DocumentSidebar.deletePermanentlyButton')}
+              {t("components.DocumentSidebar.deletePermanently")}
             </Button>
           </DialogFooter>
         </DialogContent>

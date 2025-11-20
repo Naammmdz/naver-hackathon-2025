@@ -13,6 +13,7 @@ import { Loader2, Search, Users } from "lucide-react";
 import { useState } from "react";
 import { workspaceApi } from "@/lib/api/workspaceApi";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface JoinWorkspaceDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface JoinWorkspaceDialogProps {
 }
 
 export function JoinWorkspaceDialog({ open, onOpenChange }: JoinWorkspaceDialogProps) {
+  const { t } = useTranslation();
   const [workspaceId, setWorkspaceId] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function JoinWorkspaceDialog({ open, onOpenChange }: JoinWorkspaceDialogP
 
   const handleJoin = async () => {
     if (!workspaceId.trim()) {
-      setError("Workspace ID is required");
+      setError(t("workspace.workspaceIdRequired"));
       return;
     }
 
@@ -37,12 +39,12 @@ export function JoinWorkspaceDialog({ open, onOpenChange }: JoinWorkspaceDialogP
     try {
       await workspaceApi.joinPublicWorkspace(workspaceId.trim());
       await loadWorkspaces();
-      toast.success("Successfully joined workspace!");
+      toast.success(t("workspace.successfullyJoinedWorkspace"));
       onOpenChange(false);
       setWorkspaceId("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to join workspace");
-      toast.error("Failed to join workspace. Please check the ID and try again.");
+      setError(err instanceof Error ? err.message : t("workspace.failedToJoinWorkspace"));
+      toast.error(t("workspace.failedToJoinWorkspace"));
     } finally {
       setIsJoining(false);
     }
@@ -57,9 +59,9 @@ export function JoinWorkspaceDialog({ open, onOpenChange }: JoinWorkspaceDialogP
               <Users className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <DialogTitle>Join Workspace</DialogTitle>
+              <DialogTitle>{t("workspace.joinWorkspaceTitle")}</DialogTitle>
               <DialogDescription>
-                Enter the ID of the workspace you want to join
+                {t("workspace.joinWorkspaceDescription")}
               </DialogDescription>
             </div>
           </div>
@@ -67,12 +69,12 @@ export function JoinWorkspaceDialog({ open, onOpenChange }: JoinWorkspaceDialogP
 
         <div className="space-y-4 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="workspace-id">Workspace ID</Label>
+            <Label htmlFor="workspace-id">{t("workspace.workspaceId")}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="workspace-id"
-                placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000"
+                placeholder={t("workspace.workspaceIdPlaceholder")}
                 value={workspaceId}
                 onChange={(e) => setWorkspaceId(e.target.value)}
                 className="pl-9"
@@ -88,16 +90,16 @@ export function JoinWorkspaceDialog({ open, onOpenChange }: JoinWorkspaceDialogP
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleJoin} disabled={!workspaceId.trim() || isJoining}>
               {isJoining ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Joining...
+                  {t("workspace.joining")}
                 </>
               ) : (
-                "Join Workspace"
+                t("workspace.joinWorkspace")
               )}
             </Button>
           </div>

@@ -1,21 +1,22 @@
 import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
-import { GraphView } from '@/components/GraphView';
 import { Button } from '@/components/ui/button';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
+import { cn } from '@/lib/utils';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
-import { useBoardStore } from '@/store/boardStore';
 import { Task } from '@/types/task';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
-import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles, Edit, Network } from 'lucide-react';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import type { DebouncedFunc } from 'lodash';
 import { debounce } from 'lodash';
-import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 export default function Docs() {
+  const { t } = useTranslation();
   const {
     documents,
     activeDocumentId,
@@ -46,7 +47,7 @@ export default function Docs() {
   const pendingTitleRef = useRef<string | null>(null);
   
   // Debounced onChange handler to avoid too many updates
-  const onChangeRef = useRef<ReturnType<typeof debounce>>();
+  const onChangeRef = useRef<DebouncedFunc<(content: any[]) => void>>();
   useEffect(() => {
     // Backup current content
     if (activeDocumentId && activeDocument?.content) {
@@ -92,6 +93,19 @@ export default function Docs() {
         if (isYjsActive) {
           // Use local update when Yjs is active to avoid API feedback loops
           setDocumentContentLocal(activeDocumentId!, content);
+          // Persist snapshot to backend via API to keep DB/search in sync
+          const currentDoc = activeDocumentId ? getDocument(activeDocumentId) : null;
+          if (currentDoc) {
+            import('@/lib/api/documentApi').then(({ documentApi }) => {
+              documentApi.update(activeDocumentId!, { content }, currentDoc).catch((error) => {
+                if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+                  console.warn('[Docs] Unauthorized error autosaving document content, token may have expired');
+                } else {
+                  console.error('[Docs] Failed to autosave document content:', error);
+                }
+              });
+            });
+          }
         } else {
           // Fallback to API update when Yjs is not available
           updateDocument(activeDocumentId!, { content }).catch((error) => {
@@ -229,12 +243,6 @@ export default function Docs() {
   const [isDark, setIsDark] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  // View mode: 'editor' or 'graph'
-  const [viewMode, setViewMode] = useState<'editor' | 'graph'>('editor');
-  
-  // Board store for graph navigation
-  const setActiveBoard = useBoardStore((state) => state.setActiveBoard);
-  
   useEffect(() => {
     const checkTheme = () => {
       const savedTheme = localStorage.getItem("theme");
@@ -254,6 +262,7 @@ export default function Docs() {
     
     return () => observer.disconnect();
   }, []);
+
 
   // Handle task link clicks
   useEffect(() => {
@@ -287,32 +296,48 @@ export default function Docs() {
   return (
     <div className={`flex h-full ${isDark ? 'bg-[#1f1f1f]' : 'bg-background'}`}>
       {/* Document Sidebar - Collapsible on larger screens */}
-      <div className={`hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
-        isSidebarCollapsed ? 'w-0' : 'w-64'
-      }`}>
-        <DocumentSidebar />
-      </div>
-
-      {/* Drag Handle - Small indicator bar like iPhone navigation */}
       <div
-        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        className={`hidden lg:flex relative w-1 flex-shrink-0 cursor-pointer group transition-all duration-200 bg-border hover:bg-primary/60`}
-        title={isSidebarCollapsed ? t('components.Docs.showSidebar') : t('components.Docs.hideSidebar')}
+        className={`relative hidden lg:block transition-all duration-300 ease-in-out overflow-hidden ${
+        isSidebarCollapsed ? 'w-0' : 'w-64'
+        }`}
       >
-        {/* Small navigation bar in the middle */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-8 w-0.5 bg-muted-foreground/40 rounded-full group-hover:bg-primary/80 group-hover:h-10 transition-all duration-200" />
-        
-        {/* Chevron indicator */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          {isSidebarCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-primary" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-primary" />
-          )}
-        </div>
+        {!isSidebarCollapsed && (
+          <button
+            type="button"
+            onClick={() => setIsSidebarCollapsed(true)}
+            className={cn(
+              'group flex h-8 w-8 items-center justify-center rounded-full border border-sidebar-border/50 bg-card/85 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all',
+              'absolute top-4 right-3 z-10'
+            )}
+            aria-label={t("components.Docs.hideSidebar")}
+            title={t("components.Docs.hideSidebar")}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
+        {!isSidebarCollapsed && (
+          <DocumentSidebar
+            onCollapse={() => setIsSidebarCollapsed(true)}
+          />
+        )}
       </div>
 
-      {/* Main Content */}
+      {isSidebarCollapsed && (
+        <div className="hidden lg:flex w-12 items-start justify-center pt-4">
+          <button
+            type="button"
+            onClick={() => setIsSidebarCollapsed(false)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-sidebar-border/60 bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+            aria-label={t("components.Docs.showSidebar")}
+            title={t("components.Docs.showSidebar")}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Main Content with comments */}
+      <div className="flex-1 flex overflow-hidden">
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {documents.filter((doc) => !doc.trashed).length === 0 ? (
           <div
@@ -359,40 +384,40 @@ export default function Docs() {
 
               <div className="space-y-3">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  Kho kiến thức của bạn đang chờ được viết
+                  {t("components.Docs.emptyStateTitle")}
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground/80">
-                  Ghi chú cuộc họp, tóm tắt dự án, hay ý tưởng chợt đến – tạo tài liệu để mọi người cùng theo dõi và cập nhật.
+                  {t("components.Docs.emptyStateDescription")}
                 </p>
               </div>
 
               <div className="flex flex-col gap-2 text-sm text-muted-foreground/70">
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                  <span>Tự động lưu từng dòng bạn viết, không lo thất lạc nội dung.</span>
+                  <span>{t("components.Docs.autoSaveFeature")}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-violet-500 dark:text-violet-300" />
-                  <span>Nhúng task, bảng biểu và link để kết nối mọi dữ liệu.</span>
+                  <span>{t("components.Docs.embedContentFeature")}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-                  <span>Sử dụng slash menu để chèn mọi thứ bằng vài phím gõ.</span>
+                  <span>{t("components.Docs.slashMenuFeature")}</span>
                 </div>
               </div>
 
               <Button
-                onClick={() => void addDocument(t('components.Docs.newDocumentTitle'))}
+                onClick={() => void addDocument(t("components.Docs.newDocumentTitle"))}
                 size="lg"
                 className="gap-2 bg-gradient-to-r from-[#38bdf8] via-[#a855f7] to-[#f97316] hover:from-[#38bdf8]/90 hover:via-[#a855f7]/90 hover:to-[#f97316]/90 text-white shadow-md hover:shadow-lg transition-all"
                 disabled={isLoading}
               >
                 <Sparkles className="h-4 w-4" />
-                Tạo tài liệu đầu tiên
+                {t("components.Docs.newDocumentButton")}
               </Button>
 
               <p className="text-xs text-muted-foreground/70">
-                Hoặc kéo tài liệu đã có vào đây để tiếp tục biên soạn cùng đội ngũ.
+                {t("components.Docs.dropDocumentHint")}
               </p>
             </div>
           </div>
@@ -409,10 +434,10 @@ export default function Docs() {
                   </div>
                 </div>
                 <h2 className="text-3xl font-bold mb-4 text-foreground">
-                  Document in Trash
+                  {t("components.Docs.documentInTrashTitle")}
                 </h2>
                 <p className="text-muted-foreground mb-8 leading-relaxed text-lg">
-                  This document has been moved to trash. You can restore it or permanently delete it from the sidebar.
+                  {t("components.Docs.documentInTrashDescription")}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button
@@ -422,15 +447,15 @@ export default function Docs() {
                     className="gap-2 border-border hover:bg-muted/60 dark:border-border dark:hover:bg-muted/40"
                   >
                     <FileText className="h-5 w-5" />
-                    Restore Document
+                    {t("components.Docs.restoreDocument")}
                   </Button>
                   <Button
-                    onClick={() => addDocument(t('components.Docs.untitledDocument'))}
+                    onClick={() => addDocument(t("components.Docs.untitled"))}
                     size="lg"
                     className="gap-2 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
                   >
                     <Plus className="h-5 w-5" />
-                    Create New
+                    {t("components.Docs.createNew")}
                   </Button>
                 </div>
               </div>
@@ -443,88 +468,28 @@ export default function Docs() {
                   <div className="flex items-center gap-3">
                     <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
                     <div className="text-xs text-muted-foreground">
-                      {activeDocument.updatedAt && `Modified ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
+                      {activeDocument.updatedAt && `${t("components.Docs.modified")} ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {/* View Switcher */}
-                    <div className="flex border rounded-lg p-1 bg-muted/50">
-                      <Button
-                        variant={viewMode === 'editor' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setViewMode('editor')}
-                        className={cn(
-                          "flex items-center gap-1.5 h-7",
-                          viewMode === 'editor' 
-                            ? "shadow-sm bg-primary text-primary-foreground" 
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Editor</span>
-                      </Button>
-                      <Button
-                        variant={viewMode === 'graph' ? 'default' : 'ghost'}
-                        size="sm"
-                        onClick={() => setViewMode('graph')}
-                        className={cn(
-                          "flex items-center gap-1.5 h-7",
-                          viewMode === 'graph' 
-                            ? "shadow-sm bg-primary text-primary-foreground" 
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <Network className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Graph</span>
-                      </Button>
-                    </div>
-                    
-                    {viewMode === 'editor' && (
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <FileText className="h-4 w-4" />
-                        Share
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      {t("components.Docs.share")}
+                    </Button>
                   </div>
                 </div>
               </div>
 
-              {/* Content Container */}
-              <div className="flex-1 overflow-hidden">
-                {viewMode === 'editor' ? (
-                  <div className="h-full overflow-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <DocumentEditor
-                      key={activeDocument.id}
-                      document={activeDocument}
-                      isDark={isDark}
-                      canEditWorkspace={true}
-                      onTaskClick={setSelectedTask}
-                      onChange={handleDocumentChange}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-full">
-                    <GraphView 
-                      workspaceId={activeWorkspaceId || undefined}
-                      onNodeClick={(node) => {
-                        console.log("Node clicked:", node);
-                        const nodeId = node.id || '';
-                        
-                        // Handle document nodes
-                        if (node.type === "note" || nodeId.startsWith("doc_")) {
-                          const docId = nodeId.startsWith("doc_") 
-                            ? nodeId.replace("doc_", "") 
-                            : nodeId;
-                          setActiveDocument(docId);
-                          setViewMode('editor'); // Switch to editor when opening a document
-                        } else if (nodeId.startsWith("board_")) {
-                          const boardId = nodeId.replace("board_", "");
-                          setActiveBoard(boardId);
-                        }
-                      }}
-                    />
-                  </div>
-                )}
+              {/* Editor Container */}
+              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6 relative">
+                <DocumentEditor
+                  key={activeDocument.id}
+                  document={activeDocument}
+                  isDark={isDark}
+                  canEditWorkspace={true}
+                  onTaskClick={setSelectedTask}
+                  onChange={handleDocumentChange}
+                />
               </div>
             </>
           )
@@ -538,15 +503,16 @@ export default function Docs() {
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  Chọn tài liệu từ sidebar
+                  {t("components.Docs.selectDocumentTitle")}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Chọn một tài liệu từ danh sách bên trái hoặc tạo tài liệu mới
+                  {t("components.Docs.selectDocumentDescription")}
                 </p>
               </div>
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Task Details Drawer */}
