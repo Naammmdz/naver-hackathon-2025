@@ -25,7 +25,7 @@ Example:
     ```
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 import sys
 from pathlib import Path
 
