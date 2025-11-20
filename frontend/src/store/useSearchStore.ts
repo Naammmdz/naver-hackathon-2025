@@ -3,7 +3,7 @@ import type { SearchResult } from "@/types/search";
 import { create } from "zustand";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 
-const RECENT_QUERIES_KEY = "devflow.search.recent";
+const RECENT_QUERIES_KEY = "DevHolic.search.recent";
 const MAX_RECENT = 8;
 
 const loadRecentQueries = (): string[] => {

@@ -63,7 +63,7 @@ export const sendTaskReminder = async ({
   });
 
   const mailOptions = {
-    from: `"DevFlow" <${process.env.EMAIL_USER}>`,
+    from: `"DevHolic" <${process.env.EMAIL_USER}>`,
     to: recipientEmail,
     subject: `🔔 Task Reminder: ${taskTitle}`,
     html: emailHtml,

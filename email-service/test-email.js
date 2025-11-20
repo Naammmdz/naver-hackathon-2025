@@ -24,7 +24,7 @@ async function testEmail() {
     const result = await sendTaskReminder({
       taskId: 'test-task-123',
       taskTitle: 'Test Task Reminder',
-      taskDescription: 'This is a test reminder email from DevFlow email service.',
+      taskDescription: 'This is a test reminder email from DevHolic email service.',
       dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
       recipientEmail: process.env.EMAIL_USER,
       recipientName: 'Test User',

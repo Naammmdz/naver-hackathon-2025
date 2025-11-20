@@ -199,7 +199,7 @@ export function SmartTaskParser({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             {parseMethod === 'server' && (
-              <div title="Powered by DevFlow AI">
+              <div title="Powered by DevHolic AI">
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
             )}

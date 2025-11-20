@@ -1,7 +1,7 @@
 {
-  "name": "devflow-email-service",
+  "name": "devholic-email-service",
   "version": "1.0.0",
-  "description": "Email service for DevFlow task reminders",
+  "description": "Email service for DevHolic task reminders",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

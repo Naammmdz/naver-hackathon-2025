@@ -10,7 +10,7 @@ You're getting "535-5.7.8 Username and Password not accepted" because you're usi
 2. If you see "2-Step Verification is off", enable it first at: https://myaccount.google.com/security
 3. Select:
    - App: **Mail**
-   - Device: **Other (Custom name)** → Type "DevFlow"
+   - Device: **Other (Custom name)** → Type "DevHolic"
 4. Click **Generate**
 5. **Copy the 16-character password** (looks like: `abcd efgh ijkl mnop`)
 
@@ -33,7 +33,7 @@ npm test
 ```
 
 ## Why App Password?
-Gmail requires App Passwords for third-party apps (like DevFlow) to prevent unauthorized access. Your regular password won't work for SMTP authentication.
+Gmail requires App Passwords for third-party apps (like DevHolic) to prevent unauthorized access. Your regular password won't work for SMTP authentication.
 
 ## Still Having Issues?
 - Make sure 2-Step Verification is enabled

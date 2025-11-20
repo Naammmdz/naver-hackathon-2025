@@ -275,7 +275,7 @@ export function AppSidebar({ className, onSmartCreate, onToggleCollapse }: AppSi
             placeholder={t("components.AppSidebar.searchTaskPlaceholder")}
             value={filters.search ?? ""}
             onChange={(event) => setFilters({ search: event.target.value })}
-            className="h-8 rounded-lg border border-transparent bg-sidebar/40 pl-8 pr-3 text-xs focus-visible:ring-sidebar-ring/30 focus-visible:border-sidebar-ring/40"
+            className="h-8 rounded-lg border-border/50 bg-muted pl-8 pr-3 text-xs focus-visible:ring-primary/30 focus-visible:border-primary/40"
           />
         </div>
 

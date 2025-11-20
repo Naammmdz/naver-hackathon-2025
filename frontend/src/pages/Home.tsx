@@ -255,8 +255,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{workspaceDocuments.length}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.totalDocuments', 'Total Documents')}</p>
+                <p className="text-4xl font-bold tracking-tight">{workspaceDocuments.length}</p>
+                <p className="text-sm text-muted-foreground font-medium">{t('dashboard.totalDocuments', 'Total Documents')}</p>
               </div>
               <div className="rounded-full bg-secondary/10 p-3">
                 <FileText className="h-6 w-6 text-secondary" />
@@ -278,8 +278,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{workspaceBoards.length}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.totalBoards', 'Total Boards')}</p>
+                <p className="text-4xl font-bold tracking-tight">{workspaceBoards.length}</p>
+                <p className="text-sm text-muted-foreground font-medium">{t('dashboard.totalBoards', 'Total Boards')}</p>
               </div>
               <div className="rounded-full bg-accent/10 p-3">
                 <Layers className="h-6 w-6 text-accent" />
@@ -302,8 +302,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* Header Stats */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold">{members.length}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.teamMembers', 'Team Members')}</p>
+                <p className="text-4xl font-bold tracking-tight">{members.length}</p>
+                <p className="text-sm text-muted-foreground font-medium">{t('dashboard.teamMembers', 'Team Members')}</p>
               </div>
               <div className="rounded-full bg-success/10 p-3">
                 <Users className="h-6 w-6 text-success" />
@@ -351,7 +351,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">
-                        {member.user?.fullName || member.user?.email || t('components.Home.unknown', 'Unknown')}
+                        {member.fullName || member.user?.fullName || member.user?.email || member.userId}
                       </p>
                       <p className="text-[10px] text-muted-foreground truncate">
                         {member.role === 'OWNER' ? '👑 Owner' : 
@@ -962,7 +962,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   <p className="text-[10px] font-medium text-muted-foreground">Completion</p>
                   <BarChart3 className="h-4 w-4 text-[hsl(var(--chart-2))]" />
                 </div>
-                <p className="text-2xl font-bold">{completionRate}%</p>
+                <p className="text-3xl font-bold tracking-tight">{completionRate}%</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
                   {doneTasks} of {workspaceTasks.length} tasks
                 </p>
@@ -974,7 +974,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   <p className="text-[10px] text-muted-foreground">{t('components.Home.totalTasks', 'Total Tasks')}</p>
                   <CheckSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
                 </div>
-                <p className="text-2xl font-bold">{workspaceTasks.length}</p>
+                <p className="text-3xl font-bold tracking-tight">{workspaceTasks.length}</p>
                 <p className="text-[9px] text-muted-foreground mt-1">
                   {t('components.Home.inWorkspace', 'In workspace')}
                 </p>
@@ -1036,12 +1036,12 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             {/* 7-Day Completion Trend */}
             <div className="flex-1 min-h-0">
               <p className="text-xs font-semibold text-foreground mb-3">7-Day Completion Trend</p>
-              <div className="flex items-end justify-between gap-1.5 h-32">
+              <div className="flex items-end justify-between gap-1.5 h-48">
                 {completionByDay.map((day, idx) => {
                   const height = maxCompleted > 0 ? (day.completed / maxCompleted) * 100 : 0;
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full">
-                      <div className="w-full h-full bg-muted rounded-t relative flex items-end" style={{ minHeight: '80px' }}>
+                      <div className="w-full h-full bg-muted rounded-t relative flex items-end" style={{ minHeight: '120px' }}>
                         <div 
                           className="w-full bg-[hsl(var(--chart-3))] rounded-t transition-all hover:opacity-80"
                           style={{ height: `${height}%`, minHeight: height > 0 ? '4px' : '0' }}
@@ -1696,8 +1696,8 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
             strategy={rectSortingStrategy}
           >
             <div 
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" 
-              style={{ 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+            style={{ 
                 gridAutoRows: '280px',
                 gridAutoFlow: 'row', // Changed from 'dense' to prevent overlap
                 willChange: activeId ? 'contents' : 'auto',

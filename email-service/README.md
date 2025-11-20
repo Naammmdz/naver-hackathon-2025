@@ -1,4 +1,4 @@
-# DevFlow Email Service
+# DevHolic Email Service
 
 Email service for sending task reminders using Nodemailer.
 

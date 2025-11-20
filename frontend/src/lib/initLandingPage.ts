@@ -277,9 +277,9 @@ export function initLandingPage() {
     const typed = new Typed('#prompts-sample', {
       strings: [
         "How to solve a rubik's cube? Step by step guide",
-        "What's DevFlow playground?",
+        "What's DevHolic playground?",
         'How to build an AI SaaS App?',
-        'How to integrate DevFlow API?',
+        'How to integrate DevHolic API?',
       ],
       typeSpeed: 80,
       smartBackspace: true,

@@ -15,7 +15,7 @@
     "success": "Success"
   },
   "header": {
-    "title": "DevFlow",
+    "title": "DevHolic",
     "subtitle": "Productivity Suite",
     "searchPlaceholder": "Search tasks...",
     "newTask": "New Task",
@@ -35,7 +35,7 @@
     "clearAllFilters": "Clear All Filters"
   },
   "tasks": {
-    "title": "DevFlow Projects",
+    "title": "DevHolic Projects",
     "subtitle": "Streamline your workflow and boost productivity",
     "todo": "Todo",
     "inProgress": "In Progress",

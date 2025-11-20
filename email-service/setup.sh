@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "📧 DevFlow Email Service Setup"
+echo "📧 DevHolic Email Service Setup"
 echo "================================"
 echo ""
 

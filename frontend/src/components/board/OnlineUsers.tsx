@@ -147,10 +147,9 @@ export const OnlineUsers = memo(function OnlineUsers({
                       alt={collaborator.name || collaborator.email} 
                     />
                     <AvatarFallback
-                      className="text-xs font-semibold"
+                      className="text-xs font-semibold text-primary-foreground"
                       style={{ 
-                        backgroundColor: collaborator.color, 
-                        color: '#ffffff'
+                        backgroundColor: collaborator.color
                       }}
                     >
                       {getUserInitial(collaborator)}
@@ -158,8 +157,7 @@ export const OnlineUsers = memo(function OnlineUsers({
                   </Avatar>
                   {/* Online indicator dot - bottom right */}
                   <div
-                    className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
-                    style={{ backgroundColor: '#10b981' }}
+                    className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-success"
                   />
                 </div>
               </TooltipTrigger>
@@ -209,18 +207,16 @@ export const OnlineUsers = memo(function OnlineUsers({
                               alt={collaborator.name || collaborator.email} 
                             />
                             <AvatarFallback
-                              className="text-xs font-semibold"
+                              className="text-xs font-semibold text-primary-foreground"
                               style={{ 
-                                backgroundColor: collaborator.color, 
-                                color: '#ffffff'
+                                backgroundColor: collaborator.color
                               }}
                             >
                               {getUserInitial(collaborator)}
                             </AvatarFallback>
                           </Avatar>
                           <div
-                            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background"
-                            style={{ backgroundColor: '#10b981' }}
+                            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-success"
                           />
                         </div>
                         <div className="flex-1 min-w-0">

@@ -23,7 +23,7 @@ export const getTaskReminderTemplate = ({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Task Reminder - DevFlow</title>
+  <title>Task Reminder - DevHolic</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
@@ -42,7 +42,7 @@ export const getTaskReminderTemplate = ({
                       🔔 Task Reminder
                     </h1>
                     <p style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px; font-weight: 400;">
-                      DevFlow - Your Productivity Companion
+                      DevHolic - Your Productivity Companion
                     </p>
                   </td>
                 </tr>
@@ -104,7 +104,7 @@ export const getTaskReminderTemplate = ({
                   <td align="center" style="padding: 20px 0;">
                     <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/tasks?taskId=${taskId}" 
                        style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
-                      View Task in DevFlow
+                      View Task in DevHolic
                     </a>
                   </td>
                 </tr>
@@ -116,11 +116,11 @@ export const getTaskReminderTemplate = ({
           <tr>
             <td style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; border-radius: 0 0 12px 12px;">
               <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px; line-height: 1.5;">
-                This is an automated reminder from <strong>DevFlow</strong>.
+                This is an automated reminder from <strong>DevHolic</strong>.
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.5;">
                 You received this email because a reminder was set for this task. 
-                To manage your email preferences, please visit your DevFlow settings.
+                To manage your email preferences, please visit your DevHolic settings.
               </p>
             </td>
           </tr>
@@ -132,7 +132,7 @@ export const getTaskReminderTemplate = ({
           <tr>
             <td align="center" style="padding: 20px;">
               <p style="margin: 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">
-                © ${new Date().getFullYear()} DevFlow. All rights reserved.
+                © ${new Date().getFullYear()} DevHolic. All rights reserved.
               </p>
             </td>
           </tr>

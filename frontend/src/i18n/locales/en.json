@@ -17,7 +17,7 @@
     "showLess": "Show less"
   },
   "header": {
-    "title": "DevFlow",
+    "title": "DevHolic",
     "subtitle": "Productivity Suite",
     "searchPlaceholder": "Search tasks...",
     "newTask": "New Task",
@@ -38,7 +38,7 @@
     "noTagsFound": "No tags found"
   },
   "tasks": {
-    "title": "DevFlow Projects",
+    "title": "DevHolic Projects",
     "subtitle": "Streamline your workflow and boost productivity",
     "todo": "Todo",
     "inProgress": "In Progress",

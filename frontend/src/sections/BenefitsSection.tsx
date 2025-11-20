@@ -21,7 +21,7 @@
               </div>
               <h2 className="tw-text-3xl max-md:tw-text-2xl tw-font-medium">Unified Workspace</h2>
               <p className="tw-text-base tw-leading-normal tw-text-gray-800 dark:tw-text-gray-200">
-                DevFlow brings Tasks, Documents, and Boards together with realtime sync (Yjs). No more switching tools — stay focused in one place.
+                DevHolic brings Tasks, Documents, and Boards together with realtime sync (Yjs). No more switching tools — stay focused in one place.
               </p>
               <div className="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-text-black dark:tw-text-white tw-font-medium">
                 <span>Learn more</span>

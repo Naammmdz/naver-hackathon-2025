@@ -17,7 +17,7 @@
     "showLess": "Ẩn bớt"
   },
   "header": {
-    "title": "DevFlow",
+    "title": "DevHolic",
     "subtitle": "Bộ công cụ năng suất",
     "searchPlaceholder": "Tìm kiếm công việc...",
     "newTask": "Công việc mới",
@@ -38,7 +38,7 @@
     "noTagsFound": "Không tìm thấy thẻ nào"
   },
   "tasks": {
-    "title": "Dự án DevFlow",
+    "title": "Dự án DevHolic",
     "subtitle": "Tối ưu hóa quy trình làm việc và tăng năng suất",
     "todo": "Cần làm",
     "inProgress": "Đang làm",

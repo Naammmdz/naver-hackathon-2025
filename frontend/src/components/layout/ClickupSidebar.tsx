@@ -277,7 +277,7 @@ export function ClickupSidebar({
           <span>Settings</span>
         </Button>
         <p className="text-xs text-sidebar-foreground/70 text-center py-2 px-2">
-          DevFlow © 2025
+          DevHolic © 2025
         </p>
       </div>
     </aside>

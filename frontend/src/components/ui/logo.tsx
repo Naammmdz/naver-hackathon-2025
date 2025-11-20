@@ -3,15 +3,14 @@ interface LogoProps {
   className?: string;
 }
 
-export function DevFlowLogo({ size = 32, className = "" }: LogoProps) {
+export function DevHolicLogo({ size = 32, className = "" }: LogoProps) {
   return (
     <img 
-      src="/src/assets/logos/devflow-logo.png" 
-      alt="DevFlow Logo" 
+      src="/DevHolic-demo.png" 
+      alt="DevHolic Logo" 
       width={size}
       height={size}
-      className={className}
-      style={{ objectFit: 'contain' }}
+      className={`rounded-lg ${className}`}
     />
   );
 }
@@ -21,11 +20,11 @@ interface IconProps {
   className?: string;
 }
 
-export function DevFlowIcon({ size = 32, className = "" }: IconProps) {
+export function DevHolicIcon({ size = 32, className = "" }: IconProps) {
   return (
     <img 
-      src="/src/assets/logos/devflow-icon.png" 
-      alt="DevFlow Icon" 
+      src="/DevHolic-demo.png" 
+      alt="DevHolic Icon" 
       width={size}
       height={size}
       className={className}
@@ -38,11 +37,11 @@ interface LogoWithTextProps {
   className?: string;
 }
 
-export function DevFlowLogoWithText({ className = "" }: LogoWithTextProps) {
+export function DevHolicLogoWithText({ className = "" }: LogoWithTextProps) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <DevFlowIcon size={32} />
-      <span className="text-lg font-semibold text-primary">DevFlow</span>
+      <DevHolicIcon size={32} />
+      <span className="text-lg font-semibold text-primary">DevHolic</span>
     </div>
   );
 }

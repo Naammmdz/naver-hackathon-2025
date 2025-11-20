@@ -203,7 +203,7 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-              <Users className="h-8 w-8 text-blue-500" />
+              <Users className="h-8 w-8 text-primary" />
               {t('teams.title')}
             </h1>
             <p className="text-muted-foreground">
@@ -370,12 +370,12 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
                               <Badge variant="outline">{t('teams.owner')}</Badge>
                             )}
                             {member.role === 'ADMIN' && member.userId !== activeWorkspace?.ownerId && (
-                              <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+                              <Badge variant="secondary" className="bg-warning/10 text-warning dark:text-warning">
                                 {t('teams.admin')}
                               </Badge>
                             )}
                             {member.role === 'MEMBER' && (
-                              <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                              <Badge variant="secondary" className="bg-secondary/10 text-secondary-foreground dark:text-secondary-foreground">
                                 {t('teams.member')}
                               </Badge>
                             )}
@@ -430,8 +430,8 @@ export default function Teams({ onViewChange }: { onViewChange: (view: 'tasks' |
         {/* Info Card */}
         <div className="rounded-lg border bg-muted/50 p-4">
           <div className="flex items-start gap-3">
-            <div className="rounded-full bg-blue-500/10 p-2">
-              <Users className="h-5 w-5 text-blue-500" />
+            <div className="rounded-full bg-primary/10 p-2">
+              <Users className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium">{t('teams.aboutTeamRoles')}</p>

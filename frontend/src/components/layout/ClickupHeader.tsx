@@ -45,6 +45,7 @@ export const ClickupHeader = memo(function ClickupHeader({
       docs: 'doc',
       board: 'board',
       teams: 'all',
+      graph: 'all',
     };
     openSearchModal({ initialType: typeMap[currentView] });
   };
@@ -108,17 +109,17 @@ export const ClickupHeader = memo(function ClickupHeader({
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
       <div className="flex h-10 items-center justify-between px-4 gap-4 mx-2 my-2 min-w-0">
-        {/* Left Section - Workspace & Breadcrumb */}
+        {/* Left Section - Workspace */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Workspace Selector */}
-          <div className="hidden sm:block min-w-[200px] flex-shrink-0">
+          <div className="min-w-[180px] max-w-[220px] flex-shrink-0">
             <WorkspaceSwitcher />
           </div>
 
-          <div className="hidden sm:block h-6 w-px bg-border flex-shrink-0" />
+          <div className="hidden md:block h-6 w-px bg-border flex-shrink-0" />
 
           {/* Breadcrumb - with truncation */}
-          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground min-w-0 flex-1">
+          <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground min-w-0 flex-1">
             {(() => {
               const viewLabels: Record<string, string> = {
                 home: 'Home',

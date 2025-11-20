@@ -17,7 +17,7 @@ Gmail no longer allows "Less secure app access". You must use an **App Password*
 1. Go to: https://myaccount.google.com/apppasswords
    - Or: Google Account → Security → 2-Step Verification → App passwords
 2. Select app: **Mail**
-3. Select device: **Other (Custom name)** → Enter "DevFlow Email Service"
+3. Select device: **Other (Custom name)** → Enter "DevHolic Email Service"
 4. Click **Generate**
 5. **Copy the 16-character password** (it looks like: `abcd efgh ijkl mnop`)
 

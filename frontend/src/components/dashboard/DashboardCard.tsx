@@ -168,16 +168,17 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
       <Card 
         ref={cardRef}
         className={cn(
-          "h-full hover:shadow-lg transition-all duration-200 flex flex-col group cursor-pointer relative",
-          "bg-gradient-to-br from-background via-background to-secondary/10",
-          "border border-border/60 hover:border-border",
-          "border-l-2 hover:border-l-4",
+          "h-full shadow-sm hover:shadow-md transition-all duration-200 flex flex-col group cursor-pointer relative",
+          "bg-card",
+          "hover:scale-[1.01] active:scale-[0.99]",
+          "border border-border/50",
+          "border-l-4",
           config.color || "border-l-primary",
-          (isDragging || isSortableDragging) && "shadow-2xl ring-2 ring-primary/50",
+          (isDragging || isSortableDragging) && "shadow-xl ring-2 ring-primary/50",
           isResizing && "ring-2 ring-primary/50"
         )}
       >
-        <CardHeader className="pb-2 px-4 pt-3 flex-shrink-0">
+        <CardHeader className="p-6 pb-3 flex-shrink-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {/* Drag Handle - Always visible with icon */}
@@ -246,7 +247,7 @@ export const DashboardCard = memo(function DashboardCard({ config, children, onR
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 px-4 pb-4 flex-1 overflow-y-auto overflow-x-hidden">
+        <CardContent className="p-6 pt-3 flex-1 overflow-y-auto overflow-x-hidden">
           {children}
         </CardContent>
         

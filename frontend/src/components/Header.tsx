@@ -13,7 +13,7 @@ export function Header() {
             className="tw-object-contain tw-h-full tw-w-full"
           />
         </div>
-        <span className="tw-uppercase tw-text-base tw-font-medium">DevFlow</span>
+        <span className="tw-uppercase tw-text-base tw-font-medium">DevHolic</span>
       </a>
       <div className="collapsible-header animated-collapse max-lg:tw-shadow-md" id="collapsed-header-items">
         <nav
@@ -127,7 +127,7 @@ export function Header() {
           </button>
           <a
             href="/app"
-            aria-label="Try DevFlow Playground"
+            aria-label="Try DevHolic Playground"
             className="luxury-button tw-flex tw-gap-3 tw-px-3 tw-py-2 tw-transition-transform
                                     tw-duration-[0.3s] hover:tw-translate-x-2"
           >

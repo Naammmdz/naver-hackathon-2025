@@ -14,7 +14,7 @@ export function AppLayout({ children, currentView, onViewChange }: AppLayoutProp
       {/* Sidebar */}
       <aside className="w-64 border-r bg-card flex flex-col">
         <div className="p-6 border-b">
-          <h2 className="text-xl font-bold">DevFlow</h2>
+          <h2 className="text-xl font-bold">DevHolic</h2>
           <p className="text-sm text-muted-foreground">Productivity Suite</p>
         </div>
         
@@ -46,7 +46,7 @@ export function AppLayout({ children, currentView, onViewChange }: AppLayoutProp
 
         <div className="p-4 border-t">
           <p className="text-xs text-muted-foreground text-center">
-            © 2025 DevFlow
+            © 2025 DevHolic
           </p>
         </div>
       </aside>

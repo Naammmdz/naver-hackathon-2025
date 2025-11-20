@@ -10,7 +10,7 @@
         <span className="tw-font-serif">Workflow</span>
       </h2>
       <p className="reveal-up tw-mt-8 tw-max-w-[650px] tw-text-gray-900 dark:tw-text-gray-200 tw-text-center max-md:tw-text-sm">   
-        DevFlow unifies Tasks, Documents, and Boards with realtime collaboration (Yjs). 
+        DevHolic unifies Tasks, Documents, and Boards with realtime collaboration (Yjs). 
         Plan, write, and sketch together without losing focus.
       </p>
       <div className="reveal-up tw-flex tw-mt-8">

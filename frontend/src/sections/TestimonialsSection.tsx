@@ -2,7 +2,7 @@
   return (
   <section className="tw-flex tw-min-h-[100vh] tw-w-full tw-flex-col tw-place-content-center tw-place-items-center tw-p-[2%]">
     <h3 className="reveal-up tw-text-4xl tw-font-medium tw-text-center max-md:tw-text-2xl">
-      Teams love DevFlow for realtime collaboration
+      Teams love DevHolic for realtime collaboration
     </h3>
     {/* Testimonials */}
     <div className="tw-mt-20 tw-gap-10 tw-space-y-8  max-md:tw-columns-1 lg:tw-columns-2 xl:tw-columns-3">
@@ -19,7 +19,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          DevFlow’s unified Tasks, Docs, and Boards with live sync keeps our team aligned. Kanban and collaborative docs eliminated context switching and boosted our delivery speed.
+          DevHolic’s unified Tasks, Docs, and Boards with live sync keeps our team aligned. Kanban and collaborative docs eliminated context switching and boosted our delivery speed.
         </p>
       </div>
       <div className="reveal-up tw-flex tw-h-fit tw-w-[350px] tw-break-inside-avoid 
@@ -100,7 +100,7 @@
           </div>
         </div>
         <p className="tw-mt-4 tw-text-gray-800 dark:tw-text-gray-200">
-          From sprint planning to design sessions, DevFlow centralizes everything. Realtime sync across tasks, docs, and boards keeps momentum high.
+          From sprint planning to design sessions, DevHolic centralizes everything. Realtime sync across tasks, docs, and boards keeps momentum high.
         </p>
       </div>
     </div>

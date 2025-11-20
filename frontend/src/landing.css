@@ -4,7 +4,7 @@
 @config "../tailwind-prefixed.config.ts";
 @tailwind utilities;
 
-/* DEVFLOW LANDING PAGE STYLES */
+/* DevHolic LANDING PAGE STYLES */
 
 /* Apply base styles only to landing page elements */
 #landing-page {

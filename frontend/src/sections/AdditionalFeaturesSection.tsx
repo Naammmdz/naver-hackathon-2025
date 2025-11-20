@@ -86,7 +86,7 @@
             API Integration
           </h3>
           <p className="tw-text-gray-700 dark:tw-text-gray-300 tw-px-4 tw-text-center tw-text-sm">
-            Connect DevFlow with your favorite tools and services. Integrate with GitHub, Jira, Slack, and more through our comprehensive API.
+            Connect DevHolic with your favorite tools and services. Integrate with GitHub, Jira, Slack, and more through our comprehensive API.
           </p>
         </div>
         <div className="reveal-up tw-w-[350px] max-md:tw-w-[320px] tw-border-[1px] tw-h-[400px] tw-rounded-lg tw-place-items-center tw-p-4
@@ -102,7 +102,7 @@
             Multi-platform Support
           </h3>
           <p className="tw-text-gray-700 dark:tw-text-gray-300 tw-px-4 tw-text-center tw-text-sm">
-            Access DevFlow from any device. Web, desktop, and mobile apps keep your workflow consistent across all platforms.
+            Access DevHolic from any device. Web, desktop, and mobile apps keep your workflow consistent across all platforms.
           </p>
         </div>
       </div>

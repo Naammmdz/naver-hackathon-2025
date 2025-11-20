@@ -29,11 +29,11 @@ export function HeroSection() {
       {
         type: "heading",
         props: { level: 1 },
-        content: "Welcome to DevFlow",
+        content: "Welcome to DevHolic",
       },
       {
         type: "paragraph",
-        content: "DevFlow is a collaborative workspace for Tasks, Documents, and Boards with realtime sync powered by Yjs.",
+        content: "DevHolic is a collaborative workspace for Tasks, Documents, and Boards with realtime sync powered by Yjs.",
       },
       {
         type: "heading",
@@ -104,7 +104,7 @@ export function HeroSection() {
         <h2 className="reveal-up tw-text-center tw-text-7xl tw-font-semibold tw-uppercase tw-leading-tight max-lg:tw-text-4xl max-md:tw-leading-snug">
           <span> Stay in flow </span>
           <br />
-          <span className="tw-font-thin tw-font-serif tw-text-black dark:tw-text-white"> with DevFlow </span>
+          <span className="tw-font-thin tw-font-serif tw-text-black dark:tw-text-white"> with DevHolic </span>
         </h2>
         <div className="reveal-up tw-mt-8 tw-max-w-[450px] tw-text-lg max-lg:tw-text-base tw-p-2 tw-text-center
                    tw-text-gray-800 dark:tw-text-white max-lg:tw-max-w-full">
@@ -146,7 +146,7 @@ export function HeroSection() {
             autoPlay
             muted
             loop
-            src="/devflow-intro.mp4"
+            src="/DevHolic-intro.mp4"
           >
             Your browser does not support the video tag.
           </video>
