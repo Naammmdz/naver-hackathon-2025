@@ -14,9 +14,10 @@ interface GraphNode {
 interface GraphViewProps {
   workspaceId?: string;
   onNodeClick?: (node: GraphNode) => void;
+  data?: GraphData | null;
 }
 
-export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
+export function GraphView({ workspaceId, onNodeClick, data }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphApiRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
@@ -51,60 +52,54 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
 
     async function loadData() {
       try {
-        console.log("[GraphView] Starting to load data...");
         setLoading(true);
         setError(null);
 
         // Wait for container to be ready
         if (!containerRef.current) {
-          console.log("[GraphView] Waiting for container to mount...");
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
         if (!containerRef.current) {
-          console.error("[GraphView] Container still not available after wait");
           setError("Container not available");
           setLoading(false);
           return;
         }
 
-        let graphData: GraphData;
+        let graphData: GraphData | null = null;
 
-        // Try to fetch real data if workspaceId is provided
-        if (workspaceId) {
-          console.log("[GraphView] Fetching workspace data for:", workspaceId);
-          try {
-            graphData = await fetchGraphData(workspaceId);
-            console.log("[GraphView] Workspace data loaded:", graphData);
-          } catch (apiError) {
-            console.warn("Failed to fetch workspace graph data, falling back to demo:", apiError);
-            // Fallback to demo data if API fails
-            graphData = await fetchDemoGraphData();
-            console.log("[GraphView] Demo data loaded:", graphData);
-          }
+        if (data) {
+          graphData = data;
         } else {
-          // Use demo data if no workspace selected
-          console.log("[GraphView] No workspace ID, using demo data");
-          graphData = await fetchDemoGraphData();
-          console.log("[GraphView] Demo data loaded:", graphData);
+          if (workspaceId) {
+            try {
+              graphData = await fetchGraphData(workspaceId);
+            } catch (apiError) {
+              console.warn("Failed to fetch workspace graph data, falling back to demo:", apiError);
+              graphData = await fetchDemoGraphData();
+            }
+          } else {
+            graphData = await fetchDemoGraphData();
+          }
         }
 
-        console.log("[GraphView] Container ref:", containerRef.current);
-        console.log("[GraphView] Graph data nodes:", graphData.nodes.length);
-        console.log("[GraphView] Graph data links:", graphData.links.length);
+        if (!graphData) {
+          setError("No graph data available");
+          setLoading(false);
+          return;
+        }
 
         if (!cancelled && containerRef.current) {
-          console.log("[GraphView] Initializing D3 graph...");
+          if (graphApiRef.current?.destroy) {
+            graphApiRef.current.destroy();
+          }
           const isDarkMode = document.documentElement.classList.contains('dark');
           graphApiRef.current = initGraph(containerRef.current, graphData, {
             onNodeClick,
             vennMode: true,
-            theme: isDarkMode ? 'dark' : 'light'
+            theme: isDarkMode ? 'dark' : 'light',
           });
-          console.log("[GraphView] Graph initialized successfully!");
           setLoading(false);
-        } else {
-          console.warn("[GraphView] Cannot initialize: cancelled=", cancelled, "container=", containerRef.current);
         }
       } catch (e) {
         console.error("Failed to load graph:", e);
@@ -123,7 +118,7 @@ export function GraphView({ workspaceId, onNodeClick }: GraphViewProps) {
         graphApiRef.current.destroy();
       }
     };
-  }, [workspaceId, onNodeClick, isDark]);
+  }, [workspaceId, onNodeClick, data, isDark]);
 
   return (
     <div className="relative w-full h-full">

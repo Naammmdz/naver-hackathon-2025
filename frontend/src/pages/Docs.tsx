@@ -1,9 +1,12 @@
 import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import DocumentSidebar from '@/components/documents/DocumentSidebar';
 import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
+import { GraphView } from '@/components/GraphView';
 import { Button } from '@/components/ui/button';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { cn } from '@/lib/utils';
+import { buildDocumentGraph } from '@/lib/graph/buildDocumentGraph';
+import { useBoardStore } from '@/store/boardStore';
 import { useDocumentStore } from '@/store/documentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { useWorkspaceStore } from '@/store/workspaceStore';
@@ -13,7 +16,7 @@ import '@blocknote/mantine/style.css';
 import type { DebouncedFunc } from 'lodash';
 import { debounce } from 'lodash';
 import { ChevronLeft, ChevronRight, FileText, Plus, Sparkles } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 export default function Docs() {
   const { t } = useTranslation();
@@ -31,10 +34,12 @@ export default function Docs() {
   } = useDocumentStore();
 
   const { tasks } = useTaskStore();
+  const setActiveBoard = useBoardStore((state) => state.setActiveBoard);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
 
   // Filter documents by active workspace
   const filteredDocuments = useWorkspaceFilter(documents);
+  const documentGraphData = useMemo(() => buildDocumentGraph(filteredDocuments), [filteredDocuments]);
 
   // Get active document first (before using it in useEffect)
   const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
@@ -242,6 +247,7 @@ export default function Docs() {
   // Detect current theme
   const [isDark, setIsDark] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [viewMode, setViewMode] = useState<'editor' | 'graph'>('editor');
   
   useEffect(() => {
     const checkTheme = () => {
@@ -318,6 +324,8 @@ export default function Docs() {
         {!isSidebarCollapsed && (
           <DocumentSidebar
             onCollapse={() => setIsSidebarCollapsed(true)}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
         )}
       </div>
@@ -464,32 +472,54 @@ export default function Docs() {
             <>
               {/* Document Header */}
               <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <h1 className="text-lg font-semibold truncate">{activeDocument.title}</h1>
                     <div className="text-xs text-muted-foreground">
                       {activeDocument.updatedAt && `${t("components.Docs.modified")} ${new Date(activeDocument.updatedAt).toLocaleDateString()}`}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {viewMode === 'editor' && (
                     <Button variant="ghost" size="sm" className="gap-2">
                       <FileText className="h-4 w-4" />
                       {t("components.Docs.share")}
                     </Button>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Editor Container */}
-              <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6 relative">
-                <DocumentEditor
-                  key={activeDocument.id}
-                  document={activeDocument}
-                  isDark={isDark}
-                  canEditWorkspace={true}
-                  onTaskClick={setSelectedTask}
-                  onChange={handleDocumentChange}
-                />
+              {/* Content Container */}
+              <div className="flex-1 overflow-hidden">
+                {viewMode === 'editor' ? (
+                  <div className="h-full overflow-auto px-4 sm:px-6 lg:px-8 py-6 relative">
+                    <DocumentEditor
+                      key={activeDocument.id}
+                      document={activeDocument}
+                      isDark={isDark}
+                      canEditWorkspace={true}
+                      onTaskClick={setSelectedTask}
+                      onChange={handleDocumentChange}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-full">
+                    <GraphView
+                      data={documentGraphData}
+                      onNodeClick={(node) => {
+                        const nodeId = node.id || '';
+
+                        if (node.type === "note" || node.type === "folder" || nodeId.startsWith("doc_")) {
+                          const docId = nodeId.startsWith("doc_") ? nodeId.replace("doc_", "") : nodeId;
+                          setActiveDocument(docId);
+                          setViewMode('editor');
+                        } else if (nodeId.startsWith("board_")) {
+                          const boardId = nodeId.replace("board_", "");
+                          setActiveBoard(boardId);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </>
           )

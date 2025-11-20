@@ -19,6 +19,8 @@ import {
   ChevronLeft,
   Edit2,
   FileText,
+  Network,
+  Edit,
   Plus,
   Search,
   Trash2
@@ -32,11 +34,17 @@ const sidebarSurfaceStyle: CSSProperties = {
   boxShadow: '0 20px 45px color-mix(in oklch, var(--shadow-color) 12%, transparent)',
 };
 
+interface DocumentSidebarProps {
+  onCollapse?: () => void;
+  viewMode?: "editor" | "graph";
+  onViewModeChange?: (mode: "editor" | "graph") => void;
+}
+
 export default function DocumentSidebar({
   onCollapse,
-}: {
-  onCollapse?: () => void;
-}) {
+  viewMode = "editor",
+  onViewModeChange,
+}: DocumentSidebarProps) {
   const { t } = useTranslation();
   const {
     documents,
@@ -300,6 +308,45 @@ export default function DocumentSidebar({
               className="pl-9 h-8 text-sm bg-sidebar/40 border border-transparent focus-visible:ring-sidebar-ring/30 rounded-lg"
             />
           </div>
+
+          {/* View Switcher */}
+          {onViewModeChange && (
+            <div className="flex items-center justify-between rounded-2xl bg-sidebar/30 border border-sidebar-border/40 px-2 py-1.5">
+              <span className="text-xs uppercase tracking-wide text-sidebar-foreground/60">
+                {t("components.DocumentSidebar.viewMode", "View")}
+              </span>
+              <div className="flex border border-sidebar-border/40 rounded-xl overflow-hidden">
+                <Button
+                  type="button"
+                  variant={viewMode === "editor" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => onViewModeChange("editor")}
+                  className={`h-7 gap-1 px-3 ${
+                    viewMode === "editor"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  <span className="text-xs">{t("components.DocumentSidebar.editor", "Editor")}</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={viewMode === "graph" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => onViewModeChange("graph")}
+                  className={`h-7 gap-1 px-3 ${
+                    viewMode === "graph"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                  }`}
+                >
+                  <Network className="h-3.5 w-3.5" />
+                  <span className="text-xs">{t("components.DocumentSidebar.graph", "Graph")}</span>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Document List */}
