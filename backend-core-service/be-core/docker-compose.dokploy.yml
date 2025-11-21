@@ -31,11 +31,15 @@ services:
     container_name: backend-core
     ports:
       - "8989:8989"
+    # Thêm extra_hosts để resolve hostname của PostgreSQL (nếu cần)
+    # extra_hosts:
+    #   - "devflow-naverhackathon-hggsje:<postgres-ip>"
     environment:
-      # Database configuration
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://devflow-naverhackathon-hggsje:5432/naver_hackathon
+      # Database configuration - thử format đầy đủ với connection parameters
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://devflow-naverhackathon-hggsje:5432/naver_hackathon?sslmode=disable&connectTimeout=10
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=12345
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       
       # Redis configuration
       - REDIS_HOST=devflow-naverhackathon-ueemyy
@@ -59,7 +63,8 @@ services:
       elasticsearch:
         condition: service_healthy
     networks:
-      - app-network
+      - app-network  # Network cho Elasticsearch
+      # Dokploy tự động tạo network cho services, không cần external network
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8989/api/tasks || exit 1"]
       interval: 30s
@@ -74,4 +79,8 @@ volumes:
 networks:
   app-network:
     driver: bridge
+  # Kết nối với network của Dokploy để access PostgreSQL và Redis
+  dokploy-network:
+    external: true
+    name: dokploy-network  # Tên network mặc định của Dokploy, có thể cần đổi
 
