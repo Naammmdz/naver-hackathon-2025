@@ -1,6 +1,16 @@
 # Multi-stage build for optimized production image
 FROM node:20-alpine AS build
 
+# Build arguments for Vite environment variables
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ARG VITE_CLERK_JWT_TEMPLATE
+ARG VITE_HOCUSPOCUS_URL
+
+# Set as environment variables for build
+ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
+ENV VITE_CLERK_JWT_TEMPLATE=$VITE_CLERK_JWT_TEMPLATE
+ENV VITE_HOCUSPOCUS_URL=$VITE_HOCUSPOCUS_URL
+
 # Set working directory
 WORKDIR /app
 
