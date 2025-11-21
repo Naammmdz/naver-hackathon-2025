@@ -32,10 +32,16 @@ ENV REDIS_HOST=devflow-naverhackathon-ueemyy
 ENV REDIS_PORT=6379
 ENV SPRING_REDIS_PASSWORD=tqybmepkxzyvrb70
 
-# Elasticsearch configuration - kết nối đến container elasticsearch trên Dokploy
-ENV SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+# Elasticsearch configuration - dùng container name nếu cùng network, hoặc domain nếu cần
+# Option 1: Dùng container name (nếu cùng Docker network)
 ENV ELASTICSEARCH_HOST=elasticsearch
 ENV ELASTICSEARCH_PORT=9200
+ENV SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+
+# Option 2: Nếu không cùng network, uncomment và dùng domain:
+# ENV ELASTICSEARCH_HOST=devflow-elasticsearch-8137a9-110-234-195-193.traefik.me
+# ENV ELASTICSEARCH_PORT=9200
+# ENV SPRING_ELASTICSEARCH_URIS=http://devflow-elasticsearch-8137a9-110-234-195-193.traefik.me:9200
 
 # Production settings
 ENV SPRING_PROFILES_ACTIVE=production
