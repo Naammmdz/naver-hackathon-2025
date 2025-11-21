@@ -92,6 +92,8 @@ services:
         condition: service_healthy
     volumes:
       - ./backend-core-service/be-core/src:/app/src
+    networks:
+      - default
     restart: unless-stopped
 
   hocuspocus:
@@ -114,6 +116,8 @@ services:
         condition: service_healthy
       backend-core:
         condition: service_started
+    networks:
+      - default
     restart: unless-stopped
 
   frontend:
@@ -133,6 +137,8 @@ services:
     depends_on:
       - backend-core
       - hocuspocus
+    networks:
+      - default
     restart: unless-stopped
 
 volumes:
@@ -141,3 +147,8 @@ volumes:
   postgres_data:
   redis_data:
   elasticsearch_data:
+
+networks:
+  default:
+    name: devflow-network
+    driver: bridge
