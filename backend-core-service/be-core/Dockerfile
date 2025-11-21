@@ -22,35 +22,27 @@ WORKDIR /app
 # Copy built jar
 COPY --from=build /app/target/*.jar app.jar
 
-# Set environment variables for Dokploy deployment
-ENV SPRING_PROFILES_ACTIVE=production
+# Override database và redis cho Dokploy deployment
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://devflow-naverhackathon-hggsje:5432/naver_hackathon
 ENV SPRING_DATASOURCE_USERNAME=postgres
 ENV SPRING_DATASOURCE_PASSWORD=12345
-ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 
-# Redis configuration
-ENV SPRING_REDIS_HOST=devflow-naverhackathon-ueemyy
-ENV SPRING_REDIS_PORT=6379
+# Redis configuration cho Dokploy
+ENV REDIS_HOST=devflow-naverhackathon-ueemyy
+ENV REDIS_PORT=6379
 ENV SPRING_REDIS_PASSWORD=tqybmepkxzyvrb70
-ENV SPRING_REDIS_USERNAME=default
 
-# JPA/Hibernate settings
-ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
+# Production settings
+ENV SPRING_PROFILES_ACTIVE=production
 ENV SPRING_JPA_SHOW_SQL=false
-ENV SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
-ENV SPRING_JPA_OPEN_IN_VIEW=false
-
-# Server settings
-ENV SERVER_PORT=8989
-
-# Logging
 ENV LOGGING_LEVEL_COM_NAAMMM_BECORE=INFO
 ENV LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=INFO
 
-# Clerk settings (sẽ được override bởi Dokploy)
-ENV CLERK_JWKS_URL=https://direct-newt-10.clerk.accounts.dev/.well-known/jwks.json
-ENV CLERK_ISSUER=https://direct-newt-10.clerk.accounts.dev
+# Các settings khác sẽ dùng từ application.properties:
+# - Clerk authentication (đã có sẵn)
+# - Gemini API (đã có sẵn với key mặc định)
+# - JPA/Hibernate settings (đã có sẵn)
+# - Server port (đã có sẵn)
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

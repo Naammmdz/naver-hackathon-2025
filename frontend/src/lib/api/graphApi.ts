@@ -26,21 +26,21 @@ export async function fetchGraphData(workspaceId: string): Promise<GraphData> {
   const headers = await apiAuthContext.getAuthHeaders({
     "Content-Type": "application/json",
   });
-
+  
   try {
-    const response = await fetch(
-      `${AI_SERVICE_URL}/api/v1/graph?workspace_id=${workspaceId}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch graph data: ${response.statusText}`);
+  const response = await fetch(
+    `${AI_SERVICE_URL}/api/v1/graph?workspace_id=${workspaceId}`,
+    {
+      method: "GET",
+      headers,
     }
+  );
 
-    return response.json();
+  if (!response.ok) {
+    throw new Error(`Failed to fetch graph data: ${response.statusText}`);
+  }
+
+  return response.json();
   } catch (error) {
     console.warn("[graphApi] Failed to fetch workspace graph data", error);
     throw error;

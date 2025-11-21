@@ -71,11 +71,11 @@ export function GraphView({ workspaceId, onNodeClick, data }: GraphViewProps) {
         if (data) {
           graphData = data;
         } else {
-          if (workspaceId) {
-            try {
-              graphData = await fetchGraphData(workspaceId);
-            } catch (apiError) {
-              console.warn("Failed to fetch workspace graph data, falling back to demo:", apiError);
+        if (workspaceId) {
+          try {
+            graphData = await fetchGraphData(workspaceId);
+          } catch (apiError) {
+            console.warn("Failed to fetch workspace graph data, falling back to demo:", apiError);
               graphData = await fetchDemoGraphData();
             }
           } else {

@@ -492,14 +492,14 @@ export default function Docs() {
               <div className="flex-1 overflow-hidden">
                 {viewMode === 'editor' ? (
                   <div className="h-full overflow-auto px-4 sm:px-6 lg:px-8 py-6 relative">
-                    <DocumentEditor
-                      key={activeDocument.id}
-                      document={activeDocument}
-                      isDark={isDark}
-                      canEditWorkspace={true}
-                      onTaskClick={setSelectedTask}
-                      onChange={handleDocumentChange}
-                    />
+                <DocumentEditor
+                  key={activeDocument.id}
+                  document={activeDocument}
+                  isDark={isDark}
+                  canEditWorkspace={true}
+                  onTaskClick={setSelectedTask}
+                  onChange={handleDocumentChange}
+                />
                   </div>
                 ) : (
                   <div className="h-full">

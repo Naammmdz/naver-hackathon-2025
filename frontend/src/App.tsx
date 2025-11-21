@@ -37,7 +37,7 @@ const App = () => {
     const shouldBeDark = resolvedTheme
       ? resolvedTheme === "dark"
       : (isMainApp ? true : systemDark);
-
+    
     if (shouldBeDark) {
       document.documentElement.classList.add("dark");
     } else {
