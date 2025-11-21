@@ -55,6 +55,8 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - network.host=0.0.0.0
+      - network.publish_host=_local_
     ports:
       - "9200:9200"
     volumes:
