@@ -26,20 +26,15 @@ COPY --from=build /app/target/*.jar app.jar
 COPY test-elasticsearch.sh /app/test-elasticsearch.sh
 RUN chmod +x /app/test-elasticsearch.sh
 
-# Override database và redis cho Dokploy deployment
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://devflow-naverhackathon-hggsje:5432/naver_hackathon
+# Default environment variables (can be overridden by docker-compose.yml)
+# For local docker-compose: sẽ được override bởi docker-compose.yml
+# For Dokploy deployment: dùng docker-compose.dokploy.yml hoặc set ENV ở Dokploy
+ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/naver_hackathon
 ENV SPRING_DATASOURCE_USERNAME=postgres
 ENV SPRING_DATASOURCE_PASSWORD=12345
-
-# Redis configuration cho Dokploy
-ENV REDIS_HOST=devflow-naverhackathon-ueemyy
+ENV REDIS_HOST=localhost
 ENV REDIS_PORT=6379
-ENV SPRING_REDIS_PASSWORD=tqybmepkxzyvrb70
-
-# Elasticsearch configuration - Dùng service name từ docker-compose
-# Khi deploy cùng docker-compose, service name là "elasticsearch"
-# Nếu deploy riêng, có thể cần dùng container name hoặc IP
-ENV SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+ENV SPRING_ELASTICSEARCH_URIS=http://localhost:9200
 
 # Production settings
 ENV SPRING_PROFILES_ACTIVE=production

@@ -80,12 +80,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       CLERK_JWKS_URL: ${CLERK_JWKS_URL:-https://direct-newt-10.clerk.accounts.dev/.well-known/jwks.json}
       CLERK_ISSUER: ${CLERK_ISSUER:-https://direct-newt-10.clerk.accounts.dev}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     volumes:
       - ./backend-core-service/be-core/src:/app/src
