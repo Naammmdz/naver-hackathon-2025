@@ -34,4 +34,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+        // Đặt thư mục build là 'dist' (mặc định)
+        outDir: 'dist', 
+        // Đảm bảo các assets (CSS/JS) nằm ngay trong thư mục build root
+        assetsDir: 'assets', 
+    },
 }));
