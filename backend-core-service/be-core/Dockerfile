@@ -14,13 +14,17 @@ RUN mvn clean package -DskipTests
 # Production stage
 FROM eclipse-temurin:21-jre-alpine
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+# Install curl và các tools cần thiết cho debugging
+RUN apk add --no-cache curl bash
 
 WORKDIR /app
 
 # Copy built jar
 COPY --from=build /app/target/*.jar app.jar
+
+# Copy test script (optional, để debug)
+COPY test-elasticsearch.sh /app/test-elasticsearch.sh
+RUN chmod +x /app/test-elasticsearch.sh
 
 # Override database và redis cho Dokploy deployment
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://devflow-naverhackathon-hggsje:5432/naver_hackathon
@@ -32,12 +36,9 @@ ENV REDIS_HOST=devflow-naverhackathon-ueemyy
 ENV REDIS_PORT=6379
 ENV SPRING_REDIS_PASSWORD=tqybmepkxzyvrb70
 
-# Elasticsearch configuration - kết nối qua Traefik domain
-# Traefik sẽ route request đến container port 9200
-# Nếu Traefik có SSL, thử https:// trước, nếu không thì dùng http://
-ENV ELASTICSEARCH_HOST=devflow-elasticsearch-8137a9-110-234-195-193.traefik.me
-ENV ELASTICSEARCH_PORT=9200
-# Thử không port trước (Traefik route tự động), nếu không được thì thêm :9200
+# Elasticsearch configuration - Domain Traefik KHÔNG CẦN PORT
+# Traefik đã route domain đến container port 9200 tự động
+# Override trực tiếp spring.elasticsearch.uris để bỏ qua application.properties
 ENV SPRING_ELASTICSEARCH_URIS=http://devflow-elasticsearch-8137a9-110-234-195-193.traefik.me
 
 # Production settings
@@ -45,6 +46,10 @@ ENV SPRING_PROFILES_ACTIVE=production
 ENV SPRING_JPA_SHOW_SQL=false
 ENV LOGGING_LEVEL_COM_NAAMMM_BECORE=INFO
 ENV LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=INFO
+
+# Debug Elasticsearch connection
+ENV LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_DATA_ELASTICSEARCH=DEBUG
+ENV LOGGING_LEVEL_ORG_ELASTICSEARCH=DEBUG
 
 # Các settings khác sẽ dùng từ application.properties:
 # - Clerk authentication (đã có sẵn)
