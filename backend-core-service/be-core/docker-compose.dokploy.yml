@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  backend-core:
+    build: .
+    container_name: backend-core
+    ports:
+      - "8989:8989"
+    environment:
+      # Database configuration
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://devflow-naverhackathon-hggsje:5432/naver_hackathon
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=12345
+      
+      # Redis configuration
+      - REDIS_HOST=devflow-naverhackathon-ueemyy
+      - REDIS_PORT=6379
+      - SPRING_REDIS_PASSWORD=tqybmepkxzyvrb70
+      
+      # Elasticsearch configuration - dùng service name
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+      
+      # Clerk và Gemini
+      - CLERK_JWKS_URL=https://direct-newt-10.clerk.accounts.dev/.well-known/jwks.json
+      - CLERK_ISSUER=https://direct-newt-10.clerk.accounts.dev
+      - GEMINI_API_KEY=AIzaSyDEwvGlAezRXGb5ewfSe5heEtUTUchitnM
+      
+      # Production settings
+      - SPRING_PROFILES_ACTIVE=production
+      - SPRING_JPA_SHOW_SQL=false
+      - LOGGING_LEVEL_COM_NAAMMM_BECORE=INFO
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=INFO
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8989/api/tasks || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
+

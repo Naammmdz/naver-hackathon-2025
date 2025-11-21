@@ -36,10 +36,10 @@ ENV REDIS_HOST=devflow-naverhackathon-ueemyy
 ENV REDIS_PORT=6379
 ENV SPRING_REDIS_PASSWORD=tqybmepkxzyvrb70
 
-# Elasticsearch configuration - Domain Traefik KHÔNG CẦN PORT
-# Traefik đã route domain đến container port 9200 tự động
-# Override trực tiếp spring.elasticsearch.uris để bỏ qua application.properties
-ENV SPRING_ELASTICSEARCH_URIS=http://devflow-elasticsearch-8137a9-110-234-195-193.traefik.me
+# Elasticsearch configuration - Dùng service name từ docker-compose
+# Khi deploy cùng docker-compose, service name là "elasticsearch"
+# Nếu deploy riêng, có thể cần dùng container name hoặc IP
+ENV SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
 
 # Production settings
 ENV SPRING_PROFILES_ACTIVE=production
