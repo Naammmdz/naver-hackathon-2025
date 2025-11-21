@@ -7,8 +7,14 @@ import type {
 } from "@/types/workspace";
 import { apiAuthContext } from "./authContext";
 
+// Use relative URL in production (when VITE_API_BASE_URL is empty or not set)
+// Use localhost in development
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8989";
+  import.meta.env.VITE_API_BASE_URL !== undefined
+    ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
+    : import.meta.env.PROD
+    ? ""
+    : "http://localhost:8989";
 
 export const workspaceApi = {
   // Get all workspaces for current user

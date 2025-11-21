@@ -123,6 +123,7 @@ services:
       args:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-pk_test_ZGlyZWN0LW5ld3QtMTAuY2xlcmsuYWNjb3VudHMuZGV2JA}
         VITE_CLERK_JWT_TEMPLATE: ${VITE_CLERK_JWT_TEMPLATE:-backend}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
         VITE_HOCUSPOCUS_URL: ${VITE_HOCUSPOCUS_URL:-ws://localhost:1234}
         VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8989}
         VITE_REALTIME_WS_URL: ${VITE_REALTIME_WS_URL:-ws://localhost:8090/ws/yjs}
