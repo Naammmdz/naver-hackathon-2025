@@ -13,6 +13,7 @@
     "loading": "Loading",
     "error": "Error",
     "success": "Success",
+    "upload": "Upload",
     "more": "more",
     "showLess": "Show less"
   },
@@ -146,6 +147,24 @@
     "doneDescription": "Completed tasks"
   },
   "components": {
+    "SessionManager": {
+      "chatSessions": "Chat Sessions",
+      "viewPastConversations": "View and manage your past conversations",
+      "searchSessions": "Search sessions...",
+      "newSession": "New Session",
+      "loadingSessions": "Loading sessions...",
+      "noMatchingSessions": "No matching sessions found",
+      "noChatSessionsYet": "No chat sessions yet",
+      "tryDifferentSearchTerm": "Try a different search term",
+      "startNewConversation": "Start a new conversation to get help from AI",
+      "createFirstSession": "Create First Session",
+      "active": "Active",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{count}} days ago",
+      "messages": "messages",
+      "delete": "Delete"
+    },
     "Index": {
       "cannotLoadTasks": "Cannot load tasks. Please try again.",
       "retryLoad": "Retry"
@@ -186,17 +205,17 @@
     "GlobalChatPanel": {
       "aiAvatarAlt": "AI Assistant",
       "attachButtonSr": "Add attachment",
-      "buttonText": "AI Chat",
+      "buttonText": "DevHolic AI Chat",
       "closeButtonAria": "Close chat panel",
       "defaultResponse": "I have noted your request. Backend integration will help me respond more intelligently in the future.",
       "errorMessage": "Sorry, I encountered an error while processing your request. Please try again.",
       "headerSubtitle": "Support you anytime, anywhere",
-      "headerTitle": "AI Assistant",
-      "inputLabel": "Enter message to chat with AI assistant",
-      "panelAriaLabel": "Chat with AI assistant",
+      "headerTitle": "DevHolic AI Assistant",
+      "inputLabel": "Enter message to chat with DevHolic AI assistant",
+      "panelAriaLabel": "Chat with DevHolic AI assistant",
       "placeholder": "Enter your question...",
       "sendButtonSr": "Send",
-      "welcomeMessage": "Hello! I am the DevHolic AI assistant. How can I help you today?"
+      "welcomeMessage": "Hello! I am the DevHolic DevHolic AI assistant. How can I help you today?"
     },
     "ProtectedRoute": {
       "loadingUserInfo": "Loading user information..."
@@ -210,15 +229,15 @@
       "recent": "Recent",
       "emptyDocument": "Empty document",
       "noChatHistory": "No chat history",
-      "startConversation": "Start a conversation with AI Chat",
-      "openAiChat": "Open AI Chat",
+      "startConversation": "Start a conversation with DevHolic AI Chat",
+      "openAiChat": "Open DevHolic AI Chat",
       "recentConversations": "Recent Conversations",
       "viewAll": "View All",
       "continueChat": "Continue Chat",
       "newTask": "New Task",
       "newDoc": "New Doc",
       "newBoard": "New Board",
-      "aiChat": "AI Chat",
+      "aiChat": "DevHolic AI Chat",
       "embedPlaceholder": "Paste YouTube, Google Docs, Figma, or any URL...",
       "clear": "Clear",
       "embedExternalContent": "Embed External Content",
@@ -321,6 +340,13 @@
       "untitled": "Untitled"
     },
     "Index": {
+      "createFirstTaskTitle": "Create your first task",
+      "createFirstTaskDescription": "Organize your work with tasks. You can track status, priority, and due dates.",
+      "autoSaveDescription": "Changes are saved automatically",
+      "smartParserDescription": "Use natural language to create tasks",
+      "dragDropDescription": "Drag and drop to reorder tasks",
+      "createNewTask": "Create New Task",
+      "openSmartParser": "Open Smart Parser",
       "title": "Analytics Dashboard",
       "subtitle": "Task performance and productivity insights",
       "productivityScore": "Productivity Score",
@@ -447,8 +473,8 @@
     "boardsCount": "Boards Count",
     "boardsCountDesc": "Total number of boards",
     "teamMembersDesc": "Number of workspace members",
-    "aiChat": "AI Chat",
-    "aiChatDesc": "Quick access to AI assistant conversations",
+    "aiChat": "DevHolic AI Chat",
+    "aiChatDesc": "Quick access to DevHolic AI assistant conversations",
     "smartParser": "Smart Task Parser",
     "smartParserDesc": "Create tasks using natural language",
     "aiSuggestions": "AI Suggestions",
@@ -620,5 +646,23 @@
     "failedToJoinWorkspace": "Failed to join workspace. Please check the ID and try again.",
     "failedToLoadSettings": "Failed to load workspace settings",
     "error": "Error"
+  },
+  "documents": {
+    "title": "Documents",
+    "new": "New Document",
+    "newDoc": "Untitled",
+    "upload": {
+      "title": "Upload Document",
+      "description": "Upload a document to index it for AI search. Supported formats: PDF, DOCX, TXT, MD.",
+      "file": "File",
+      "docTitle": "Title",
+      "titlePlaceholder": "Optional title",
+      "noWorkspace": "No active workspace",
+      "noFile": "Please select a file",
+      "success": "Document uploaded successfully",
+      "error": "Failed to upload document",
+      "tooltip": "Upload Document",
+      "clickToUpload": "Click to upload"
+    }
   }
 }

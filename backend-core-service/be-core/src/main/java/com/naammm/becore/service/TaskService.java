@@ -12,6 +12,7 @@ import com.naammm.becore.entity.Task;
 import com.naammm.becore.entity.TaskPriority;
 import com.naammm.becore.entity.TaskStatus;
 import com.naammm.becore.exception.ResourceNotFoundException;
+import com.naammm.becore.repository.TaskDocRepository;
 import com.naammm.becore.repository.TaskRepository;
 import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskDocRepository taskDocRepository;
     private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
@@ -144,6 +146,7 @@ public class TaskService {
         } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
             throw new SecurityException("Access denied");
         }
+        taskDocRepository.deleteByTaskId(id);
         taskRepository.delete(task);
         globalSearchService.deleteTask(id);
     }

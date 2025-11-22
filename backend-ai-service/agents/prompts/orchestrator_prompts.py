@@ -46,7 +46,7 @@ Available Agents:
 - hybrid_query: Requires both documents and tasks
 - workspace_overview: High-level summary
 - task_risk: Risk analysis
-- unknown: Cannot determine intent
+- unknown: Cannot determine intent (set agent to 'both')
 
 **Output Format:**
 Always provide structured JSON output matching the Intent or ExecutionPlan schema.
@@ -147,7 +147,10 @@ def create_planning_prompt(
     """
     
     # Determine if planning is needed
-    if agent == AgentType.DOCUMENT or agent == AgentType.TASK or agent == AgentType.BOARD:
+    if intent_type == IntentType.UNKNOWN:
+        needs_planning = False
+        planning_note = "**Note:** The intent is unknown. Create a simple single-step plan using the Document Agent to answer the user or ask for clarification."
+    elif agent == AgentType.DOCUMENT or agent == AgentType.TASK or agent == AgentType.BOARD:
         needs_planning = False
         planning_note = "**Note:** This is a simple query that can be handled by a single agent. Create a single-step plan."
     else:

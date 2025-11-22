@@ -323,9 +323,13 @@ async def index_document(
             # Process indexing
             doc_title = title or Path(file.filename).stem
             
+            from fastapi.concurrency import run_in_threadpool
+            
             logger.info(f"🚀 Starting indexing: {file.filename} -> workspace {workspace_id}")
             
-            result = process_document_indexing(
+            # Run processing in thread pool to avoid blocking event loop
+            result = await run_in_threadpool(
+                process_document_indexing,
                 file_path=tmp_path,
                 workspace_id=workspace_id,
                 title=doc_title,

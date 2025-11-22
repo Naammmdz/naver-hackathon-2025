@@ -70,19 +70,27 @@ class DoclingParser(BaseParser):
             f"tables={self.table_extraction}, format={self.output_format}"
         )
     
+    # Class-level cache for converters to avoid expensive re-initialization
+    _converters = {}
+    
     @property
     def converter(self):
-        """Lazy initialization of DocumentConverter to avoid import issues"""
-        if self._converter is None:
+        """Lazy initialization of DocumentConverter with caching"""
+        # Create a cache key based on configuration
+        cache_key = (self.ocr_enabled, self.table_extraction)
+        
+        if cache_key not in DoclingParser._converters:
             try:
                 from docling.document_converter import DocumentConverter, PdfFormatOption
                 from docling.datamodel.base_models import InputFormat
                 from docling.datamodel.pipeline_options import PdfPipelineOptions
                 
+                logger.info(f"Initializing new Docling DocumentConverter for config: ocr={self.ocr_enabled}, tables={self.table_extraction}")
+                
                 # Configure PDF pipeline options
                 pipeline_options = PdfPipelineOptions()
-                pipeline_options.do_ocr = False  # Disable OCR to avoid easyocr dependency
-                pipeline_options.do_table_structure = False  # Disable table structure to avoid torchvision dependency
+                pipeline_options.do_ocr = self.ocr_enabled
+                pipeline_options.do_table_structure = self.table_extraction
                 
                 # Create format options with pipeline settings
                 format_options = {
@@ -92,11 +100,13 @@ class DoclingParser(BaseParser):
                 }
                 
                 # Initialize converter with format-specific options
-                self._converter = DocumentConverter(
+                converter = DocumentConverter(
                     allowed_formats=[InputFormat.PDF, InputFormat.DOCX, InputFormat.PPTX],
                     format_options=format_options
                 )
-                logger.info("Docling DocumentConverter initialized successfully (OCR disabled)")
+                
+                DoclingParser._converters[cache_key] = converter
+                logger.info("Docling DocumentConverter initialized successfully")
                     
             except ImportError as e:
                 logger.error(f"Failed to import Docling: {e}")
@@ -104,7 +114,7 @@ class DoclingParser(BaseParser):
                     "Docling library not found. Install with: pip install docling docling-core"
                 ) from e
         
-        return self._converter
+        return DoclingParser._converters[cache_key]
     
     def supports(self, source: Union[str, Path]) -> bool:
         """

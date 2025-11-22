@@ -135,8 +135,8 @@ export function CardGallery({ open, onOpenChange, onSelectCard }: CardGalleryPro
     // AI & Smart Cards
     {
       id: 'ai-chat',
-      name: t('dashboard.aiChat', 'AI Chat'),
-      description: t('dashboard.aiChatDesc', 'Quick access to AI assistant conversations'),
+      name: t('dashboard.aiChat', 'DevHolic AI Chat'),
+      description: t('dashboard.aiChatDesc', 'Quick access to DevHolic AI assistant conversations'),
       icon: <MessageSquare className="h-5 w-5 text-primary" />,
       category: 'ai',
       preview: '',

@@ -13,6 +13,7 @@
     "loading": "Đang tải",
     "error": "Lỗi",
     "success": "Thành công",
+    "upload": "Tải lên",
     "more": "thêm",
     "showLess": "Ẩn bớt"
   },
@@ -143,6 +144,24 @@
     "doneDescription": "Các công việc đã hoàn thành"
   },
   "components": {
+    "SessionManager": {
+      "chatSessions": "Phiên Trò Chuyện",
+      "viewPastConversations": "Xem và quản lý các cuộc trò chuyện cũ",
+      "searchSessions": "Tìm kiếm phiên...",
+      "newSession": "Phiên Mới",
+      "loadingSessions": "Đang tải phiên...",
+      "noMatchingSessions": "Không tìm thấy phiên phù hợp",
+      "noChatSessionsYet": "Chưa có phiên trò chuyện nào",
+      "tryDifferentSearchTerm": "Thử từ khóa tìm kiếm khác",
+      "startNewConversation": "Bắt đầu cuộc trò chuyện mới để nhận trợ giúp từ AI",
+      "createFirstSession": "Tạo Phiên Đầu Tiên",
+      "active": "Đang hoạt động",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "daysAgo": "{{count}} ngày trước",
+      "messages": "tin nhắn",
+      "delete": "Xóa"
+    },
     "Index": {
       "cannotLoadTasks": "Không thể tải danh sách công việc. Vui lòng thử lại.",
       "retryLoad": "Thử lại"
@@ -183,7 +202,7 @@
     "GlobalChatPanel": {
       "aiAvatarAlt": "Trợ lý AI",
       "attachButtonSr": "Thêm tệp đính kèm",
-      "buttonText": "AI Chat",
+      "buttonText": "DevHolic AI Chat",
       "closeButtonAria": "Đóng bảng chat",
       "defaultResponse": "Tôi đã ghi nhận yêu cầu của bạn. Tích hợp backend sẽ giúp tôi phản hồi thông minh hơn trong tương lai.",
       "errorMessage": "Xin lỗi, tôi gặp lỗi khi xử lý yêu cầu của bạn. Vui lòng thử lại.",
@@ -207,15 +226,15 @@
       "recent": "Gần đây",
       "emptyDocument": "Tài liệu trống",
       "noChatHistory": "Không có lịch sử trò chuyện",
-      "startConversation": "Bắt đầu cuộc trò chuyện với AI Chat",
-      "openAiChat": "Mở AI Chat",
+      "startConversation": "Bắt đầu cuộc trò chuyện với DevHolic AI Chat",
+      "openAiChat": "Mở DevHolic AI Chat",
       "recentConversations": "Cuộc trò chuyện gần đây",
       "viewAll": "Xem tất cả",
       "continueChat": "Tiếp tục trò chuyện",
       "newTask": "Công việc mới",
       "newDoc": "Tài liệu mới",
       "newBoard": "Bảng mới",
-      "aiChat": "AI Chat",
+      "aiChat": "DevHolic AI Chat",
       "embedPlaceholder": "Dán YouTube, Google Docs, Figma, hoặc bất kỳ URL nào...",
       "clear": "Xóa",
       "embedExternalContent": "Nhúng nội dung bên ngoài",
@@ -318,6 +337,13 @@
       "untitled": "Chưa đặt tên"
     },
     "Index": {
+      "createFirstTaskTitle": "Tạo công việc đầu tiên của bạn",
+      "createFirstTaskDescription": "Tổ chức công việc của bạn với các task. Bạn có thể theo dõi trạng thái, mức độ ưu tiên và hạn chót.",
+      "autoSaveDescription": "Thay đổi được lưu tự động",
+      "smartParserDescription": "Sử dụng ngôn ngữ tự nhiên để tạo công việc",
+      "dragDropDescription": "Kéo và thả để sắp xếp lại công việc",
+      "createNewTask": "Tạo Công Việc Mới",
+      "openSmartParser": "Mở Trình Phân Tích Thông Minh",
       "title": "Bảng điều khiển phân tích",
       "subtitle": "Hiệu suất công việc và thông tin chi tiết về năng suất",
       "productivityScore": "Điểm năng suất",
@@ -615,5 +641,23 @@
     "failedToJoinWorkspace": "Không thể tham gia workspace. Vui lòng kiểm tra ID và thử lại.",
     "failedToLoadSettings": "Không thể tải cài đặt workspace",
     "error": "Lỗi"
+  },
+  "documents": {
+    "title": "Tài liệu",
+    "new": "Tài liệu mới",
+    "newDoc": "Không tiêu đề",
+    "upload": {
+      "title": "Tải lên tài liệu",
+      "description": "Tải lên tài liệu để lập chỉ mục cho tìm kiếm AI. Hỗ trợ: PDF, DOCX, TXT, MD.",
+      "file": "Tệp",
+      "docTitle": "Tiêu đề",
+      "titlePlaceholder": "Tiêu đề tùy chọn",
+      "noWorkspace": "Không có không gian làm việc đang hoạt động",
+      "noFile": "Vui lòng chọn tệp",
+      "success": "Tải lên tài liệu thành công",
+      "error": "Tải lên tài liệu thất bại",
+      "tooltip": "Tải lên tài liệu",
+      "clickToUpload": "Nhấn để tải lên"
+    }
   }
 }

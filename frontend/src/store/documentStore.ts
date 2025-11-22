@@ -8,7 +8,7 @@ import type {
 import { create } from "zustand";
 
 const SAVE_INTERVAL_MS = 600;
-const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const saveTimers = new Map<string, number>();
 
 type DocumentState = DocumentStore & {
   currentUserId: string | null;
@@ -26,6 +26,9 @@ type DocumentState = DocumentStore & {
   mergeDocumentsLocal: (incoming: Array<Pick<Document, 'id'|'title'|'createdAt'|'updatedAt'|'userId'|'workspaceId'|'icon'|'parentId'|'trashed'|'trashedAt'>>) => void;
   setDocumentContentLocal: (id: string, content: any[]) => void;
   setDocumentTitleLocal: (id: string, title: string) => void;
+  // Optimistic UI helpers
+  addLocalDocument: (doc: Document) => void;
+  removeLocalDocument: (id: string) => void;
 };
 
 const defaultContent = (title: string) => [
@@ -337,9 +340,21 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
   },
 
   // Local-only title update to prevent editor re-render and cursor loss
-  setDocumentTitleLocal: (id: string, title: string) => {
+    setDocumentTitleLocal: (id: string, title: string) => {
     set((state) => ({
       documents: state.documents.map((d) => (d.id === id ? { ...d, title, updatedAt: new Date() } : d)),
+    }));
+  },
+
+  addLocalDocument: (doc: Document) => {
+    set((state) => ({
+      documents: [...state.documents, doc],
+    }));
+  },
+
+  removeLocalDocument: (id: string) => {
+    set((state) => ({
+      documents: state.documents.filter((d) => d.id !== id),
     }));
   },
   };

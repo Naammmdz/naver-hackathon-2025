@@ -164,5 +164,11 @@ INTENT_EXAMPLES = [
         "intent_type": IntentType.TASK_ANALYSIS,
         "agent": AgentType.TASK,
         "reasoning": "User asking about task assignments"
+    },
+    {
+        "query": "Hello, how can you help me?",
+        "intent_type": IntentType.UNKNOWN,
+        "agent": AgentType.BOTH,
+        "reasoning": "General greeting or open-ended question"
     }
 ]

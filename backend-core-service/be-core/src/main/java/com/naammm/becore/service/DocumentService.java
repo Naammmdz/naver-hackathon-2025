@@ -9,7 +9,10 @@ import java.util.Optional;
 import com.naammm.becore.config.RedisConfig;
 import com.naammm.becore.entity.Document;
 import com.naammm.becore.exception.ResourceNotFoundException;
+import com.naammm.becore.repository.DocumentChunkRepository;
+import com.naammm.becore.repository.DocumentCommentRepository;
 import com.naammm.becore.repository.DocumentRepository;
+import com.naammm.becore.repository.TaskDocRepository;
 import com.naammm.becore.repository.WorkspaceRepository;
 import com.naammm.becore.security.UserContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,6 +30,9 @@ import org.springframework.util.StringUtils;
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
+    private final TaskDocRepository taskDocRepository;
+    private final DocumentCommentRepository documentCommentRepository;
+    private final DocumentChunkRepository documentChunkRepository;
     private final WorkspaceRepository workspaceRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ChannelTopic metadataChannel;
@@ -158,6 +164,16 @@ public class DocumentService {
         } else if (!workspaceRepository.userHasAccess(workspaceId, userId)) {
             throw new SecurityException("Access denied");
         }
+
+        // Recursively delete children
+        List<Document> children = documentRepository.findByParentId(id);
+        for (Document child : children) {
+            permanentlyDeleteDocument(child.getId());
+        }
+
+        taskDocRepository.deleteByDocId(id);
+        documentCommentRepository.deleteByDocumentId(id);
+        documentChunkRepository.deleteByDocumentId(id);
         documentRepository.delete(document);
         globalSearchService.deleteDocument(document.getId());
     }

@@ -25,6 +25,8 @@ Example:
 
 from typing import Dict, Any, Optional
 import sys
+import os
+import yaml
 from pathlib import Path
 
 # Add parent directory to path for utils import
@@ -64,8 +66,8 @@ class DocumentAgent:
     
     def __init__(
         self,
-        embedder_type: str = 'huggingface',
-        llm_provider: str = None,  # Will use config default if None
+        embedder_type: Optional[str] = None,
+        llm_provider: Optional[str] = None,  # Will use config default if None
         top_k: int = 5,
         relevance_threshold: float = 0.01  # Lower threshold for hybrid scores
     ):
@@ -82,6 +84,26 @@ class DocumentAgent:
         llm_factory = LLMFactory()
         if llm_provider is None:
             llm_provider = llm_factory.get_default_provider()
+        
+        # Get default embedder from config if not specified
+        if embedder_type is None:
+            try:
+                # Load config.yml directly to get data_preprocessing section
+                config_path = "config.yml"
+                if os.path.exists(config_path):
+                    with open(config_path, "r") as f:
+                        full_config = yaml.safe_load(f)
+                        embedder_type = full_config.get('data_preprocessing', {}).get('embedding', {}).get('provider')
+                        logger.info(f"Loaded embedder type from config: {embedder_type}")
+                
+                if not embedder_type:
+                    embedder_type = 'huggingface'
+                    logger.info(f"Using default embedder type: {embedder_type}")
+            except Exception as e:
+                logger.error(f"Error loading embedder type from config: {e}")
+                embedder_type = 'huggingface'
+        else:
+            logger.info(f"Using provided embedder type: {embedder_type}")
         
         self.embedder_type = embedder_type
         self.llm_provider = llm_provider

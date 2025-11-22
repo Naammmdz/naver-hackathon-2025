@@ -164,15 +164,16 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
                 'agents_involved': list(agent_types)
             }
         
-        # MEDIUM: Multi-agent coordination
-        if len(agent_types) > 1:
-            return {
-                'type': ActionType.TASK_UPDATE,
-                'severity': ActionSeverity.MEDIUM,
-                'reason': 'Multi-agent coordination required',
-                'estimated_impact': f'Involves {len(agent_types)} agents: {", ".join(agent_types)}',
-                'agents_involved': list(agent_types)
-            }
+        # MEDIUM: Multi-agent coordination (only if not read-only)
+        # We allow read-only multi-agent queries to proceed without HITL
+        # if len(agent_types) > 1:
+        #     return {
+        #         'type': ActionType.TASK_UPDATE,
+        #         'severity': ActionSeverity.MEDIUM,
+        #         'reason': 'Multi-agent coordination required',
+        #         'estimated_impact': f'Involves {len(agent_types)} agents: {", ".join(agent_types)}',
+        #         'agents_involved': list(agent_types)
+        #     }
         
         # MEDIUM: Single agent with deletions
         if has_deletions:
