@@ -88,10 +88,10 @@ export function useHocuspocusProvider({
 
           // For production/deployed environments, ALWAYS use relative path via nginx proxy
           // This ensures we never try to connect to localhost:1234 from a client's browser
-          // Use ws:// for Traefik domains (often have self-signed certs) or if explicitly set
-          const isTraefikDomain = window.location.hostname.includes('.traefik.me');
-          const forceWs = import.meta.env.VITE_FORCE_WS === 'true' || isTraefikDomain;
-          const protocol = (!forceWs && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+          // IMPORTANT: If page is loaded over HTTPS, MUST use wss:// to avoid mixed content blocking
+          // Browser will block ws:// connections from HTTPS pages for security
+          // If certificate is invalid, user will see warning but can proceed
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[HocuspocusProvider] Using WebSocket URL via nginx proxy:', url, {
             hostname: window.location.hostname,
@@ -99,8 +99,7 @@ export function useHocuspocusProvider({
             protocol: window.location.protocol,
             mode: import.meta.env.MODE,
             dev: import.meta.env.DEV,
-            isTraefikDomain,
-            forceWs
+            note: 'Using wss:// for HTTPS pages to avoid mixed content blocking'
           });
           return url;
         };
