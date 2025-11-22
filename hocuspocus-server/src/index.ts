@@ -15,25 +15,45 @@ const dbExtension = createDatabaseExtension({ postgresUrl: POSTGRES_URL });
 const server = Server.configure({
   port: parseInt(process.env.PORT || '1234', 10),
 
-  async onAuthenticate({ token, documentName }) {
+  async onAuthenticate({ token, documentName, requestHeaders }) {
+    // Log authentication attempt
+    console.log(`[onAuthenticate] Authentication attempt:`, {
+      documentName,
+      hasToken: !!token,
+      tokenLength: token?.length || 0,
+      tokenPreview: token ? `${token.substring(0, 20)}...` : 'null',
+      headers: requestHeaders ? Object.keys(requestHeaders) : [],
+      authorizationHeader: requestHeaders?.authorization ? `${requestHeaders.authorization.substring(0, 30)}...` : 'none'
+    });
+
     // Call backend-core to check permission
     if (!token || token.trim() === '') {
       console.warn(`[onAuthenticate] No token provided for document=${documentName}`);
+      throw new Error('Unauthorized: No token provided');
     }
+    
     console.log(`[onAuthenticate] Checking permission: doc=${documentName}, core=${CORE_SERVICE_URL}`);
     const permission = await checkPermission(token, documentName, CORE_SERVICE_URL);
+    
+    console.log(`[onAuthenticate] Permission result:`, {
+      allow: permission.allow,
+      readOnly: permission.readOnly,
+      userId: permission.userId
+    });
     
     if (!permission.allow) {
       console.warn(`[onAuthenticate] Unauthorized: doc=${documentName}, readOnly=${permission.readOnly}`);
       throw new Error('Unauthorized');
     }
 
-    return {
-      user: {
-        id: permission.userId || 'anonymous',
-        readOnly: permission.readOnly,
-      },
+    const user = {
+      id: permission.userId || 'anonymous',
+      readOnly: permission.readOnly,
     };
+    
+    console.log(`[onAuthenticate] Authentication successful:`, user);
+    
+    return { user };
   },
 
   // Database extension hooks

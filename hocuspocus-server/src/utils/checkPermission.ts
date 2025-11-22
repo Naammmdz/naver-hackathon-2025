@@ -12,11 +12,19 @@ export async function checkPermission(
   coreServiceUrl: string
 ): Promise<PermissionResponse> {
   if (!token) {
+    console.warn(`[checkPermission] No token provided for document=${documentName}`);
     return { allow: false, readOnly: true };
   }
 
   try {
     const url = `${coreServiceUrl}/api/internal/check-permission`;
+    console.log(`[checkPermission] Requesting permission:`, {
+      url,
+      documentName,
+      tokenLength: token.length,
+      tokenPreview: `${token.substring(0, 20)}...`
+    });
+    
     const response = await axios.post(
       url,
       { documentName },
@@ -27,14 +35,25 @@ export async function checkPermission(
       }
     );
 
-    if (process.env.DEBUG_HOCUSPOCUS === '1') {
-      console.log(`[checkPermission] POST ${url} -> ${response.status} allow=${response.data?.allow} ro=${response.data?.readOnly}`);
-    }
+    console.log(`[checkPermission] Permission response:`, {
+      status: response.status,
+      allow: response.data?.allow,
+      readOnly: response.data?.readOnly,
+      userId: response.data?.userId
+    });
+    
     return response.data;
   } catch (error) {
     const status = (error as any)?.response?.status;
     const data = (error as any)?.response?.data;
-    console.error(`[checkPermission] Failed: status=${status} data=${JSON.stringify(data)} url=${coreServiceUrl}`);
+    const message = (error as any)?.message;
+    console.error(`[checkPermission] Failed:`, {
+      status,
+      message,
+      data: JSON.stringify(data),
+      url: coreServiceUrl,
+      documentName
+    });
     return { allow: false, readOnly: true };
   }
 }
