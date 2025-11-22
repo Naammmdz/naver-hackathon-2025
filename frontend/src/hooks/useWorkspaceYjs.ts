@@ -94,6 +94,11 @@ export function useWorkspaceYjs({
           return;
         }
 
+        // Debug logging in production
+        if (import.meta.env.PROD) {
+          console.log('[WorkspaceYjs] Token available:', token ? `${token.substring(0, 20)}...` : 'null');
+        }
+
         // Create Y.Doc
         const doc = new Y.Doc();
         
@@ -107,15 +112,25 @@ export function useWorkspaceYjs({
           // In production, use relative WebSocket URL via nginx proxy
           if (import.meta.env.PROD) {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            return `${protocol}//${window.location.host}/ws`;
+            const url = `${protocol}//${window.location.host}/ws`;
+            console.log('[WorkspaceYjs] WebSocket URL:', url);
+            return url;
           }
           // Development fallback
           return 'ws://localhost:1234';
         };
 
+        const wsUrl = getWebSocketUrl();
+        console.log('[WorkspaceYjs] Initializing provider:', { 
+          url: wsUrl, 
+          name: `workspace-${workspaceId}`,
+          hasToken: !!token,
+          tokenLength: token?.length || 0
+        });
+
         // Create Hocuspocus provider for workspace with token
         hocuspocusProvider = new HocuspocusProvider({
-          url: getWebSocketUrl(),
+          url: wsUrl,
           name: `workspace-${workspaceId}`,
           token: token,
           document: doc,
