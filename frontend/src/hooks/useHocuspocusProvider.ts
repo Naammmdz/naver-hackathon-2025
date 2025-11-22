@@ -76,30 +76,31 @@ export function useHocuspocusProvider({
         const doc = new Y.Doc();
         
         // Determine WebSocket URL
-        // In production, use relative URL via nginx proxy (/ws)
-        // In development, use VITE_HOCUSPOCUS_URL or localhost
+        // Priority: VITE_HOCUSPOCUS_URL > relative /ws (nginx proxy) > localhost (dev only)
         const getWebSocketUrl = () => {
+          // If explicitly set, use it
           if (import.meta.env.VITE_HOCUSPOCUS_URL) {
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
-          // Check if we're in production (not localhost)
-          const isProduction = window.location.hostname !== 'localhost' && 
-                              window.location.hostname !== '127.0.0.1' &&
-                              !window.location.hostname.startsWith('192.168.') &&
-                              !window.location.hostname.startsWith('10.') &&
-                              (import.meta.env.MODE === 'production' || import.meta.env.PROD);
           
-          // In production, use relative WebSocket URL via nginx proxy
-          if (isProduction) {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const url = `${protocol}//${window.location.host}/ws`;
-            console.log('[HocuspocusProvider] Production WebSocket URL:', url);
-            return url;
+          // Check if we're on localhost (development)
+          const isLocalhost = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' ||
+                             window.location.hostname.startsWith('192.168.') ||
+                             window.location.hostname.startsWith('10.');
+          
+          // For localhost development, use direct connection
+          if (isLocalhost && import.meta.env.DEV) {
+            const devUrl = 'ws://localhost:1234';
+            console.log('[HocuspocusProvider] Development WebSocket URL:', devUrl);
+            return devUrl;
           }
-          // Development fallback
-          const devUrl = 'ws://localhost:1234';
-          console.log('[HocuspocusProvider] Development WebSocket URL:', devUrl);
-          return devUrl;
+          
+          // For all other cases (production, deployed), use relative path via nginx proxy
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const url = `${protocol}//${window.location.host}/ws`;
+          console.log('[HocuspocusProvider] Using WebSocket URL via nginx proxy:', url);
+          return url;
         };
 
         // Create Hocuspocus provider with token
