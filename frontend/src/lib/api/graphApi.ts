@@ -1,6 +1,13 @@
 import { apiAuthContext } from "./authContext";
 
-const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || "http://localhost:8000";
+// AI Service base URL - use relative URL in production (via nginx proxy)
+// In development, use proxy path /ai-api to avoid CORS issues
+// In production, use relative URL or configure via VITE_AI_SERVICE_BASE_URL
+const AI_SERVICE_BASE_URL =
+  import.meta.env.VITE_AI_SERVICE_BASE_URL?.replace(/\/$/, "") ??
+  (import.meta.env.PROD ? "" : "http://localhost:8000");
+
+const API_PREFIX = import.meta.env.DEV ? "/ai-api/api/v1" : "/ai-api/api/v1";
 
 interface GraphNode {
   id: string;
@@ -29,7 +36,7 @@ export async function fetchGraphData(workspaceId: string): Promise<GraphData> {
   
   try {
   const response = await fetch(
-    `${AI_SERVICE_URL}/api/v1/graph?workspace_id=${workspaceId}`,
+    `${AI_SERVICE_BASE_URL}${API_PREFIX}/graph?workspace_id=${workspaceId}`,
     {
       method: "GET",
       headers,
@@ -51,7 +58,7 @@ export async function fetchGraphData(workspaceId: string): Promise<GraphData> {
  * Fetch demo graph data (for testing without database)
  */
 export async function fetchDemoGraphData(): Promise<GraphData> {
-  const response = await fetch(`${AI_SERVICE_URL}/api/v1/graph/demo`, {
+  const response = await fetch(`${AI_SERVICE_BASE_URL}${API_PREFIX}/graph/demo`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

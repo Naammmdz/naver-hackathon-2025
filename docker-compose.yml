@@ -153,6 +153,7 @@ services:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-pk_test_ZGlyZWN0LW5ld3QtMTAuY2xlcmsuYWNjb3VudHMuZGV2JA}
         VITE_CLERK_JWT_TEMPLATE: ${VITE_CLERK_JWT_TEMPLATE:-backend}
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+        VITE_AI_SERVICE_BASE_URL: ${VITE_AI_SERVICE_BASE_URL:-}
         VITE_HOCUSPOCUS_URL: ${VITE_HOCUSPOCUS_URL:-ws://localhost:1234}
         VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8989}
         VITE_REALTIME_WS_URL: ${VITE_REALTIME_WS_URL:-ws://localhost:8090/ws/yjs}
@@ -161,10 +162,30 @@ services:
       - "8080:8080"
     depends_on:
       - backend-core
+      - backend-ai-service
       - hocuspocus
     networks:
       - default
     restart: unless-stopped
+
+  # Docker cleanup service (chạy thủ công khi cần)
+  # Usage: docker compose run --rm cleanup
+  cleanup:
+    image: docker:cli
+    container_name: nvhkt-cleanup
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "
+        echo '🧹 Cleaning Docker...' &&
+        docker builder prune -af &&
+        docker image prune -af &&
+        docker container prune -f &&
+        echo '✅ Cleanup complete!' &&
+        docker system df
+      "
+    profiles:
+      - tools
 
 volumes:
   core_pg_data:

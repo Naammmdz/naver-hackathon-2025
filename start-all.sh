@@ -83,7 +83,14 @@ echo ""
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}1. Starting Docker Containers${NC}"
 echo -e "${BLUE}========================================${NC}"
-$DOCKER_CMD up -d postgres redis elasticsearch
+
+# Sử dụng wrapper script nếu có, nếu không thì dùng docker-compose trực tiếp
+if [ -f "./docker-compose-wrapper.sh" ]; then
+    ./docker-compose-wrapper.sh up -d postgres redis elasticsearch
+else
+    $DOCKER_CMD up -d postgres redis elasticsearch
+fi
+
 echo -e "${GREEN}✓ PostgreSQL, Redis, and Elasticsearch started${NC}"
 echo ""
 
