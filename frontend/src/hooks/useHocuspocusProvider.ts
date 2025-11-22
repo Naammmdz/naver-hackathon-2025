@@ -8,9 +8,9 @@ interface UseHocuspocusProviderOptions {
   enabled?: boolean;
 }
 
-export function useHocuspocusProvider({ 
-  documentName, 
-  enabled = true 
+export function useHocuspocusProvider({
+  documentName,
+  enabled = true
 }: UseHocuspocusProviderOptions) {
   const { getToken, userId } = useAuth();
   const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
@@ -60,7 +60,7 @@ export function useHocuspocusProvider({
     const initializeProvider = async () => {
       try {
         const token = await getStableToken();
-        
+
         // Check if still mounted and have token
         if (!mounted) {
           return;
@@ -74,21 +74,20 @@ export function useHocuspocusProvider({
 
         // Create Y.Doc
         const doc = new Y.Doc();
-        
+
         // Determine WebSocket URL
         // Priority: VITE_HOCUSPOCUS_URL > relative /ws (nginx proxy)
         // IMPORTANT: Frontend runs in browser, so NEVER use localhost:1234 unless explicitly set
         // Always use relative /ws path which nginx will proxy to hocuspocus service
         const getWebSocketUrl = () => {
-          // If explicitly set, use it (could be localhost:1234 for local dev, or external URL)
-          if (import.meta.env.VITE_HOCUSPOCUS_URL) {
-            console.log('[HocuspocusProvider] Using VITE_HOCUSPOCUS_URL:', import.meta.env.VITE_HOCUSPOCUS_URL);
+          // In development, we might want to use the env var if set
+          if (import.meta.env.DEV && import.meta.env.VITE_HOCUSPOCUS_URL) {
+            console.log('[HocuspocusProvider] Using VITE_HOCUSPOCUS_URL (DEV):', import.meta.env.VITE_HOCUSPOCUS_URL);
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
-          
-          // For ALL cases (production, deployed, Docker, local dev), use relative path via nginx proxy
-          // This works because nginx will proxy /ws to the actual hocuspocus service
-          // Even in local dev, if nginx is running, it will proxy correctly
+
+          // For production/deployed environments, ALWAYS use relative path via nginx proxy
+          // This ensures we never try to connect to localhost:1234 from a client's browser
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[HocuspocusProvider] Using WebSocket URL via nginx proxy:', url, {
@@ -120,10 +119,11 @@ export function useHocuspocusProvider({
           },
           onStateless: (data) => {
             // Handle stateless messages (e.g., metadata updates)
-            if (mounted && data.type === 'metadata') {
+            const payload = data.payload as any;
+            if (mounted && payload && payload.type === 'metadata') {
               // Emit custom event for metadata updates
               window.dispatchEvent(new CustomEvent('hocuspocus-metadata', {
-                detail: data.payload
+                detail: payload.payload
               }));
             }
           },

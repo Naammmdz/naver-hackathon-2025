@@ -9,9 +9,9 @@ interface UseWorkspaceYjsOptions {
   enabled?: boolean;
 }
 
-export function useWorkspaceYjs({ 
-  workspaceId, 
-  enabled = true 
+export function useWorkspaceYjs({
+  workspaceId,
+  enabled = true
 }: UseWorkspaceYjsOptions) {
   const { getToken, userId } = useAuth();
   const tokenTemplate = import.meta.env.VITE_CLERK_JWT_TEMPLATE;
@@ -78,9 +78,9 @@ export function useWorkspaceYjs({
       if (token) {
         lastToken = token;
         lastFetchedAt = Date.now();
-        console.log('[WorkspaceYjs] Token obtained:', { 
-          length: token.length, 
-          preview: `${token.substring(0, 20)}...` 
+        console.log('[WorkspaceYjs] Token obtained:', {
+          length: token.length,
+          preview: `${token.substring(0, 20)}...`
         });
         return token;
       }
@@ -109,21 +109,20 @@ export function useWorkspaceYjs({
 
         // Create Y.Doc
         const doc = new Y.Doc();
-        
+
         // Determine WebSocket URL
         // Priority: VITE_HOCUSPOCUS_URL > relative /ws (nginx proxy)
         // IMPORTANT: Frontend runs in browser, so NEVER use localhost:1234 unless explicitly set
         // Always use relative /ws path which nginx will proxy to hocuspocus service
         const getWebSocketUrl = () => {
-          // If explicitly set, use it (could be localhost:1234 for local dev, or external URL)
-          if (import.meta.env.VITE_HOCUSPOCUS_URL) {
-            console.log('[WorkspaceYjs] Using VITE_HOCUSPOCUS_URL:', import.meta.env.VITE_HOCUSPOCUS_URL);
+          // In development, we might want to use the env var if set
+          if (import.meta.env.DEV && import.meta.env.VITE_HOCUSPOCUS_URL) {
+            console.log('[WorkspaceYjs] Using VITE_HOCUSPOCUS_URL (DEV):', import.meta.env.VITE_HOCUSPOCUS_URL);
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
-          
-          // For ALL cases (production, deployed, Docker, local dev), use relative path via nginx proxy
-          // This works because nginx will proxy /ws to the actual hocuspocus service
-          // Even in local dev, if nginx is running, it will proxy correctly
+
+          // For production/deployed environments, ALWAYS use relative path via nginx proxy
+          // This ensures we never try to connect to localhost:1234 from a client's browser
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[WorkspaceYjs] Using WebSocket URL via nginx proxy:', url, {
@@ -137,8 +136,8 @@ export function useWorkspaceYjs({
         };
 
         const wsUrl = getWebSocketUrl();
-        console.log('[WorkspaceYjs] Initializing provider:', { 
-          url: wsUrl, 
+        console.log('[WorkspaceYjs] Initializing provider:', {
+          url: wsUrl,
           name: `workspace-${workspaceId}`,
           hasToken: !!token,
           tokenLength: token?.length || 0,
@@ -203,7 +202,7 @@ export function useWorkspaceYjs({
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('workspace-provider-ready'));
             }, 0);
-          } catch {}
+          } catch { }
           setYdoc(doc);
 
           // Initialize Yjs Maps
@@ -242,7 +241,7 @@ export function useWorkspaceYjs({
                     // Fallback: update configuration
                     try {
                       (providerRef.current as any).configuration.token = newToken;
-                    } catch {}
+                    } catch { }
                   }
                   // If currently disconnected, try reconnect
                   try {
@@ -250,7 +249,7 @@ export function useWorkspaceYjs({
                     if (p && p.status === 'disconnected' && typeof p.connect === 'function') {
                       p.connect();
                     }
-                  } catch {}
+                  } catch { }
                 }
               } catch (e) {
                 console.warn('[WorkspaceYjs] token refresh failed', e);
@@ -274,7 +273,7 @@ export function useWorkspaceYjs({
                   } else {
                     try {
                       (providerRef.current as any).configuration.token = newToken;
-                    } catch {}
+                    } catch { }
                   }
                   const p: any = providerRef.current;
                   if (p && typeof p.connect === 'function') {
@@ -316,7 +315,7 @@ export function useWorkspaceYjs({
       }
       try {
         delete (window as any).__WORKSPACE_PROVIDER;
-      } catch {}
+      } catch { }
       setProvider(null);
       setYdoc(null);
       setTasksMap(null);
