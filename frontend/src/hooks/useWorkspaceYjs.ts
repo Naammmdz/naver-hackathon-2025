@@ -60,12 +60,15 @@ export function useWorkspaceYjs({
     const getStableToken = async (): Promise<string | null> => {
       const now = Date.now();
       if (lastToken && now - lastFetchedAt < CACHE_TTL_MS) {
+        console.log('[WorkspaceYjs] Using cached token');
         return lastToken;
       }
       // Prefer cached Clerk token (no skipCache)
       const baseOptions = tokenTemplate ? { template: tokenTemplate as string } : {};
+      console.log('[WorkspaceYjs] Fetching token from Clerk...', { hasTemplate: !!tokenTemplate });
       let token = await getToken(baseOptions as any);
       if (!token) {
+        console.warn('[WorkspaceYjs] Token not found, forcing refresh...');
         // Force refresh only when needed
         const refreshOptions = tokenTemplate
           ? { template: tokenTemplate as string, skipCache: true }
@@ -75,8 +78,13 @@ export function useWorkspaceYjs({
       if (token) {
         lastToken = token;
         lastFetchedAt = Date.now();
+        console.log('[WorkspaceYjs] Token obtained:', { 
+          length: token.length, 
+          preview: `${token.substring(0, 20)}...` 
+        });
         return token;
       }
+      console.error('[WorkspaceYjs] Failed to get token from Clerk');
       return null;
     };
 
@@ -134,14 +142,16 @@ export function useWorkspaceYjs({
           url: wsUrl, 
           name: `workspace-${workspaceId}`,
           hasToken: !!token,
-          tokenLength: token?.length || 0
+          tokenLength: token?.length || 0,
+          tokenPreview: token ? `${token.substring(0, 20)}...` : 'null'
         });
 
         // Create Hocuspocus provider for workspace with token
+        // HocuspocusProvider will automatically add token to query parameter ?token=...
         hocuspocusProvider = new HocuspocusProvider({
           url: wsUrl,
           name: `workspace-${workspaceId}`,
-          token: token,
+          token: token, // This will be sent as ?token=... in WebSocket URL
           document: doc,
           onConnect: () => {
             if (mounted) {
