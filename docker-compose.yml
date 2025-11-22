@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5433:5432"
+      - "5435:5432"
     volumes:
       - core_pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +19,7 @@ services:
       retries: 20
 
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: nvhkt-postgres
     environment:
       POSTGRES_USER: postgres
@@ -128,10 +128,10 @@ services:
       dockerfile: Dockerfile
     container_name: nvhkt-backend-ai
     ports:
-      - "8000:8000"
+      - "8005:8000"
     environment:
       # Database connection - dùng chung database với backend-core
-      NEONDB: postgresql://postgres:postgres@postgres:5432/postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
       # LLM Provider API Keys (có thể override bằng environment variables)
       NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:-}
       NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:-}
@@ -161,7 +161,7 @@ services:
         VITE_REALTIME_WS_URL: ${VITE_REALTIME_WS_URL:-ws://localhost:8090/ws/yjs}
     container_name: nvhkt-frontend
     ports:
-      - "8080:8080"
+      - "9095:8080"
     depends_on:
       - backend-core
       - backend-ai-service

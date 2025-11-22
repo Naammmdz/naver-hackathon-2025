@@ -22,6 +22,7 @@ class Task(BaseModel, UUIDMixin, TimestampMixin):
     status = Column(String, nullable=False, index=True)  # Todo, In_Progress, Completed, etc.
     priority = Column(String, nullable=False, index=True)  # Low, Medium, High
     due_date = Column(DateTime, nullable=True, index=True)
+    assignee_id = Column(String, nullable=True, index=True)
     order_index = Column(Integer, nullable=False, index=True)
     
     # Relationships

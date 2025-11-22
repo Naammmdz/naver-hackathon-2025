@@ -22,6 +22,13 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+try:
+    from .pymupdf_parser import PyMuPDFParser
+    PYMUPDF_AVAILABLE = True
+except ImportError:
+    logger.warning("PyMuPDF not available. Install with: pip install pymupdf")
+    PYMUPDF_AVAILABLE = False
+
 
 class ParserFactory:
     """
@@ -50,10 +57,17 @@ class ParserFactory:
         'markdown': MarkdownParser,
     }
     
+    # Add PyMuPDF if available
+    if PYMUPDF_AVAILABLE:
+        _PARSERS['pymupdf'] = PyMuPDFParser
+    
     # Mapping of file extensions to parser types
+    # Note: PDF mapping is determined by config (default_parser)
     _EXTENSION_MAP = {
-        # Docling-supported formats
-        'pdf': 'docling',
+        # PDF - will be determined by config default_parser
+        'pdf': None,  # Dynamically determined
+        
+        # Docling-supported formats (non-PDF)
         'docx': 'docling',
         'doc': 'docling',
         'pptx': 'docling',
@@ -122,7 +136,7 @@ class ParserFactory:
                 parser_type = 'markdown'
                 logger.info("No parser_type or source specified, defaulting to markdown")
             else:
-                parser_type = cls._detect_parser_type(source)
+                parser_type = cls._detect_parser_type(source, config)
                 logger.info(f"Auto-detected parser type: {parser_type}")
         
         # Validate parser type
@@ -142,12 +156,13 @@ class ParserFactory:
         return parser
     
     @classmethod
-    def _detect_parser_type(cls, source: Union[str, Path]) -> str:
+    def _detect_parser_type(cls, source: Union[str, Path], config: Dict[str, Any] = None) -> str:
         """
         Auto-detect parser type from source.
         
         Args:
             source: File path or content string
+            config: Configuration to determine default PDF parser
         
         Returns:
             str: Detected parser type
@@ -159,7 +174,24 @@ class ParserFactory:
             
             if ext in cls._EXTENSION_MAP:
                 parser_type = cls._EXTENSION_MAP[ext]
-                logger.debug(f"Detected parser from extension '.{ext}': {parser_type}")
+                
+                # Handle PDF - use config to determine parser
+                if parser_type is None and ext == 'pdf':
+                    default_parser = 'pymupdf'  # Default fallback
+                    if config:
+                        default_parser = config.get('data_preprocessing', {}).get('parsing', {}).get('default_parser', 'pymupdf')
+                    
+                    # Validate parser is available
+                    if default_parser == 'pymupdf' and not PYMUPDF_AVAILABLE:
+                        logger.warning("PyMuPDF not available, falling back to docling")
+                        parser_type = 'docling'
+                    else:
+                        parser_type = default_parser
+                    
+                    logger.debug(f"Detected PDF, using configured parser: {parser_type}")
+                else:
+                    logger.debug(f"Detected parser from extension '.{ext}': {parser_type}")
+                
                 return parser_type
         
         # If it's a string, try to detect from content

@@ -4,27 +4,154 @@ Document Management Endpoints
 Provides APIs for uploading, ingesting, and managing documents.
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form, Query
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 import sys
 from pathlib import Path
 import tempfile
 import os
+import yaml
 
 if str(Path(__file__).parent.parent.parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from database.connection import get_db_session
-from database.models import Document
-from database.repositories import DocumentRepository, WorkspaceRepository
+from database.models import Document, DocumentChunk
+from database.repositories import DocumentRepository, WorkspaceRepository, DocumentChunkRepository
 from scripts.ingest_documents import ingest_single_document
+from data_preprocessing.parsing import ParserFactory
+from data_preprocessing.chunking import ChunkerFactory
+from data_preprocessing.embedding import EmbeddingFactory
 from utils.logger import get_logger
 from sqlalchemy.orm import Session
 
 logger = get_logger(__name__)
 router = APIRouter()
+
+
+# Helper functions
+def load_config() -> Dict[str, Any]:
+    """Load configuration from config.yml"""
+    config_path = Path(__file__).parent.parent.parent / 'config.yml'
+    with open(config_path) as f:
+        return yaml.safe_load(f)
+
+
+def index_document_content(
+    document_id: str,
+    workspace_id: str,
+    content: str,
+    title: str,
+    db: Session
+) -> Dict[str, Any]:
+    """
+    Index user-authored document content.
+    
+    This function:
+    1. Deletes existing chunks for the document
+    2. Parses the markdown/text content
+    3. Chunks the text
+    4. Generates embeddings
+    5. Stores chunks in database
+    
+    Args:
+        document_id: Document ID
+        workspace_id: Workspace ID
+        content: Document content (markdown/text)
+        title: Document title
+        db: Database session
+    
+    Returns:
+        Dict with indexing results
+    """
+    import time
+    start_time = time.time()
+    
+    try:
+        # Delete old chunks
+        db.query(DocumentChunk).filter_by(document_id=document_id).delete()
+        db.commit()
+        
+        # Load config
+        config = load_config()
+        
+        # Parse markdown content
+        parser = ParserFactory.create_parser('markdown', config)
+        parse_result = parser.parse(content)
+        
+        if not parse_result.success:
+            raise Exception(f"Parsing failed: {parse_result.error}")
+        
+        # Chunk text
+        chunking_config = config.get('data_preprocessing', {}).get('chunking', {})
+        chunker = ChunkerFactory.create_chunker(
+            method=chunking_config.get('method', 'paragraph'),
+            chunk_size=chunking_config.get('chunk_size', 768),
+            overlap=chunking_config.get('overlap', 50)
+        )
+        chunks = chunker.chunk(parse_result.text)
+        
+        if not chunks:
+            logger.warning(f"No chunks created for document {document_id}")
+            return {
+                'success': True,
+                'chunks_created': 0,
+                'embedding_dimensions': 0,
+                'processing_time': time.time() - start_time
+            }
+        
+        # Generate embeddings
+        embedding_config = config.get('data_preprocessing', {}).get('embedding', {})
+        provider = embedding_config.get('provider', 'huggingface')
+        
+        embedder = EmbeddingFactory.create_embedder(
+            provider=provider,
+            config=config
+        )
+        
+        chunk_texts = [c.text for c in chunks]
+        embedding_result = embedder.embed_batch(chunk_texts)
+        
+        # Store chunks
+        for i, (chunk, embedding) in enumerate(zip(chunks, embedding_result.embeddings)):
+            chunk_record = DocumentChunk(
+                document_id=document_id,
+                workspace_id=workspace_id,
+                chunk_index=i,
+                chunk_text=chunk.text,
+                embedding=embedding.tolist(),
+                metadata={
+                    'start_char': chunk.metadata.get('start_index', 0),
+                    'end_char': chunk.metadata.get('end_index', len(chunk.text)),
+                    'source': 'user_authored',
+                    'method': chunking_config.get('method', 'paragraph')
+                }
+            )
+            db.add(chunk_record)
+        
+        db.commit()
+        
+        processing_time = time.time() - start_time
+        logger.info(f"✅ Indexed document {document_id}: {len(chunks)} chunks in {processing_time:.2f}s")
+        
+        return {
+            'success': True,
+            'chunks_created': len(chunks),
+            'embedding_dimensions': len(embedding_result.embeddings[0]) if chunks else 0,
+            'processing_time': processing_time
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error indexing content for {document_id}: {e}", exc_info=True)
+        db.rollback()
+        return {
+            'success': False,
+            'chunks_created': 0,
+            'error': str(e)
+        }
 
 
 # Dependency
@@ -75,6 +202,24 @@ class IngestResponse(BaseModel):
     title: str
     chunks_created: int
     status: str
+    message: str
+
+
+class DocumentUpdateRequest(BaseModel):
+    """Request model for updating document content"""
+    title: Optional[str] = Field(None, description="Document title")
+    content: Optional[str] = Field(None, description="Document content (markdown/text)")
+    icon: Optional[str] = Field(None, description="Document icon")
+    parent_id: Optional[str] = Field(None, description="Parent document ID for hierarchy")
+
+
+class DocumentUpdateResponse(BaseModel):
+    """Response for document update"""
+    document_id: str
+    title: str
+    content_length: int
+    indexed: bool
+    chunks_created: int
     message: str
 
 
@@ -397,4 +542,298 @@ async def delete_document(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete document: {str(e)}"
+        )
+
+
+@router.put(
+    "/workspaces/{workspace_id}/documents/{document_id}",
+    response_model=DocumentUpdateResponse,
+    summary="Update Document",
+    description="Update document content with automatic indexing"
+)
+async def update_document(
+    workspace_id: str,
+    document_id: str,
+    request: DocumentUpdateRequest,
+    auto_index: bool = Query(default=True, description="Auto-index content for RAG"),
+    db: Session = Depends(get_db)
+):
+    """
+    Update document and optionally index its content.
+    
+    Args:
+        workspace_id: Workspace ID
+        document_id: Document ID
+        request: Update payload (title, content, icon, parent_id)
+        auto_index: Auto-index content for RAG (default: True)
+    
+    Returns:
+        Updated document with indexing status
+    """
+    try:
+        # Get document
+        doc_repo = DocumentRepository(db)
+        document = doc_repo.get_by_id(document_id)
+        
+        if not document or document.workspace_id != workspace_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Document {document_id} not found in workspace {workspace_id}"
+            )
+        
+        # Update fields
+        updated = False
+        if request.title is not None:
+            document.title = request.title
+            updated = True
+        if request.content is not None:
+            document.content = request.content
+            updated = True
+        if request.icon is not None:
+            document.icon = request.icon
+            updated = True
+        if request.parent_id is not None:
+            document.parent_id = request.parent_id
+            updated = True
+        
+        if updated:
+            document.updated_at = datetime.utcnow()
+            db.commit()
+        
+        # Index content if requested and content exists
+        indexing_result = None
+        should_index = (
+            auto_index and 
+            document.content and 
+            len(document.content.strip()) > 50  # Minimum content length
+        )
+        
+        if should_index:
+            logger.info(f"Auto-indexing document {document_id}...")
+            indexing_result = await run_in_threadpool(
+                index_document_content,
+                document_id=document_id,
+                workspace_id=workspace_id,
+                content=document.content,
+                title=document.title,
+                db=db
+            )
+        
+        chunks_created = 0
+        if indexing_result and indexing_result.get('success'):
+            chunks_created = indexing_result.get('chunks_created', 0)
+        
+        return DocumentUpdateResponse(
+            document_id=document.id,
+            title=document.title,
+            content_length=len(document.content or ''),
+            indexed=chunks_created > 0,
+            chunks_created=chunks_created,
+            message=f"Document updated{'and indexed' if chunks_created > 0 else ''}"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating document: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update document: {str(e)}"
+        )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/documents/{document_id}/reindex",
+    summary="Re-index Document",
+    description="Manually re-index a user-authored document"
+)
+async def reindex_document(
+    workspace_id: str,
+    document_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Manually re-index a user-authored document.
+    
+    Useful for:
+    - Changing chunking strategy
+    - Re-indexing after config changes
+    - Fixing indexing issues
+    
+    Args:
+        workspace_id: Workspace ID
+        document_id: Document ID
+    
+    Returns:
+        Indexing result
+    """
+    try:
+        # Get document
+        doc_repo = DocumentRepository(db)
+        document = doc_repo.get_by_id(document_id)
+        
+        if not document or document.workspace_id != workspace_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Document {document_id} not found"
+            )
+        
+        if not document.content or len(document.content.strip()) < 10:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Document has no content to index"
+            )
+        
+        logger.info(f"Manually re-indexing document {document_id}...")
+        
+        result = await run_in_threadpool(
+            index_document_content,
+            document_id=document_id,
+            workspace_id=workspace_id,
+            content=document.content,
+            title=document.title,
+            db=db
+        )
+        
+        if result['success']:
+            return {
+                "message": f"Document re-indexed: {result['chunks_created']} chunks",
+                "document_id": document_id,
+                "chunks_created": result['chunks_created'],
+                "processing_time": result['processing_time']
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=result.get('error', 'Indexing failed')
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error re-indexing document: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to re-index document: {str(e)}"
+        )
+
+
+@router.post(
+    "/workspaces/{workspace_id}/documents/reindex-all",
+    summary="Batch Re-index All Documents",
+    description="Re-index all user-authored documents in workspace"
+)
+async def reindex_all_documents(
+    workspace_id: str,
+    filter_empty: bool = Query(default=True, description="Skip documents with no content"),
+    db: Session = Depends(get_db)
+):
+    """
+    Re-index all user-authored documents in workspace.
+    
+    Useful for:
+    - After config changes (chunking strategy, embedding model)
+    - Bulk migration of existing documents
+    - Fixing indexing issues across workspace
+    
+    Args:
+        workspace_id: Workspace ID
+        filter_empty: Skip documents with empty/minimal content
+    
+    Returns:
+        Batch indexing results
+    """
+    try:
+        # Verify workspace exists
+        workspace_repo = WorkspaceRepository(db)
+        workspace = workspace_repo.get_by_id(workspace_id)
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Workspace {workspace_id} not found"
+            )
+        
+        # Get all documents in workspace
+        doc_repo = DocumentRepository(db)
+        query = db.query(Document).filter_by(workspace_id=workspace_id)
+        
+        if filter_empty:
+            # Filter out documents with no content or very short content
+            query = query.filter(
+                Document.content != None,
+                Document.content != ''
+            )
+        
+        documents = query.all()
+        
+        if not documents:
+            return {
+                "message": "No documents found to index",
+                "total_documents": 0,
+                "successful": 0,
+                "failed": 0,
+                "total_chunks": 0,
+                "details": []
+            }
+        
+        logger.info(f"Batch re-indexing {len(documents)} documents in workspace {workspace_id}...")
+        
+        # Process each document
+        results = []
+        for doc in documents:
+            # Skip if content too short
+            if filter_empty and len(doc.content.strip() if doc.content else '') < 10:
+                results.append({
+                    'document_id': doc.id,
+                    'title': doc.title,
+                    'success': False,
+                    'chunks_created': 0,
+                    'error': 'Content too short'
+                })
+                continue
+            
+            # Index document
+            result = await run_in_threadpool(
+                index_document_content,
+                document_id=doc.id,
+                workspace_id=workspace_id,
+                content=doc.content,
+                title=doc.title,
+                db=db
+            )
+            
+            results.append({
+                'document_id': doc.id,
+                'title': doc.title,
+                'success': result['success'],
+                'chunks_created': result.get('chunks_created', 0),
+                'error': result.get('error')
+            })
+        
+        # Calculate stats
+        success_count = sum(1 for r in results if r['success'])
+        failed_count = len(results) - success_count
+        total_chunks = sum(r['chunks_created'] for r in results)
+        
+        logger.info(
+            f"Batch re-index complete: {success_count}/{len(documents)} successful, "
+            f"{total_chunks} total chunks"
+        )
+        
+        return {
+            "message": f"Re-indexed {success_count}/{len(documents)} documents",
+            "total_documents": len(documents),
+            "successful": success_count,
+            "failed": failed_count,
+            "total_chunks": total_chunks,
+            "details": results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in batch re-index: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to batch re-index: {str(e)}"
         )

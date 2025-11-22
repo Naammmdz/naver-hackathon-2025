@@ -157,7 +157,8 @@ def process_document_indexing(
     try:
         # 1. Parse document
         logger.info(f"📄 Parsing document: {file_path.name}")
-        parser = ParserFactory.create_parser(parser_type='docling')
+        # Use auto-detection with config (will respect default_parser setting)
+        parser = ParserFactory.create_parser(config=config, source=str(file_path))
         parse_result = parser.parse(str(file_path))
         
         if not parse_result.success:

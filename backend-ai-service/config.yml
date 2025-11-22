@@ -1,12 +1,22 @@
 data_preprocessing:
   parsing:
+    # Parser selection: pymupdf (fast, lightweight) or docling (advanced features)
+    default_parser: "pymupdf"              # Default parser for PDFs: pymupdf | docling
     encoding: "utf-8"
-    # Docling configuration (universal document parser)
+    
+    # PyMuPDF configuration (fast PDF parser - default)
+    pymupdf:
+      extract_images: false                # Extract images from PDFs
+      preserve_layout: true                # Preserve text layout
+      max_file_size_mb: 500                # Maximum file size to process
+    
+    # Docling configuration (universal document parser with advanced features)
     docling:
       ocr_enabled: true                    # Enable OCR for scanned documents and images
       table_extraction: true               # Extract tables from documents
       output_format: "markdown"            # Output format: markdown, text, or html
       max_file_size_mb: 50                # Maximum file size to process
+    
     # Markdown configuration (for user-written documents)
     markdown:
       extensions:                          # Python-Markdown extensions
@@ -17,6 +27,7 @@ data_preprocessing:
         - "fenced_code"                    # Code blocks with syntax highlighting
       parse_frontmatter: true              # Extract YAML frontmatter metadata
       preserve_formatting: true            # Keep markdown formatting in output
+    
     # Text processing options
     preprocessing:
       remove_stopwords: false              # Remove Vietnamese/English stopwords

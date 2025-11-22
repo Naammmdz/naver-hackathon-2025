@@ -143,21 +143,25 @@ User information for readable names in reports.
 **Columns:**
 - id: VARCHAR (Primary Key) - User identifier (matches user_id in other tables)
 - email: VARCHAR (UNIQUE) - User email
-- name: VARCHAR - User's display name
-- avatar_url: VARCHAR - Profile picture URL (nullable)
+- username: VARCHAR (UNIQUE) - User's username
+- first_name: VARCHAR - First name
+- last_name: VARCHAR - Last name
+- image_url: VARCHAR - Profile picture URL (nullable)
+- metadata: TEXT - Additional user metadata
 - created_at: TIMESTAMP - Account creation date
 - updated_at: TIMESTAMP - Last update
 
 **Indexes:**
 - PRIMARY KEY: id
 - UNIQUE: email
-- INDEX: name
+- UNIQUE: username
+- INDEX: username
 
 **Sample Query:**
 ```sql
 -- Get tasks with readable user names instead of IDs
 SELECT t.id, t.title, t.status, t.priority, 
-       u.name as assigned_to, u.email
+       u.username as assigned_to, u.email
 FROM tasks t
 LEFT JOIN users u ON u.id = t.user_id
 WHERE t.workspace_id = 'workspace-123'
@@ -196,7 +200,7 @@ Users who are members of workspaces.
 **Sample Query:**
 ```sql
 -- Get task distribution by user WITH READABLE NAMES
-SELECT u.name, u.email, wm.role,
+SELECT u.username, u.email, wm.role,
        COUNT(t.id) as total_tasks,
        SUM(CASE WHEN t.status = 'Done' THEN 1 ELSE 0 END) as completed_tasks,
        SUM(CASE WHEN t.status = 'In_Progress' THEN 1 ELSE 0 END) as in_progress_tasks
@@ -204,7 +208,7 @@ FROM workspace_members wm
 LEFT JOIN users u ON u.id = wm.user_id
 LEFT JOIN tasks t ON t.user_id = wm.user_id AND t.workspace_id = wm.workspace_id
 WHERE wm.workspace_id = 'workspace-123'
-GROUP BY u.name, u.email, wm.role
+GROUP BY u.username, u.email, wm.role
 ORDER BY total_tasks DESC;
 ```
 
@@ -218,7 +222,7 @@ SELECT
     t.id, t.title, t.status, t.priority,
     t.due_date,
     EXTRACT(DAY FROM NOW() - t.due_date) as days_overdue,
-    u.name as assigned_to,
+    u.username as assigned_to,
     u.email
 FROM tasks t
 LEFT JOIN users u ON u.id = t.user_id
@@ -247,7 +251,7 @@ SELECT
     COUNT(*) as count,
     SUM(CASE WHEN t.status = 'Done' THEN 1 ELSE 0 END) as completed,
     SUM(CASE WHEN t.status = 'Todo' THEN 1 ELSE 0 END) as blocked,
-    STRING_AGG(DISTINCT u.name, ', ') as users
+    STRING_AGG(DISTINCT u.username, ', ') as users
 FROM tasks t
 LEFT JOIN users u ON u.id = t.user_id
 WHERE t.workspace_id = :workspace_id
@@ -264,7 +268,7 @@ ORDER BY
 ### 4. User Workload Analysis (WITH READABLE NAMES)
 ```sql
 SELECT 
-    u.name,
+    u.username,
     u.email,
     COUNT(*) as total_tasks,
     SUM(CASE WHEN t.status = 'In_Progress' THEN 1 ELSE 0 END) as in_progress,
@@ -273,7 +277,7 @@ SELECT
 FROM tasks t
 LEFT JOIN users u ON u.id = t.user_id
 WHERE t.workspace_id = :workspace_id
-GROUP BY u.name, u.email
+GROUP BY u.username, u.email
 HAVING SUM(CASE WHEN t.status = 'In_Progress' THEN 1 ELSE 0 END) > 5
 ORDER BY in_progress DESC;
 ```
@@ -282,7 +286,7 @@ ORDER BY in_progress DESC;
 ```sql
 SELECT 
     t.id, t.title, t.priority, t.created_at,
-    u.name as assigned_to,
+    u.username as assigned_to,
     EXTRACT(DAY FROM NOW() - t.updated_at) as days_since_update,
     COUNT(st.id) as total_subtasks,
     SUM(CASE WHEN st.done THEN 1 ELSE 0 END) as completed_subtasks
@@ -291,7 +295,7 @@ LEFT JOIN users u ON u.id = t.user_id
 LEFT JOIN subtasks st ON st.task_id = t.id
 WHERE t.workspace_id = :workspace_id
   AND (t.description LIKE '%blocked%' OR t.description LIKE '%waiting%')
-GROUP BY t.id, t.title, t.priority, t.created_at, t.updated_at, u.name
+GROUP BY t.id, t.title, t.priority, t.created_at, t.updated_at, u.username
 ORDER BY days_since_update DESC;
 ```
 
@@ -299,7 +303,7 @@ ORDER BY days_since_update DESC;
 ```sql
 SELECT 
     t.id, t.title, t.priority, t.status,
-    u.name as assigned_to,
+    u.username as assigned_to,
     t.updated_at,
     EXTRACT(DAY FROM NOW() - t.updated_at) as days_stalled
 FROM tasks t

@@ -226,8 +226,9 @@ class OrchestratorAgent:
             try:
                 intent_type_enum = IntentType(intent_type_str)
             except ValueError:
-                logger.warning(f"Invalid intent type '{intent_type_str}', defaulting to UNKNOWN")
-                intent_type_enum = IntentType.UNKNOWN
+                logger.warning(f"Invalid intent type '{intent_type_str}', defaulting to DOCUMENT_QUERY for fallback")
+                # Default to DOCUMENT_QUERY instead of UNKNOWN to enable document search
+                intent_type_enum = IntentType.DOCUMENT_QUERY
             
             # Create Intent object
             intent = Intent(

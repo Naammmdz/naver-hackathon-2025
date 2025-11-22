@@ -1,11 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { useBoardStore } from '@/store/boardStore';
-import { useDocumentStore } from '@/store/documentStore';
 import { useSearchStore } from '@/store/useSearchStore';
 import { Languages, Menu, Monitor, Moon, Palette, Search, Sun } from 'lucide-react';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { NotificationBell } from './NotificationBell';
 import { OnlineUsers } from '@/components/board/OnlineUsers';
 import {
@@ -29,10 +26,6 @@ export const ClickupHeader = memo(function ClickupHeader({
   onMenuClick,
   currentView,
 }: ClickupHeaderProps) {
-  const activeDocumentId = useDocumentStore((state) => state.activeDocumentId);
-  const getDocument = useDocumentStore((state) => state.getDocument);
-  const activeBoardId = useBoardStore((state) => state.activeBoardId);
-  const boards = useBoardStore((state) => state.boards);
   const [isDark, setIsDark] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const { t, i18n } = useTranslation();
@@ -49,10 +42,6 @@ export const ClickupHeader = memo(function ClickupHeader({
     };
     openSearchModal({ initialType: typeMap[currentView] });
   };
-
-  // Get context for breadcrumb
-  const activeDocument = activeDocumentId ? getDocument(activeDocumentId) : null;
-  const activeBoard = activeBoardId ? boards.find((b) => b.id === activeBoardId) : null;
 
   const toggleLanguage = () => {
     const currentLang = i18n.language;
@@ -109,53 +98,24 @@ export const ClickupHeader = memo(function ClickupHeader({
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
       <div className="flex h-10 items-center justify-between px-4 gap-4 mx-2 my-2 min-w-0">
-        {/* Left Section - Workspace */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Workspace Selector */}
-          <div className="min-w-[180px] max-w-[220px] flex-shrink-0">
-            <WorkspaceSwitcher />
-          </div>
-
-          <div className="hidden md:block h-6 w-px bg-border flex-shrink-0" />
-
-          {/* Breadcrumb - with truncation */}
-          <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground min-w-0 flex-1">
-            {(() => {
-              const viewLabels: Record<string, string> = {
-                home: 'Home',
-                tasks: 'Tasks',
-                docs: 'Documents',
-                board: 'Boards',
-                teams: 'Teams',
-              };
-              
-              const breadcrumbParts = [viewLabels[currentView] || currentView];
-              
-              // Add context for documents
-              if (currentView === 'docs' && activeDocument) {
-                breadcrumbParts.push(activeDocument.title);
-              }
-              
-              // Add context for boards
-              if (currentView === 'board' && activeBoard) {
-                breadcrumbParts.push(activeBoard.title);
-              }
-              
-              return (
-                <span className="truncate">
-                  / {breadcrumbParts.map((part, index) => (
-                    <span key={index}>
-                      {index > 0 && <span className="mx-1">/</span>}
-                      <span className={index === breadcrumbParts.length - 1 ? 'text-foreground font-medium' : ''}>
-                        {index === breadcrumbParts.length - 1 && part.length > 30 
-                          ? `${part.substring(0, 30)}...` 
-                          : part}
-                      </span>
-                    </span>
-                  ))}
-                </span>
-              );
-            })()}
+        {/* Left Section - Logo + Website Name */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Mobile Menu Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMenuClick}
+            className="lg:hidden hover-surface"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+          
+          {/* Logo + Name */}
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">DH</span>
+            </div>
+            <span className="hidden sm:inline font-semibold text-lg">DevHolic</span>
           </div>
         </div>
 
@@ -232,16 +192,6 @@ export const ClickupHeader = memo(function ClickupHeader({
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Mobile Menu */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMenuClick}
-            className="sm:hidden hover-surface"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
           </div>
         </div>
       </div>

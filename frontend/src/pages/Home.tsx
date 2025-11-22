@@ -12,6 +12,7 @@ import { CheckSquare, FileText, Layers, TrendingUp, Users, Plus, Settings2, Rota
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getCachedBoardPreview } from '@/utils/boardPreview';
+import { WorkspaceSwitcher } from '@/components/layout/WorkspaceSwitcher';
 import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, format, addMonths, subMonths, isSameMonth } from 'date-fns';
 import {
   DndContext,
@@ -63,6 +64,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
   const [showCustomizationDialog, setShowCustomizationDialog] = useState(false);
   const [showCardGallery, setShowCardGallery] = useState(false);
   const [calendarDate, setCalendarDate] = useState(new Date());
+  const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'boards' | 'team'>('overview');
 
   const [isDark, setIsDark] = useState(false);
   
@@ -1652,35 +1654,104 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
   return (
     <div className="h-full overflow-auto bg-gradient-to-br from-background via-background to-secondary/5">
       <div className="max-w-[1800px] mx-auto p-4 sm:p-6 space-y-4">
-        {/* Header - More compact */}
-        <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-gradient-to-r from-background via-secondary/10 to-background border border-border/40 shadow-sm">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-              {activeWorkspace ? activeWorkspace.name : t('dashboard.home', 'Home')}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {t('dashboard.subtitle', 'Overview of your workspace activities and recent updates')}
-            </p>
+        {/* User Avatar + Workspace Section */}
+        <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-card border border-border shadow-sm">
+          <div className="flex items-center gap-4">
+            {/* User Avatar */}
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-full ${getAvatarColor('user-avatar').bg} flex items-center justify-center`}>
+                <span className={`text-sm font-semibold ${getAvatarColor('user-avatar').text}`}>
+                  {getInitials(activeWorkspace?.name, 'U')}
+                </span>
+              </div>
+              
+              {/* Workspace Switcher */}
+              <div className="min-w-[200px]">
+                <WorkspaceSwitcher />
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Settings2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('dashboard.customize', 'Customize')}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShowCardGallery(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('dashboard.addCard', 'Add Card')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={resetToDefault}>
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  {t('dashboard.resetLayout', 'Reset Layout')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        </div>
+
+        {/* Page Title and Description */}
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t('dashboard.home', 'Trang Chủ')}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {t('dashboard.subtitle', 'Tổng quan về hoạt động workspace và cập nhật gần đây')}
+          </p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="border-b border-border">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={cn(
+                "pb-3 px-1 text-sm font-medium border-b-2 transition-colors",
+                activeTab === 'overview'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              )}
+            >
+              {t('dashboard.tabs.tasksOverview', 'Tasks Overview')}
+            </button>
+            <button
+              onClick={() => setActiveTab('documents')}
+              className={cn(
+                "pb-3 px-1 text-sm font-medium border-b-2 transition-colors",
+                activeTab === 'documents'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              )}
+            >
+              {t('dashboard.tabs.documents', 'Documents')}
+            </button>
+            <button
+              onClick={() => setActiveTab('boards')}
+              className={cn(
+                "pb-3 px-1 text-sm font-medium border-b-2 transition-colors",
+                activeTab === 'boards'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              )}
+            >
+              {t('dashboard.tabs.boards', 'Boards')}
+            </button>
+            <button
+              onClick={() => setActiveTab('team')}
+              className={cn(
+                "pb-3 px-1 text-sm font-medium border-b-2 transition-colors",
+                activeTab === 'team'
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              )}
+            >
+              {t('dashboard.tabs.teamMembers', 'Team Members')}
+            </button>
+            
+            {/* Customize Button - Right aligned */}
+            <div className="ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Settings2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('dashboard.customize', 'Customize')}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setShowCardGallery(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('dashboard.addCard', 'Add Card')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={resetToDefault}>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    {t('dashboard.resetLayout', 'Reset Layout')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
