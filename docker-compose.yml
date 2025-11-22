@@ -120,6 +120,31 @@ services:
       - default
     restart: unless-stopped
 
+  backend-ai-service:
+    build:
+      context: ./backend-ai-service
+      dockerfile: Dockerfile
+    container_name: nvhkt-backend-ai
+    ports:
+      - "8000:8000"
+    environment:
+      # Database connection - dùng chung database với backend-core
+      NEONDB: postgresql://postgres:postgres@postgres:5432/postgres
+      # LLM Provider API Keys (có thể override bằng environment variables)
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:-}
+      NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend-core:
+        condition: service_started
+    networks:
+      - default
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
