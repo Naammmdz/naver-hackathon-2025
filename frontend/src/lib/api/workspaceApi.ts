@@ -50,7 +50,17 @@ export const workspaceApi = {
       credentials: "include",
       body: JSON.stringify(input),
     });
-    if (!response.ok) throw new Error("Failed to create workspace");
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to create workspace:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        headers: Object.fromEntries(response.headers.entries()),
+        requestHeaders: headers,
+      });
+      throw new Error(`Failed to create workspace: ${response.status} ${response.statusText} - ${errorText}`);
+    }
     return response.json();
   },
 
