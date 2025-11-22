@@ -109,15 +109,24 @@ export function useWorkspaceYjs({
           if (import.meta.env.VITE_HOCUSPOCUS_URL) {
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
+          // Check if we're in production (not localhost)
+          const isProduction = window.location.hostname !== 'localhost' && 
+                              window.location.hostname !== '127.0.0.1' &&
+                              !window.location.hostname.startsWith('192.168.') &&
+                              !window.location.hostname.startsWith('10.') &&
+                              (import.meta.env.MODE === 'production' || import.meta.env.PROD);
+          
           // In production, use relative WebSocket URL via nginx proxy
-          if (import.meta.env.PROD) {
+          if (isProduction) {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const url = `${protocol}//${window.location.host}/ws`;
-            console.log('[WorkspaceYjs] WebSocket URL:', url);
+            console.log('[WorkspaceYjs] Production WebSocket URL:', url);
             return url;
           }
           // Development fallback
-          return 'ws://localhost:1234';
+          const devUrl = 'ws://localhost:1234';
+          console.log('[WorkspaceYjs] Development WebSocket URL:', devUrl);
+          return devUrl;
         };
 
         const wsUrl = getWebSocketUrl();
