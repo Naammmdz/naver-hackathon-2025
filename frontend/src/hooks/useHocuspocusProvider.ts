@@ -77,6 +77,7 @@ export function useHocuspocusProvider({
         
         // Determine WebSocket URL
         // Priority: VITE_HOCUSPOCUS_URL > relative /ws (nginx proxy) > localhost (dev only)
+        // IMPORTANT: Frontend runs in browser, so localhost:1234 only works in local dev
         const getWebSocketUrl = () => {
           // If explicitly set, use it
           if (import.meta.env.VITE_HOCUSPOCUS_URL) {
@@ -84,16 +85,18 @@ export function useHocuspocusProvider({
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
           
-          // Check if we're on localhost (development)
+          // Only use direct localhost connection if:
+          // 1. We're in development mode (Vite dev server)
+          // 2. AND we're on localhost/127.0.0.1
+          // 3. AND we're using Vite dev server port (5173) or common dev port (3000)
+          // This ensures we only use direct connection during local development
+          const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
           const isLocalhost = window.location.hostname === 'localhost' || 
                              window.location.hostname === '127.0.0.1';
-          
-          // Only use direct localhost connection if:
-          // 1. We're on localhost
-          // 2. AND we're in development mode (not production build)
-          // 3. AND we're not using a custom port that suggests proxying
-          const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
-          const isDirectLocalhost = isLocalhost && isDevMode && window.location.port !== '8080';
+          const isViteDevPort = window.location.port === '5173' || 
+                               window.location.port === '3000' || 
+                               window.location.port === '';
+          const isDirectLocalhost = isDevMode && isLocalhost && isViteDevPort;
           
           if (isDirectLocalhost) {
             const devUrl = 'ws://localhost:1234';
@@ -101,15 +104,17 @@ export function useHocuspocusProvider({
             return devUrl;
           }
           
-          // For all other cases (production, deployed, or localhost with proxy), use relative path via nginx proxy
+          // For ALL other cases (production, deployed, Docker, etc.), use relative path via nginx proxy
+          // This works because nginx will proxy /ws to the actual hocuspocus service
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[HocuspocusProvider] Using WebSocket URL via nginx proxy:', url, {
             hostname: window.location.hostname,
             port: window.location.port,
             protocol: window.location.protocol,
-            isLocalhost,
             isDevMode,
+            isLocalhost,
+            isViteDevPort,
             isDirectLocalhost
           });
           return url;
