@@ -111,46 +111,27 @@ export function useWorkspaceYjs({
         const doc = new Y.Doc();
         
         // Determine WebSocket URL
-        // Priority: VITE_HOCUSPOCUS_URL > relative /ws (nginx proxy) > localhost (dev only)
-        // IMPORTANT: Frontend runs in browser, so localhost:1234 only works in local dev
+        // Priority: VITE_HOCUSPOCUS_URL > relative /ws (nginx proxy)
+        // IMPORTANT: Frontend runs in browser, so NEVER use localhost:1234 unless explicitly set
+        // Always use relative /ws path which nginx will proxy to hocuspocus service
         const getWebSocketUrl = () => {
-          // If explicitly set, use it
+          // If explicitly set, use it (could be localhost:1234 for local dev, or external URL)
           if (import.meta.env.VITE_HOCUSPOCUS_URL) {
             console.log('[WorkspaceYjs] Using VITE_HOCUSPOCUS_URL:', import.meta.env.VITE_HOCUSPOCUS_URL);
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
           
-          // Only use direct localhost connection if:
-          // 1. We're in development mode (Vite dev server)
-          // 2. AND we're on localhost/127.0.0.1
-          // 3. AND we're using Vite dev server port (5173) or common dev port (3000)
-          // This ensures we only use direct connection during local development
-          const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
-          const isLocalhost = window.location.hostname === 'localhost' || 
-                             window.location.hostname === '127.0.0.1';
-          const isViteDevPort = window.location.port === '5173' || 
-                               window.location.port === '3000' || 
-                               window.location.port === '';
-          const isDirectLocalhost = isDevMode && isLocalhost && isViteDevPort;
-          
-          if (isDirectLocalhost) {
-            const devUrl = 'ws://localhost:1234';
-            console.log('[WorkspaceYjs] Development WebSocket URL (direct):', devUrl);
-            return devUrl;
-          }
-          
-          // For ALL other cases (production, deployed, Docker, etc.), use relative path via nginx proxy
+          // For ALL cases (production, deployed, Docker, local dev), use relative path via nginx proxy
           // This works because nginx will proxy /ws to the actual hocuspocus service
+          // Even in local dev, if nginx is running, it will proxy correctly
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[WorkspaceYjs] Using WebSocket URL via nginx proxy:', url, {
             hostname: window.location.hostname,
             port: window.location.port,
             protocol: window.location.protocol,
-            isDevMode,
-            isLocalhost,
-            isViteDevPort,
-            isDirectLocalhost
+            mode: import.meta.env.MODE,
+            dev: import.meta.env.DEV
           });
           return url;
         };
