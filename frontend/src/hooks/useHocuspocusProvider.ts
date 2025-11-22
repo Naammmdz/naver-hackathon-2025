@@ -75,9 +75,25 @@ export function useHocuspocusProvider({
         // Create Y.Doc
         const doc = new Y.Doc();
         
+        // Determine WebSocket URL
+        // In production, use relative URL via nginx proxy (/ws)
+        // In development, use VITE_HOCUSPOCUS_URL or localhost
+        const getWebSocketUrl = () => {
+          if (import.meta.env.VITE_HOCUSPOCUS_URL) {
+            return import.meta.env.VITE_HOCUSPOCUS_URL;
+          }
+          // In production, use relative WebSocket URL via nginx proxy
+          if (import.meta.env.PROD) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            return `${protocol}//${window.location.host}/ws`;
+          }
+          // Development fallback
+          return 'ws://localhost:1234';
+        };
+
         // Create Hocuspocus provider with token
         hocuspocusProvider = new HocuspocusProvider({
-          url: import.meta.env.VITE_HOCUSPOCUS_URL || 'ws://localhost:1234',
+          url: getWebSocketUrl(),
           name: documentName,
           token: token,
           document: doc,
