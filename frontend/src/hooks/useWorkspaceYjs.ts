@@ -123,14 +123,19 @@ export function useWorkspaceYjs({
 
           // For production/deployed environments, ALWAYS use relative path via nginx proxy
           // This ensures we never try to connect to localhost:1234 from a client's browser
-          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          // Use ws:// for Traefik domains (often have self-signed certs) or if explicitly set
+          const isTraefikDomain = window.location.hostname.includes('.traefik.me');
+          const forceWs = import.meta.env.VITE_FORCE_WS === 'true' || isTraefikDomain;
+          const protocol = (!forceWs && window.location.protocol === 'https:') ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[WorkspaceYjs] Using WebSocket URL via nginx proxy:', url, {
             hostname: window.location.hostname,
             port: window.location.port,
             protocol: window.location.protocol,
             mode: import.meta.env.MODE,
-            dev: import.meta.env.DEV
+            dev: import.meta.env.DEV,
+            isTraefikDomain,
+            forceWs
           });
           return url;
         };
