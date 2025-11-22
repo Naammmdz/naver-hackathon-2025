@@ -1298,20 +1298,20 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                   {t('components.Home.noChatHistory', 'No chat history')}
                 </p>
                 <p className="text-xs text-muted-foreground/70">
-                  {t('components.Home.startConversation', 'Start a conversation with AI Chat')}
+                  {t('components.Home.startConversation', 'Start a conversation with DevHolic AI Chat')}
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   className="mt-4"
                   onClick={() => {
-                    // Trigger AI chat panel open
+                    // Trigger DevHolic AI chat panel open
                     const button = document.querySelector('[aria-controls="global-ai-chat-panel"]') as HTMLButtonElement;
                     if (button) button.click();
                   }}
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  {t('components.Home.openAiChat', 'Open AI Chat')}
+                  {t('components.Home.openAiChat', 'Open DevHolic AI Chat')}
                 </Button>
               </div>
             ) : (
@@ -1415,7 +1415,7 @@ export default function Home({ onViewChange }: { onViewChange: (view: 'tasks' | 
                 }}
               >
                 <Sparkles className="h-5 w-5 text-purple-500" />
-                <span className="text-xs font-medium">{t('components.Home.aiChat', 'AI Chat')}</span>
+                <span className="text-xs font-medium">{t('components.Home.aiChat', 'DevHolic AI Chat')}</span>
               </Button>
             </div>
           </div>

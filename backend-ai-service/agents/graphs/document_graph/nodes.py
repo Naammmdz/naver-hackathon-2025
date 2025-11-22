@@ -409,7 +409,7 @@ class DocumentGraphNodes:
             try:
                 logger.info("Attempting to answer from memory context only")
                 
-                prompt = f"""You are a helpful AI assistant. The user has asked a question, but no relevant documents were found.
+                prompt = f"""You are a helpful DevHolic AI assistant. The user has asked a question, but no relevant documents were found.
 However, you have access to the conversation history and previous knowledge.
 
 {conversation_context}

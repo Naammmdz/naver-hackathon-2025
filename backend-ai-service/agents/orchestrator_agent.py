@@ -212,12 +212,29 @@ class OrchestratorAgent:
             
             intent_data = json.loads(content)
             
+            # Handle empty or invalid agent
+            agent_str = intent_data.get('agent', '')
+            try:
+                agent_enum = AgentType(agent_str)
+            except ValueError:
+                # Default to BOTH if invalid or empty
+                logger.warning(f"Invalid agent type '{agent_str}', defaulting to BOTH")
+                agent_enum = AgentType.BOTH
+
+            # Handle invalid intent type
+            intent_type_str = intent_data.get('type', '')
+            try:
+                intent_type_enum = IntentType(intent_type_str)
+            except ValueError:
+                logger.warning(f"Invalid intent type '{intent_type_str}', defaulting to UNKNOWN")
+                intent_type_enum = IntentType.UNKNOWN
+            
             # Create Intent object
             intent = Intent(
-                type=IntentType(intent_data['type']),
-                confidence=intent_data['confidence'],
-                agent=AgentType(intent_data['agent']),
-                reasoning=intent_data['reasoning'],
+                type=intent_type_enum,
+                confidence=intent_data.get('confidence', 0.0),
+                agent=agent_enum,
+                reasoning=intent_data.get('reasoning', 'No reasoning provided'),
                 entities=intent_data.get('entities', {}),
                 requires_decomposition=intent_data.get('requires_decomposition', False)
             )

@@ -10,6 +10,7 @@ export interface Document {
   trashedAt?: Date | null;
   userId: string;
   workspaceId?: string; // Add workspace support
+  status?: 'active' | 'processing' | 'error'; // UI state for upload/processing
 }
 
 export interface DocumentStore {

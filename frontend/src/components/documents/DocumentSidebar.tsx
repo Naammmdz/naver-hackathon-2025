@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useWorkspaceFilter } from '@/hooks/use-workspace-filter';
 import { useDocumentStore } from '@/store/documentStore';
+import { DocumentUploadDialog } from './DocumentUploadDialog';
 import {
   ChevronLeft,
   Edit2,
@@ -23,7 +24,9 @@ import {
   Edit,
   Plus,
   Search,
-  Trash2
+  Trash2,
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +59,7 @@ export default function DocumentSidebar({
     setActiveDocument,
     updateDocument,
     getTrashedDocuments,
+    loadDocuments,
   } = useDocumentStore();
 
   // Filter documents by active workspace
@@ -68,6 +72,7 @@ export default function DocumentSidebar({
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
   const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false);
   const [documentToPermanentDelete, setDocumentToPermanentDelete] = useState<string | null>(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [expandedDocs, setExpandedDocs] = useState<Set<string>>(new Set());
   const [showNoSubdocs, setShowNoSubdocs] = useState<Set<string>>(new Set());
   const [showTrash, setShowTrash] = useState(false);
@@ -125,8 +130,9 @@ export default function DocumentSidebar({
     const showNoSubdocsMessage = showNoSubdocs.has(doc.id);
     const children = getChildDocuments(doc.id);
     const canExpand = hasChildren(doc.id);
+    const isProcessing = doc.status === 'processing';
 
-    const actions = showTrash ? (
+    const actions = isProcessing ? null : showTrash ? (
       <>
         <DropdownMenuItem
           onClick={(e) => {
@@ -189,13 +195,14 @@ export default function DocumentSidebar({
           isExpanded={isExpanded}
           level={level}
           onToggleExpand={(e) => toggleExpanded(doc.id, e)}
-          onClick={() => setActiveDocument(doc.id)}
+          onClick={() => !isProcessing && setActiveDocument(doc.id)}
           isEditing={editingId === doc.id}
           editingValue={editingTitle}
           onEditChange={setEditingTitle}
           onEditSubmit={() => handleRenameSubmit(doc.id)}
           onEditCancel={handleRenameCancel}
           actions={actions}
+          icon={isProcessing ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> : undefined}
         />
 
         {/* Render children if expanded, or "No subdocuments" message */}
@@ -275,14 +282,25 @@ export default function DocumentSidebar({
             </h2>
             <div className="flex items-center gap-2">
               {!showTrash && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCreateDocument}
-                  className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setUploadDialogOpen(true)}
+                    className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
+                    title={t("documents.upload.tooltip", "Upload Document")}
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleCreateDocument}
+                    className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </>
               )}
               {onCollapse && (
                 <Button
@@ -429,9 +447,9 @@ export default function DocumentSidebar({
       <Dialog open={permanentDeleteDialogOpen} onOpenChange={setPermanentDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("components.DocumentSidebar.deletePermanentlyTitle")}</DialogTitle>
+            <DialogTitle>{t("components.DocumentSidebar.deletePermanently")}</DialogTitle>
             <DialogDescription>
-              {t("components.DocumentSidebar.deletePermanentlyDescription")}
+              {t("components.DocumentSidebar.deletePermanentlyConfirmation")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -439,11 +457,19 @@ export default function DocumentSidebar({
               {t("common.cancel")}
             </Button>
             <Button variant="destructive" onClick={handlePermanentDeleteConfirm}>
-              {t("components.DocumentSidebar.deletePermanently")}
+              {t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DocumentUploadDialog 
+        open={uploadDialogOpen} 
+        onOpenChange={setUploadDialogOpen}
+        onUploadSuccess={() => {
+          loadDocuments();
+        }}
+      />
     </>
   );
 }

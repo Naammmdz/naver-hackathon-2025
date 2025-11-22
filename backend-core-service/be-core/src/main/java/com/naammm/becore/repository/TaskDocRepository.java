@@ -27,4 +27,8 @@ public interface TaskDocRepository extends JpaRepository<TaskDoc, String> {
     void deleteByUserIdAndTaskId(String userId, String taskId);
 
     void deleteByUserIdAndDocId(String userId, String docId);
+
+    void deleteByTaskId(String taskId);
+
+    void deleteByDocId(String docId);
 }

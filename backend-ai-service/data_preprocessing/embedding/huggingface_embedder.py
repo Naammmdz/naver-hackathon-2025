@@ -97,8 +97,11 @@ class HuggingFaceEmbedder(BaseEmbedder):
             self._load_model()
         return self._model
     
+    # Class-level cache for models
+    _models = {}
+    
     def _load_model(self):
-        """Load sentence-transformers model"""
+        """Load sentence-transformers model with caching"""
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError:
@@ -107,9 +110,16 @@ class HuggingFaceEmbedder(BaseEmbedder):
                 "Install with: pip install sentence-transformers"
             )
         
-        print(f"Loading HuggingFace embedding model: {self.model_name}")
-        self._model = SentenceTransformer(self.model_name, device=self.device)
-        print(f"Model loaded. Embedding dimension: {self.dimensions}")
+        # Create cache key
+        cache_key = (self.model_name, self.device)
+        
+        if cache_key not in HuggingFaceEmbedder._models:
+            print(f"Loading HuggingFace embedding model: {self.model_name}")
+            model = SentenceTransformer(self.model_name, device=self.device)
+            HuggingFaceEmbedder._models[cache_key] = model
+            print(f"Model loaded. Embedding dimension: {self.dimensions}")
+            
+        self._model = HuggingFaceEmbedder._models[cache_key]
     
     def embed(self, text: str) -> np.ndarray:
         """

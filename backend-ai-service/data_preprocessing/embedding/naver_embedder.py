@@ -44,7 +44,7 @@ class NaverEmbedder(BaseEmbedder):
         "clir-sts": 768,
     }
     
-    def __init__(self, model: str = "bge-m3-v2",
+    def __init__(self, model: str = "bge-m3",
                  batch_size: int = 16,
                  api_key: Optional[str] = None,
                  **kwargs):
