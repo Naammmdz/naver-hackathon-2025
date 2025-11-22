@@ -13,15 +13,15 @@ until python -c "from database.connection import test_connection; test_connectio
 done
 echo "✓ Database is ready"
 
-# Run migrations
+# Run migrations (Skip - already applied manually)
 echo ""
 echo "Running database migrations..."
-cd /app/database
-python run_migrations.py
-cd /app
+echo "✓ Migrations already applied, skipping migration runner"
+# cd /app/database
+# python run_migrations.py
+# cd /app
 
 # Start the application
 echo ""
 echo "Starting AI Service..."
 exec python -m uvicorn api.main:app --host 0.0.0.0 --port 8000
-

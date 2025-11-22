@@ -16,10 +16,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database URL from environment
-DATABASE_URL = os.getenv('NEONDB')
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 if not DATABASE_URL:
-    raise ValueError("NEONDB environment variable not set")
+    raise ValueError("DATABASE_URL environment variable not set")
 
 # Create engine with connection pooling
 engine = create_engine(

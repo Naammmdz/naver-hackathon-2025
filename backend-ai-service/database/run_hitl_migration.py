@@ -14,9 +14,9 @@ load_dotenv()
 def run_migration():
     """Run the HITL extension migration"""
     # Connect to database
-    db_url = os.getenv('NEONDB')
+    db_url = os.getenv('DATABASE_URL')
     if not db_url:
-        print("❌ NEONDB environment variable not set")
+        print("❌ DATABASE_URL environment variable not set")
         return False
     
     # Read migration file

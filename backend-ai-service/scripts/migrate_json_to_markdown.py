@@ -32,9 +32,9 @@ def migrate_documents(dry_run: bool = True):
     Args:
         dry_run: If True, only report what would be changed
     """
-    db_url = os.getenv('NEONDB')
+    db_url = os.getenv('DATABASE_URL')
     if not db_url:
-        raise ValueError("NEONDB environment variable not set")
+        raise ValueError("DATABASE_URL environment variable not set")
     
     conn = psycopg2.connect(db_url)
     cursor = conn.cursor(cursor_factory=RealDictCursor)

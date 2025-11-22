@@ -19,22 +19,26 @@ MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 # Migration files in order
 MIGRATION_FILES = [
+    "000_init_schema.sql",
     "001_add_foreign_keys.sql",
     "002_add_indexes.sql",
     "003_install_pgvector.sql",
     "004_create_document_chunks.sql",
     "005_create_conversations.sql",
+    "005_create_users_table.sql",
     "006_create_long_term_memory.sql",
     "007_create_agent_actions.sql",
     "008_create_hitl_feedback.sql",
     "009_extend_hitl_feedback.sql",
+    "009_update_embedding_dimension.sql",
+    "010_sync_schema_with_core.sql",
 ]
 
 def connect_to_db():
     """Connect to database using environment variables"""
-    db_url = os.getenv('NEONDB')
+    db_url = os.getenv('DATABASE_URL')
     if not db_url:
-        raise ValueError("NEONDB environment variable not set")
+        raise ValueError("DATABASE_URL environment variable not set")
     
     return psycopg2.connect(db_url)
 
@@ -235,9 +239,31 @@ def main():
         print(f"✗ Failed to connect to database: {e}")
         sys.exit(1)
     
+    # Create schema_migrations table if not exists
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                id SERIAL PRIMARY KEY,
+                migration_file VARCHAR(255) NOT NULL UNIQUE,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        conn.commit()
+    except Exception as e:
+        print(f"✗ Failed to create schema_migrations table: {e}")
+        sys.exit(1)
+
+    # Get applied migrations
+    cursor.execute("SELECT migration_file FROM schema_migrations")
+    applied_migrations = {row[0] for row in cursor.fetchall()}
+
     # Run migrations
     failed_migrations = []
     for migration_file in MIGRATION_FILES:
+        if migration_file in applied_migrations:
+            print(f"✓ Migration {migration_file} already applied, skipping")
+            continue
+
         filepath = MIGRATIONS_DIR / migration_file
         
         if not filepath.exists():
@@ -248,6 +274,7 @@ def main():
         success = run_migration_file(cursor, filepath)
         
         if success:
+            cursor.execute("INSERT INTO schema_migrations (migration_file) VALUES (%s)", (migration_file,))
             conn.commit()
         else:
             conn.rollback()

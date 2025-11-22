@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-conn = psycopg2.connect(os.getenv('NEONDB'))
+conn = psycopg2.connect(os.getenv('DATABASE_URL'))
 cur = conn.cursor()
 
 # Create users table
