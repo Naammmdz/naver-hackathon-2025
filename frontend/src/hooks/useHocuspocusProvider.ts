@@ -80,26 +80,38 @@ export function useHocuspocusProvider({
         const getWebSocketUrl = () => {
           // If explicitly set, use it
           if (import.meta.env.VITE_HOCUSPOCUS_URL) {
+            console.log('[HocuspocusProvider] Using VITE_HOCUSPOCUS_URL:', import.meta.env.VITE_HOCUSPOCUS_URL);
             return import.meta.env.VITE_HOCUSPOCUS_URL;
           }
           
           // Check if we're on localhost (development)
           const isLocalhost = window.location.hostname === 'localhost' || 
-                             window.location.hostname === '127.0.0.1' ||
-                             window.location.hostname.startsWith('192.168.') ||
-                             window.location.hostname.startsWith('10.');
+                             window.location.hostname === '127.0.0.1';
           
-          // For localhost development, use direct connection
-          if (isLocalhost && import.meta.env.DEV) {
+          // Only use direct localhost connection if:
+          // 1. We're on localhost
+          // 2. AND we're in development mode (not production build)
+          // 3. AND we're not using a custom port that suggests proxying
+          const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
+          const isDirectLocalhost = isLocalhost && isDevMode && window.location.port !== '8080';
+          
+          if (isDirectLocalhost) {
             const devUrl = 'ws://localhost:1234';
-            console.log('[HocuspocusProvider] Development WebSocket URL:', devUrl);
+            console.log('[HocuspocusProvider] Development WebSocket URL (direct):', devUrl);
             return devUrl;
           }
           
-          // For all other cases (production, deployed), use relative path via nginx proxy
+          // For all other cases (production, deployed, or localhost with proxy), use relative path via nginx proxy
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
-          console.log('[HocuspocusProvider] Using WebSocket URL via nginx proxy:', url);
+          console.log('[HocuspocusProvider] Using WebSocket URL via nginx proxy:', url, {
+            hostname: window.location.hostname,
+            port: window.location.port,
+            protocol: window.location.protocol,
+            isLocalhost,
+            isDevMode,
+            isDirectLocalhost
+          });
           return url;
         };
 

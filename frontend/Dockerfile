@@ -33,11 +33,26 @@ RUN npm run build
 # Production stage with nginx
 FROM nginx:alpine
 
+# Install gettext for envsubst
+RUN apk add --no-cache gettext
+
+# Create nginx templates directory
+RUN mkdir -p /etc/nginx/templates
+
+# Copy nginx configuration template
+COPY nginx.conf.template /etc/nginx/templates/
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Copy built assets from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Set default environment variables (can be overridden at runtime)
+ENV BACKEND_URL=backend-core:8989
+ENV AI_SERVICE_URL=backend-ai-service:8000
+ENV HOCUSPOCUS_URL=hocuspocus:1234
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
@@ -46,6 +61,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8080
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Use entrypoint script to generate nginx.conf from template
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
