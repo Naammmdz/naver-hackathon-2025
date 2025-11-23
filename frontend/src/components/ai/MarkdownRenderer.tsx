@@ -9,7 +9,7 @@ interface MarkdownRendererProps {
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className }) => {
   return (
-    <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words", className)}>
+    <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words w-full", className)}>
       <ReactMarkdown
         components={{
           // Override default elements if needed

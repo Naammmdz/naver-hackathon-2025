@@ -182,10 +182,18 @@ export const GlobalChatPanel = () => {
 
         // Normal query response (not HITL)
         // Add AI response
+        let cleanAnswer = response.answer;
+        // Strip markdown code block wrappers if present
+        if (cleanAnswer.startsWith("```markdown")) {
+          cleanAnswer = cleanAnswer.replace(/^```markdown\s*/, "").replace(/\s*```$/, "");
+        } else if (cleanAnswer.startsWith("```")) {
+           cleanAnswer = cleanAnswer.replace(/^```\s*/, "").replace(/\s*```$/, "");
+        }
+
         const assistantMessage: ChatMessage = {
           id: `assistant-${timestamp}`,
           role: "assistant",
-          content: response.answer,
+          content: cleanAnswer,
           timestamp: Date.now(),
           citations: response.citations,
           metadata: response.metadata,
