@@ -416,6 +416,10 @@ class OrchestratorAgent:
         logger.info("Synthesizing final answer from step results")
         
         try:
+            # Check if final_answer is already set (e.g. small talk)
+            if state.get('final_answer'):
+                return state
+
             # Check if synthesis is needed
             plan = state['execution_plan']
             if not plan.requires_synthesis and len(state['step_results']) == 1:
@@ -539,7 +543,8 @@ class OrchestratorAgent:
         # Simple synthesis (can be enhanced)
         return {
             "synthesized": True,
-            "results": prev_results
+            "results": prev_results,
+            "answer": state.get('final_answer') # Pass final_answer if already set
         }
     
     def _execute_validation(self, step: ExecutionStep, state: OrchestratorState) -> Dict[str, Any]:
