@@ -126,7 +126,7 @@ class SQLExecutionTool:
                 query = f"{query.rstrip(';')} LIMIT {limit}"
             
             # Execute query
-            logger.info(f"Executing query: {query[:200]}...")
+            logger.info(f"Executing query: {query}")
             result = self.db.execute(text(query), parameters)
             
             # Fetch results

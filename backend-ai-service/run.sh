@@ -50,18 +50,26 @@ fi
 
 # Kiểm tra .env file
 if [ ! -f ".env" ]; then
-    echo -e "${YELLOW}⚠ File .env chưa được tạo${NC}"
-    echo -e "${YELLOW}  Tạo file .env từ template...${NC}"
-    cat > .env << EOF
+    if [ -f "../.env" ]; then
+        echo -e "${YELLOW}⚠ File .env chưa có, nhưng tìm thấy ở thư mục cha${NC}"
+        echo -e "${YELLOW}  Tạo symlink tới ../.env...${NC}"
+        ln -s ../.env .env
+        echo -e "${GREEN}✓ Đã tạo symlink .env${NC}"
+    else
+        echo -e "${YELLOW}⚠ File .env chưa được tạo${NC}"
+        echo -e "${YELLOW}  Tạo file .env từ template...${NC}"
+        cat > .env <<EOF
 # Database connection
-NEONDB=postgresql://user:password@localhost:5432/database_name
+DATABASE_URL=postgresql://postgres:postgres@localhost:5439/postgres
 
 # LLM Provider API Keys
-NAVER_CLIENT_ID=your_naver_client_id
-NAVER_CLIENT_SECRET=your_naver_client_secret
+CLOVASTUDIO_API_KEY=
+NAVER_CLIENT_ID=
+NAVER_CLIENT_SECRET=
 EOF
-    echo -e "${GREEN}✓ File .env đã được tạo${NC}"
-    echo -e "${YELLOW}⚠ Vui lòng cập nhật file .env với thông tin của bạn${NC}"
+        echo -e "${GREEN}✓ File .env đã được tạo${NC}"
+        echo -e "${YELLOW}⚠ Vui lòng cập nhật file .env với thông tin của bạn${NC}"
+    fi
 fi
 
 # Kiểm tra database connection

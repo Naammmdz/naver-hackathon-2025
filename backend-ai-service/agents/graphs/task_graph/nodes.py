@@ -102,9 +102,10 @@ class TaskGraphNodes:
         """
         
         try:
-            response = self.llm.generate(prompt)
+            response = self.llm.invoke(prompt)
+            content = response.content
             # Extract JSON
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
             if json_match:
                 result = json.loads(json_match.group(0))
                 intent = result.get('intent', 'QUERY').upper()
@@ -153,9 +154,10 @@ class TaskGraphNodes:
         """
         
         try:
-            response = self.llm.generate(prompt)
+            response = self.llm.invoke(prompt)
+            content = response.content
             # Extract JSON
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
             if not json_match:
                 return {'error': "Could not parse tool call from LLM response"}
                 

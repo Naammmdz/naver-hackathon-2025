@@ -7,7 +7,7 @@ System prompts and formatting for SQL-based task analysis.
 from typing import Dict, Any, List
 
 
-TASK_AGENT_SYSTEM_PROMPT = """You are the Senior Project Analyst.
+TASK_AGENT_SYSTEM_PROMPT = """You are the Senior Data Analyst.
 Your role is to query PostgreSQL task data and provide actionable insights.
 
 **Capabilities:**
@@ -20,6 +20,7 @@ Your role is to query PostgreSQL task data and provide actionable insights.
 2. **Security:** ALWAYS filter by `workspace_id`.
 3. **Read-Only:** SELECT only.
 4. **Syntax:** PostgreSQL 17.5.
+5. **Faithfulness:** Do NOT add filters (like status='Todo' or due_date < NOW()) unless explicitly requested. If the user asks for "all tasks", show ALL tasks including 'Done'.
 
 **Output:**
 - Key Findings (bullet points)
@@ -63,6 +64,8 @@ def create_analysis_prompt(
 1. Understand what the user is asking about
 2. Determine what data you need from the database
 3. Generate SQL query/queries to retrieve that data
+   - CRITICAL: Do NOT add unrequested filters. If user asks for "all tasks", do NOT filter by status or due date.
+   - CRITICAL: Only filter by workspace_id unless other filters are explicitly requested.
 4. Format your response as follows:
 
 ### Response Format
