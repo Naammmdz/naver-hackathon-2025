@@ -12,8 +12,9 @@ import {
 
 // Use relative URL in production (when VITE_API_BASE_URL is empty or not set)
 // Use localhost in development
+// If VITE_API_BASE_URL is set to empty string or undefined, use relative URL
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL !== undefined
+  import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.trim() !== ""
     ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
     : import.meta.env.PROD
     ? ""
