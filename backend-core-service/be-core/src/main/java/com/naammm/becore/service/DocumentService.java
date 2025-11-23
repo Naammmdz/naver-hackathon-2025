@@ -38,6 +38,7 @@ public class DocumentService {
     private final ChannelTopic metadataChannel;
     private final ObjectMapper objectMapper;
     private final GlobalSearchService globalSearchService;
+    private final com.naammm.becore.client.AIServiceClient aiServiceClient;
 
     public List<Document> getAllDocuments() {
         String userId = UserContext.requireUserId();
@@ -78,6 +79,12 @@ public class DocumentService {
         document.setUserId(userId);
         Document saved = documentRepository.save(document);
         globalSearchService.indexDocument(saved);
+        
+        // Trigger AI indexing if workspace exists
+        if (saved.getWorkspaceId() != null && !saved.getWorkspaceId().isBlank()) {
+            aiServiceClient.reindexDocument(saved.getWorkspaceId(), saved.getId());
+        }
+        
         return saved;
     }
 
@@ -114,6 +121,12 @@ public class DocumentService {
                     }
                     
                     globalSearchService.indexDocument(saved);
+                    
+                    // Trigger AI indexing if workspace exists
+                    if (saved.getWorkspaceId() != null && !saved.getWorkspaceId().isBlank()) {
+                        aiServiceClient.reindexDocument(saved.getWorkspaceId(), saved.getId());
+                    }
+                    
                     return saved;
                 })
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found"));
@@ -194,6 +207,11 @@ public class DocumentService {
         document.setTrashedAt(null);
         Document saved = documentRepository.save(document);
         globalSearchService.indexDocument(saved);
+        
+        // Trigger AI indexing if workspace exists
+        if (saved.getWorkspaceId() != null && !saved.getWorkspaceId().isBlank()) {
+            aiServiceClient.reindexDocument(saved.getWorkspaceId(), saved.getId());
+        }
     }
 
     public List<Document> searchDocuments(String search) {
