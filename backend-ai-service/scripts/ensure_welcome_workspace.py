@@ -30,7 +30,8 @@ from database.models import Workspace, Document, Task, WorkspaceMember, User
 from database.repositories.workspace import WorkspaceRepository
 from database.repositories.document import DocumentRepository
 from database.repositories.task import TaskRepository
-from api.routes.documents import index_document_content
+# Lazy import to avoid heavy dependencies at startup if not needed
+# from api.routes.documents import index_document_content
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -136,17 +137,20 @@ def ensure_welcome_workspace():
                 db.commit()
                 logger.info(f"Created document {doc_id}")
 
-            # Index the document
-            logger.info(f"Indexing document {doc_id}...")
+            # Index the document content
             try:
+                from api.routes.documents import index_document_content
+                logger.info(f"Indexing document {doc_id}...")
                 result = index_document_content(
                     document_id=doc_id,
                     workspace_id=workspace_id,
                     content=doc_content,
-                    title="👋 Getting Started",
+                    title="Getting Started",
                     db=db
                 )
                 logger.info(f"Indexing result: {result}")
+            except ImportError as e:
+                logger.warning(f"Could not import index_document_content (missing dependencies?): {e}")
             except Exception as e:
                 logger.error(f"Failed to index document: {e}")
 
