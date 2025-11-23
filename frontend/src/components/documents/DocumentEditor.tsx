@@ -815,7 +815,6 @@ export function DocumentEditor({
               } catch (error) {
                 console.warn('[BlockNote] Error inserting heading, skipping to avoid breaking editor:', error);
                 // Skip heading insertion to prevent breaking the editor
-              }
                 // The document will work without heading 1, user can add it manually
               }
             } else {
