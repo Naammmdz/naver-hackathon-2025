@@ -17,5 +17,26 @@ CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username);
 -- Migrate existing data (best effort)
 -- We assume 'name' might map to 'username' or 'first_name' depending on usage, 
 -- but for now mapping to username is safest for display.
-UPDATE users SET username = name WHERE username IS NULL;
-UPDATE users SET image_url = avatar_url WHERE image_url IS NULL;
+-- Only update if columns exist
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'name'
+    ) AND EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'username'
+    ) THEN
+        UPDATE users SET username = name WHERE username IS NULL;
+    END IF;
+    
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'avatar_url'
+    ) AND EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'image_url'
+    ) THEN
+        UPDATE users SET image_url = avatar_url WHERE image_url IS NULL;
+    END IF;
+END $$;
