@@ -17,6 +17,7 @@ until python -c "from database.connection import test_connection; test_connectio
 done
 echo "✓ Database is ready"
 
+
 # Run migrations
 echo ""
 echo "Running database migrations..."
