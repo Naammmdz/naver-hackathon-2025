@@ -120,11 +120,11 @@ class HITLManager:
             query = text("""
                 INSERT INTO hitl_feedback (
                     id, workspace_id, conversation_id, user_id, agent_name, action_type,
-                    feedback_data, sentiment, rating, feedback_type, created_at
+                    feedback_data, sentiment, rating, feedback_type, created_at, question
                 )
                 VALUES (
                     :id, :workspace_id, NULL, :user_id, :agent_name, 'pending_confirmation',
-                    :feedback_data, 'neutral', 3, 'confirmation', :created_at
+                    :feedback_data, 'neutral', 3, 'confirmation', :created_at, :question
                 )
             """)
             
@@ -143,7 +143,8 @@ class HITLManager:
                 'user_id': request.user_id,
                 'agent_name': request.agent_name,
                 'feedback_data': json.dumps(request.model_dump(), default=serialize_datetime),
-                'created_at': request.created_at
+                'created_at': request.created_at,
+                'question': request.description
             })
             db.commit()
         except Exception as e:

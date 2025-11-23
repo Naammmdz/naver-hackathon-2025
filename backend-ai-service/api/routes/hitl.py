@@ -265,17 +265,22 @@ async def submit_response(
     try:
         hitl_manager = HITLManager()
         
+        # Determine status
+        status_val = ConfirmationStatus.APPROVED
+        if request.selected_option == "cancel":
+            status_val = ConfirmationStatus.REJECTED
+            
         # Create response object
         response = ConfirmationResponse(
             request_id=request.request_id,
-            selected_option=request.selected_option,
-            confirmed_at=datetime.now(),
-            user_comment=request.user_comment,
-            modified_params=request.modified_params
+            status=status_val,
+            selected_option_id=request.selected_option,
+            reason=request.user_comment,
+            modified_parameters=request.modified_params
         )
         
         # Submit response
-        await hitl_manager.submit_response(response)
+        hitl_manager.submit_response(response)
         
         logger.info(
             f"User submitted response for request {request.request_id}: "
