@@ -15,11 +15,12 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Database URL from environment
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Database URL from environment - support both NEONDB and DATABASE_URL
+# NEONDB is used in docker-compose, DATABASE_URL is used in local development
+DATABASE_URL = os.getenv('NEONDB') or os.getenv('DATABASE_URL')
 
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable not set")
+    raise ValueError("NEONDB or DATABASE_URL environment variable must be set")
 
 # Create engine with connection pooling
 engine = create_engine(

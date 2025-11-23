@@ -42,9 +42,12 @@ class DocumentChunkRepository(BaseRepository[DocumentChunk]):
     
     def get_by_workspace(self, workspace_id: str) -> List[DocumentChunk]:
         """Get all chunks in a workspace"""
+        from database.models import Document
+        # Filter through documents table to handle cases where document_chunks.workspace_id might not exist
         return (
             self.db.query(DocumentChunk)
-            .filter(DocumentChunk.workspace_id == workspace_id)
+            .join(Document, DocumentChunk.document_id == Document.id)
+            .filter(Document.workspace_id == workspace_id)
             .all()
         )
     
@@ -53,16 +56,20 @@ class DocumentChunkRepository(BaseRepository[DocumentChunk]):
         Find similar chunks using vector similarity.
         Joins with Document table to include document title in chunk metadata.
         Note: Requires pgvector extension and proper indexing.
+        
+        Filters by workspace_id through documents table to handle cases where
+        document_chunks.workspace_id column might not exist.
         """
         from sqlalchemy import func
         from database.models import Document
         
-        # Query with JOIN to get document title
+        # Query with JOIN to get document title and filter by workspace_id
+        # Use documents.workspace_id to ensure compatibility even if document_chunks.workspace_id doesn't exist
         results = (
             self.db.query(DocumentChunk, Document.title)
             .join(Document, DocumentChunk.document_id == Document.id)
             .filter(
-                DocumentChunk.workspace_id == workspace_id,
+                Document.workspace_id == workspace_id,
                 DocumentChunk.embedding.isnot(None)
             )
             .order_by(DocumentChunk.embedding.l2_distance(query_embedding))

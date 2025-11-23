@@ -13,13 +13,13 @@ until python -c "from database.connection import test_connection; test_connectio
 done
 echo "✓ Database is ready"
 
-# Run migrations (Skip - already applied manually)
+# Run migrations
 echo ""
 echo "Running database migrations..."
-echo "✓ Migrations already applied, skipping migration runner"
-# cd /app/database
-# python run_migrations.py
-# cd /app
+cd /app/database
+python run_migrations.py
+cd /app
+echo "✓ Migrations completed"
 
 # Ensure Welcome Workspace exists for all users
 echo ""

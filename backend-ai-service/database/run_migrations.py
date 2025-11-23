@@ -32,13 +32,15 @@ MIGRATION_FILES = [
     "009_extend_hitl_feedback.sql",
     "009_update_embedding_dimension.sql",
     "010_sync_schema_with_core.sql",
+    "011_add_workspace_id_to_chunks.sql",
 ]
 
 def connect_to_db():
     """Connect to database using environment variables"""
-    db_url = os.getenv('DATABASE_URL')
+    # Support both NEONDB and DATABASE_URL for compatibility
+    db_url = os.getenv('NEONDB') or os.getenv('DATABASE_URL')
     if not db_url:
-        raise ValueError("DATABASE_URL environment variable not set")
+        raise ValueError("NEONDB or DATABASE_URL environment variable must be set")
     
     return psycopg2.connect(db_url)
 
