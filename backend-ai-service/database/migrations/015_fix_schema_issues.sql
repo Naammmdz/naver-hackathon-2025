@@ -9,6 +9,22 @@ BEGIN
     ) THEN
         ALTER TABLE documents ALTER COLUMN content TYPE TEXT;
     END IF;
+
+    -- Fix tasks.description type (change from VARCHAR(1000) to TEXT)
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'tasks' AND column_name = 'description'
+    ) THEN
+        ALTER TABLE tasks ALTER COLUMN description TYPE TEXT;
+    END IF;
+
+    -- Fix boards.snapshot type (ensure it is TEXT)
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'boards' AND column_name = 'snapshot'
+    ) THEN
+        ALTER TABLE boards ALTER COLUMN snapshot TYPE TEXT;
+    END IF;
 END $$;
 
 -- 2. Ensure users table has required columns

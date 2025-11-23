@@ -99,7 +99,7 @@ def ensure_welcome_workspace():
                     id=member_id,
                     workspace_id=workspace_id,
                     user_id=user_id,
-                    role="ADMIN", # Owner is admin
+                    role="admin", # Owner is admin
                     joined_at=datetime.now()
                 )
                 db.add(new_member)
@@ -134,21 +134,21 @@ def ensure_welcome_workspace():
                 {
                     "type": "bulletListItem",
                     "content": [
-                        {"type": "text", "text": "Real-time Collaboration", "styles": {"bold": true}},
+                        {"type": "text", "text": "Real-time Collaboration", "styles": {"bold": True}},
                         {"type": "text", "text": ": Edit documents with your team.", "styles": {}}
                     ]
                 },
                 {
                     "type": "bulletListItem",
                     "content": [
-                        {"type": "text", "text": "Task Management", "styles": {"bold": true}},
+                        {"type": "text", "text": "Task Management", "styles": {"bold": True}},
                         {"type": "text", "text": ": Track progress with Kanban boards.", "styles": {}}
                     ]
                 },
                 {
                     "type": "bulletListItem",
                     "content": [
-                        {"type": "text", "text": "Whiteboards", "styles": {"bold": true}},
+                        {"type": "text", "text": "Whiteboards", "styles": {"bold": True}},
                         {"type": "text", "text": ": Brainstorm ideas visually.", "styles": {}}
                     ]
                 },
@@ -158,6 +158,15 @@ def ensure_welcome_workspace():
                 }
             ]
             doc_content = json.dumps(doc_content_blocks)
+            
+            # Extract text for indexing
+            doc_text_for_indexing = ""
+            for block in doc_content_blocks:
+                if "content" in block and isinstance(block["content"], list):
+                    for item in block["content"]:
+                        if "text" in item:
+                            doc_text_for_indexing += item["text"]
+                    doc_text_for_indexing += "\n"
             
             if existing_docs:
                 doc_id = existing_docs[0].id
@@ -187,7 +196,7 @@ def ensure_welcome_workspace():
                 result = index_document_content(
                     document_id=doc_id,
                     workspace_id=workspace_id,
-                    content=doc_content,
+                    content=doc_text_for_indexing, # Use extracted text for indexing
                     title="Getting Started",
                     db=db
                 )
@@ -207,7 +216,7 @@ def ensure_welcome_workspace():
                     id=str(uuid.uuid4()),
                     title="Explore the platform",
                     description="Click around and see what you can do.",
-                    status="Done",
+                    status="Completed", # Changed from Done
                     priority="Low",
                     user_id=user_id,
                     assignee_id=user_id,
