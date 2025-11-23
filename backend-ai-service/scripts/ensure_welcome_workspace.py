@@ -198,4 +198,10 @@ def ensure_welcome_workspace():
         db.close()
 
 if __name__ == "__main__":
-    ensure_welcome_workspace()
+    try:
+        ensure_welcome_workspace()
+    except Exception as e:
+        logger.error(f"Critical error in ensure_welcome_workspace: {e}", exc_info=True)
+        # We exit with 0 to allow the container to start even if this script fails
+        # The error is logged for debugging
+        sys.exit(0)
