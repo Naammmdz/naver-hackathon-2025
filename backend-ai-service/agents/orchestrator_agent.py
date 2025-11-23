@@ -561,15 +561,15 @@ class OrchestratorAgent:
     # Routing Functions
     # ============================================================================
     
-    def _should_create_plan(self, state: OrchestratorState) -> str:
-        """Decide if we should create a plan or handle error"""
-        if state.get('error'):
-            return "error"
-        if not state.get('intent'):
-            return "error"
+    def _try_handle_small_talk(self, state: OrchestratorState) -> bool:
+        """
+        Check if the query is small talk and handle it.
+        Returns True if handled (and sets final_answer in state), False otherwise.
+        """
+        intent = state.get('intent')
+        if not intent:
+            return False
             
-        intent = state['intent']
-        
         # Short-circuit for small talk / greetings (UNKNOWN intent without agent requirement)
         if intent.type == IntentType.UNKNOWN and not intent.requires_decomposition:
             # Generate friendly direct response without agent calls
@@ -597,20 +597,33 @@ class OrchestratorAgent:
             
             if not response:
                 response = "I'm not sure I understood that. I can help with tasks, documents, and visualizations. Could you rephrase your request?"
-
+                
             state['final_answer'] = response
-            state['metadata'] = {
-                'intent_type': 'small_talk',
-                'agent_used': 'none',
-                'confidence': 1.0
-            }
-            # Skip to synthesis (which will just return the answer)
-            state['execution_plan'] = None
-            return "error"  # Use error path to skip plan/execute and go to synthesis
+            return True
+            
+        return False
+
+    def _should_create_plan(self, state: OrchestratorState) -> str:
+        """Decide if we should create a plan or handle error"""
+        if state.get('error'):
+            return "error"
+        if not state.get('intent'):
+            return "error"
+            
+        if self._try_handle_small_talk(state):
+            return "error"
+            
+        intent = state['intent']
+
         
         if state['intent_confidence'] < 0.3:
             state['error'] = ERROR_MESSAGES['low_confidence']
             return "error"
+            
+        # If we have a valid intent that requires decomposition, create plan
+        if intent.requires_decomposition:
+            return "plan"
+            
         return "plan"
     
     def _should_execute(self, state: OrchestratorState) -> str:

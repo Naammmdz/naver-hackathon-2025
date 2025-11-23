@@ -351,6 +351,15 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             'task_agent': self.task_agent
         })
         
+        # Check for small talk / direct answer
+        if self._try_handle_small_talk(intent_result):
+            return {
+                'success': True,
+                'answer': intent_result['final_answer'],
+                'requires_confirmation': False,
+                'metadata': intent_result.get('metadata', {})
+            }
+        
         if intent_result.get('error'):
             return {
                 'success': False,
