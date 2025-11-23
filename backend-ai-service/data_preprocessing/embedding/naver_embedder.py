@@ -81,6 +81,9 @@ class NaverEmbedder(BaseEmbedder):
         if self._embedder is None:
             try:
                 from langchain_naver import ClovaXEmbeddings
+                # Add delay to avoid rate limiting
+                import time
+                time.sleep(1)
                 self._embedder = ClovaXEmbeddings(model=self.model_name)
                 print(f"✅ ClovaXEmbeddings loaded: {self.model_name}")
             except ImportError:
@@ -126,7 +129,31 @@ class NaverEmbedder(BaseEmbedder):
         texts = self.validate_texts(texts)
         
         # Use ClovaXEmbeddings.embed_documents for batch
-        embeddings_list = self.embedder.embed_documents(texts)
+        # Process in smaller batches to avoid rate limits
+        import time
+        embeddings_list = []
+        
+        # Use configured batch size or default to 8 for safety
+        batch_size = self.batch_size or 8
+        
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i:i+batch_size]
+            try:
+                batch_embeddings = self.embedder.embed_documents(batch)
+                embeddings_list.extend(batch_embeddings)
+                # Add delay between batches to respect rate limits (approx 60 RPM)
+                time.sleep(1.5)
+            except Exception as e:
+                print(f"Error embedding batch {i}: {e}")
+                # Retry with longer delay
+                print("Retrying batch after 5 seconds...")
+                time.sleep(5)
+                try:
+                    batch_embeddings = self.embedder.embed_documents(batch)
+                    embeddings_list.extend(batch_embeddings)
+                except Exception as retry_e:
+                    print(f"Retry failed for batch {i}: {retry_e}")
+                    raise retry_e
         
         # Convert to numpy arrays
         embeddings = [np.array(emb) for emb in embeddings_list]

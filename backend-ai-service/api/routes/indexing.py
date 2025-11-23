@@ -213,21 +213,25 @@ def process_document_indexing(
         # Create chunk records
         chunk_repo = DocumentChunkRepository(db)
         for i, (chunk, embedding) in enumerate(zip(chunks, embedding_result.embeddings)):
+            # Prepare metadata
+            chunk_meta = {
+                "chunking_strategy": chunking_strategy,
+                "chunk_size": chunk_size,
+                "chunk_overlap": chunk_overlap,
+                "embedding_provider": embedding_provider,
+                "embedding_model": embedder.model_name if hasattr(embedder, 'model_name') else None,
+                "embedding_dimensions": embedding_result.dimensions,
+                "start_char": chunk.start_index if hasattr(chunk, 'start_index') else None,
+                "end_char": chunk.end_index if hasattr(chunk, 'end_index') else None
+            }
+            
             chunk_repo.create(
                 document_id=document.id,
+                workspace_id=workspace_id,
                 chunk_index=i,
-                text=chunk.text,
-                start_char=chunk.start_index if hasattr(chunk, 'start_index') else None,
-                end_char=chunk.end_index if hasattr(chunk, 'end_index') else None,
+                chunk_text=chunk.text,
                 embedding=embedding.tolist(),
-                metadata={
-                    "chunking_strategy": chunking_strategy,
-                    "chunk_size": chunk_size,
-                    "chunk_overlap": chunk_overlap,
-                    "embedding_provider": embedding_provider,
-                    "embedding_model": embedder.model_name if hasattr(embedder, 'model_name') else None,
-                    "embedding_dimensions": embedding_result.dimensions
-                }
+                chunk_metadata=chunk_meta
             )
         
         db.commit()
