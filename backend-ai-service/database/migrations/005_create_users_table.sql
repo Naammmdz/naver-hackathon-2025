@@ -16,6 +16,7 @@ BEGIN
             email VARCHAR NOT NULL UNIQUE,
             name VARCHAR NOT NULL,
             avatar_url VARCHAR,
+            user_metadata TEXT,
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
@@ -35,6 +36,14 @@ BEGIN
             WHERE table_name = 'users' AND column_name = 'avatar_url'
         ) THEN
             ALTER TABLE users ADD COLUMN avatar_url VARCHAR;
+        END IF;
+
+        -- Add user_metadata if missing
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'user_metadata'
+        ) THEN
+            ALTER TABLE users ADD COLUMN user_metadata TEXT;
         END IF;
         
         -- Add created_at if missing
