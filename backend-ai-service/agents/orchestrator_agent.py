@@ -470,6 +470,7 @@ class OrchestratorAgent:
         except Exception as e:
             logger.error(f"Synthesis failed: {str(e)}")
             state['error'] = f"Synthesis failed: {str(e)}"
+            state['final_answer'] = f"I encountered an error while synthesizing the answer: {str(e)}"
         
         return state
     
@@ -704,7 +705,7 @@ class OrchestratorAgent:
         
         # Build response
         response = {
-            "answer": final_state.get('final_answer', ERROR_MESSAGES['execution_failed']),
+            "answer": final_state.get('final_answer') or ERROR_MESSAGES['execution_failed'],
             "metadata": {
                 **final_state.get('metadata', {}),
                 "workspace_id": workspace_id,
