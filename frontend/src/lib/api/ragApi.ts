@@ -21,17 +21,19 @@ import type {
   ReadinessResponse,
 } from "@/types/rag";
 
-// AI Service base URL - can be configured via environment variable
-// In development, use proxy path /ai-api to avoid CORS issues
-// In production, use full URL or configure via VITE_AI_SERVICE_BASE_URL
-// In development, use proxy path /ai-api to avoid CORS issues and route to correct service
-// In production, use full URL or configure via VITE_AI_SERVICE_BASE_URL
-const AI_SERVICE_BASE_URL =
-  import.meta.env.VITE_AI_SERVICE_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.DEV ? "" : "http://localhost:8000");
+// AI Service base path - defaults to nginx/Vite proxy (/ai-api)
+const normalizeBaseUrl = (value?: string) => {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return "/ai-api";
+  }
+  return trimmed.replace(/\/$/, "");
+};
 
-// Use /ai-api prefix in dev to trigger Vite proxy, which rewrites it to target
-const API_PREFIX = import.meta.env.DEV ? "/ai-api/api/v1" : "/api/v1";
+const AI_SERVICE_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_AI_SERVICE_BASE_URL);
+
+// Stable API prefix used by FastAPI backend
+const API_PREFIX = "/api/v1";
 
 /**
  * Helper function to make API requests
