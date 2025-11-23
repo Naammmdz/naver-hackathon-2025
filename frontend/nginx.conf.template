@@ -39,8 +39,36 @@ server {
         rewrite ^/app/assets/(.+)$ /assets/$1 last;
     }
 
-    # SPA routing for /app path (Traefik routing) - must be after assets
-    # This handles all /app/* routes except /app/assets/* (which is handled above)
+    # AI Service API proxy for /app prefix (Traefik routing)
+    # MUST be before /app location to avoid SPA handler catching it
+    # Use ^~ modifier for exact prefix matching to prevent /app from catching it
+    location ^~ /app/ai-api {
+        set $ai_backend "${AI_SERVICE_URL}";
+        # Rewrite /app/ai-api to / for backend (backend expects /api/v1/...)
+        rewrite ^/app/ai-api(.*)$ $1 break;
+        proxy_pass http://$ai_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Forward Authorization header for authentication
+        proxy_set_header Authorization $http_authorization;
+        proxy_set_header X-User-Id $http_x_user_id;
+        # Forward all other headers from client
+        proxy_pass_request_headers on;
+        # Don't buffer responses to see errors immediately
+        proxy_buffering off;
+        proxy_intercept_errors off;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+    }
+
+    # SPA routing for /app path (Traefik routing) - must be after assets and ai-api
+    # This handles all /app/* routes except /app/assets/* and /app/ai-api/*
     location /app {
         try_files $uri $uri/ /index.html;
         add_header Cache-Control "no-cache, no-store, must-revalidate";
@@ -78,37 +106,10 @@ server {
         proxy_connect_timeout 75s;
     }
 
-    # AI Service API proxy
+    # AI Service API proxy for local/direct access
     # Use AI_SERVICE_URL env var if set, otherwise use service name
     location /ai-api {
         set $ai_backend "${AI_SERVICE_URL}";
-        proxy_pass http://$ai_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        # Forward Authorization header for authentication
-        proxy_set_header Authorization $http_authorization;
-        proxy_set_header X-User-Id $http_x_user_id;
-        # Forward all other headers from client
-        proxy_pass_request_headers on;
-        # Don't buffer responses to see errors immediately
-        proxy_buffering off;
-        proxy_intercept_errors off;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 300s;
-        proxy_connect_timeout 75s;
-    }
-
-    # AI Service API proxy for /app prefix (Traefik routing)
-    # This handles requests from /app/* paths to maintain proxy functionality
-    location /app/ai-api {
-        set $ai_backend "${AI_SERVICE_URL}";
-        # Rewrite /app/ai-api to / for backend (backend expects /api/v1/...)
-        rewrite ^/app/ai-api(.*)$ $1 break;
         proxy_pass http://$ai_backend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
