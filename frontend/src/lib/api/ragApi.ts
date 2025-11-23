@@ -21,19 +21,92 @@ import type {
   ReadinessResponse,
 } from "@/types/rag";
 
-// AI Service base path - defaults to nginx/Vite proxy (/ai-api)
+// Stable API prefix used by FastAPI backend
+const API_PREFIX = "/api/v1";
+const HEALTH_ENDPOINT = "/health";
+const DEFAULT_BASE_FALLBACK = "/ai-api";
+
 const normalizeBaseUrl = (value?: string) => {
   const trimmed = value?.trim();
   if (!trimmed) {
-    return "/ai-api";
+    return undefined;
   }
   return trimmed.replace(/\/$/, "");
 };
 
-const AI_SERVICE_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_AI_SERVICE_BASE_URL);
+const detectPathPrefix = () => {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+  const segments = window.location.pathname.split("/").filter(Boolean);
+  if (!segments.length) {
+    return undefined;
+  }
+  return `/${segments[0]}`;
+};
 
-// Stable API prefix used by FastAPI backend
-const API_PREFIX = "/api/v1";
+const buildCandidateBaseUrls = (): string[] => {
+  const candidates = new Set<string>();
+  const envBase = normalizeBaseUrl(import.meta.env.VITE_AI_SERVICE_BASE_URL);
+  if (envBase) {
+    candidates.add(envBase);
+  }
+
+  const pathPrefix = detectPathPrefix();
+  if (pathPrefix && pathPrefix !== "/") {
+    candidates.add(`${pathPrefix.replace(/\/$/, "")}/ai-api`);
+  }
+
+  candidates.add(DEFAULT_BASE_FALLBACK);
+  candidates.add("/app/ai-api");
+
+  return Array.from(candidates);
+};
+
+let resolvedBaseUrl: string | null = null;
+let resolvingBaseUrlPromise: Promise<string> | null = null;
+
+const resolveBaseUrl = async (): Promise<string> => {
+  // During SSR or build, fall back immediately to env/default
+  if (typeof window === "undefined") {
+    return normalizeBaseUrl(import.meta.env.VITE_AI_SERVICE_BASE_URL) ?? DEFAULT_BASE_FALLBACK;
+  }
+
+  const candidates = buildCandidateBaseUrls();
+
+  for (const base of candidates) {
+    const target = `${base}${API_PREFIX}${HEALTH_ENDPOINT}`;
+    try {
+      const response = await fetch(target, { method: "GET" });
+      if (response.ok) {
+        return base;
+      }
+    } catch (error) {
+      // ignore and try next candidate
+    }
+  }
+
+  return candidates[0] ?? DEFAULT_BASE_FALLBACK;
+};
+
+const getBaseUrl = async (): Promise<string> => {
+  if (resolvedBaseUrl) {
+    return resolvedBaseUrl;
+  }
+
+  if (!resolvingBaseUrlPromise) {
+    resolvingBaseUrlPromise = resolveBaseUrl()
+      .then((url) => {
+        resolvedBaseUrl = url;
+        return url;
+      })
+      .finally(() => {
+        resolvingBaseUrlPromise = null;
+      });
+  }
+
+  return resolvingBaseUrlPromise;
+};
 
 /**
  * Helper function to make API requests
@@ -42,7 +115,8 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${AI_SERVICE_BASE_URL}${API_PREFIX}${endpoint}`;
+  const baseUrl = await getBaseUrl();
+  const url = `${baseUrl}${API_PREFIX}${endpoint}`;
   
   const headers = await apiAuthContext.getAuthHeaders({
     "Content-Type": "application/json",
@@ -87,7 +161,8 @@ async function uploadFile<T>(
   additionalData?: Record<string, string>,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${AI_SERVICE_BASE_URL}${API_PREFIX}${endpoint}`;
+  const baseUrl = await getBaseUrl();
+  const url = `${baseUrl}${API_PREFIX}${endpoint}`;
   
   const formData = new FormData();
   formData.append("file", file);
