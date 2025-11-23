@@ -157,8 +157,9 @@ class BoardAgent:
             SELECT 
                 t.id, t.title, t.status, t.priority,
                 t.due_date,
-                t.user_id as assignee_name
+                u.username as assignee_name
             FROM tasks t
+            LEFT JOIN users u ON u.id = t.assignee_id
             WHERE t.workspace_id = :workspace_id
             ORDER BY t.created_at DESC
             """

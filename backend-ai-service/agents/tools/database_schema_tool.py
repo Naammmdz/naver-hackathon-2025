@@ -25,7 +25,8 @@ Main task table storing all tasks in workspaces.
 **Columns:**
 - id: VARCHAR (Primary Key) - Unique task identifier
 - workspace_id: VARCHAR (Foreign Key) - References workspaces.id
-- user_id: VARCHAR - User who created/owns the task
+- user_id: VARCHAR - User who created the task (Creator)
+- assignee_id: VARCHAR - User assigned to the task (Assignee)
 - title: VARCHAR - Task title
 - description: VARCHAR - Task description (nullable)
 - status: VARCHAR - Task status (Todo, In_Progress, Blocked, Done)
@@ -42,20 +43,23 @@ Main task table storing all tasks in workspaces.
 - PRIMARY KEY: id
 - INDEX: workspace_id
 - INDEX: user_id
+- INDEX: assignee_id
 - INDEX: status
 - INDEX: due_date
 
 **Sample Query:**
 ```sql
--- Get all overdue high-priority tasks
-SELECT id, title, status, priority, due_date, 
-       EXTRACT(DAY FROM NOW() - due_date) as days_overdue
-FROM tasks
-WHERE workspace_id = 'workspace-123'
-  AND due_date < NOW()
-  AND priority IN ('High', 'Critical')
-  AND status != 'Done'
-ORDER BY due_date ASC;
+-- Get all overdue high-priority tasks with assignee names
+SELECT t.id, t.title, t.status, t.priority, t.due_date, 
+       u.username as assignee_name,
+       EXTRACT(DAY FROM NOW() - t.due_date) as days_overdue
+FROM tasks t
+LEFT JOIN users u ON u.id = t.assignee_id
+WHERE t.workspace_id = 'workspace-123'
+  AND t.due_date < NOW()
+  AND t.priority IN ('High', 'Critical')
+  AND t.status != 'Done'
+ORDER BY t.due_date ASC;
 ```
 
 ---
@@ -163,7 +167,7 @@ User information for readable names in reports.
 SELECT t.id, t.title, t.status, t.priority, 
        u.username as assigned_to, u.email
 FROM tasks t
-LEFT JOIN users u ON u.id = t.user_id
+LEFT JOIN users u ON u.id = t.assignee_id
 WHERE t.workspace_id = 'workspace-123'
 ORDER BY t.priority DESC;
 ```

@@ -230,12 +230,20 @@ class OrchestratorAgent:
                 # Default to DOCUMENT_QUERY instead of UNKNOWN to enable document search
                 intent_type_enum = IntentType.DOCUMENT_QUERY
             
-            # Force UNKNOWN to DOCUMENT_QUERY for fallback
+            # Handle UNKNOWN intent - check if it's small talk
             if intent_type_enum == IntentType.UNKNOWN:
-                logger.info("Intent is UNKNOWN, defaulting to DOCUMENT_QUERY for fallback")
-                intent_type_enum = IntentType.DOCUMENT_QUERY
-                # Boost confidence to ensure plan creation (threshold is 0.3)
-                intent_data['confidence'] = 1.0
+                requires_agents = intent_data.get('requires_agents', True)
+                
+                if not requires_agents:
+                    # Small talk / greeting - provide direct friendly response
+                    logger.info("Intent is UNKNOWN but no agents required - treating as small talk")
+                    # Keep as UNKNOWN to trigger direct response in routing
+                    intent_data['confidence'] = 1.0
+                else:
+                    # Unclear query requiring workspace data - fallback to document search
+                    logger.info("Intent is UNKNOWN with agents required, defaulting to DOCUMENT_QUERY for fallback")
+                    intent_type_enum = IntentType.DOCUMENT_QUERY
+                    intent_data['confidence'] = 0.5
 
             
             # Create Intent object
@@ -465,6 +473,11 @@ class OrchestratorAgent:
         """
         Handle errors gracefully
         """
+        # Check if final_answer was already set (e.g., small talk)
+        if state.get('final_answer'):
+            logger.info("Using pre-generated answer (small talk)")
+            return state
+        
         error = state.get('error') or 'Unknown error'
         logger.error(f"Handling error: {error}")
         
@@ -549,6 +562,47 @@ class OrchestratorAgent:
             return "error"
         if not state.get('intent'):
             return "error"
+            
+        intent = state['intent']
+        
+        # Short-circuit for small talk / greetings (UNKNOWN intent without agent requirement)
+        if intent.type == IntentType.UNKNOWN and not intent.requires_decomposition:
+            # Generate friendly direct response without agent calls
+            small_talk_responses = {
+                "hello": "Hello! I'm your Workspace Assistant. I can help you manage tasks, find documents, or visualize your project progress. How can I help you today?",
+                "hi": "Hi there! Ready to help with your project. What do you need?",
+                "hey": "Hey! How can I assist you with your workspace today?",
+                "how are you": "I'm functioning perfectly and ready to assist! How can I help you with your work?",
+                "thanks": "You're welcome! Let me know if you need anything else.",
+                "thank you": "Happy to help! Is there anything else you need?",
+                "bye": "Goodbye! Have a productive day.",
+                "what can you do": "I'm your project assistant. I can:\n- **Analyze Tasks:** Show overdue items, risks, or workload.\n- **Search Documents:** Answer questions from your uploaded files.\n- **Visualize Data:** Create Kanban boards, Gantt charts, and flowcharts.\n\nJust ask!"
+            }
+            
+            query_lower = state['query'].lower().strip()
+            # Simple fuzzy matching or exact match
+            response = small_talk_responses.get(query_lower)
+            
+            if not response:
+                # Try partial matches for common greetings
+                for key, val in small_talk_responses.items():
+                    if key in query_lower and len(query_lower) < 20: # Only for short queries
+                        response = val
+                        break
+            
+            if not response:
+                response = "I'm not sure I understood that. I can help with tasks, documents, and visualizations. Could you rephrase your request?"
+
+            state['final_answer'] = response
+            state['metadata'] = {
+                'intent_type': 'small_talk',
+                'agent_used': 'none',
+                'confidence': 1.0
+            }
+            # Skip to synthesis (which will just return the answer)
+            state['execution_plan'] = None
+            return "error"  # Use error path to skip plan/execute and go to synthesis
+        
         if state['intent_confidence'] < 0.3:
             state['error'] = ERROR_MESSAGES['low_confidence']
             return "error"
