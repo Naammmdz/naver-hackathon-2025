@@ -84,19 +84,36 @@ class DocumentAgent:
         llm_factory = LLMFactory()
         if llm_provider is None:
             llm_provider = llm_factory.get_default_provider()
+            logger.info(f"🔍 DocumentAgent using default LLM provider: {llm_provider}")
             
+        logger.info(f"🔍 DocumentAgent initializing LLM: {llm_provider}")
         self.llm = llm_factory.create_llm(provider=llm_provider)
         
         # Get default embedder from config if not specified
         if embedder_type is None:
             try:
                 # Load config.yml directly to get data_preprocessing section
+                # Try multiple locations
+                candidates = [
+                    Path("config.yml"),
+                    Path("/app/config.yml"),
+                    Path(__file__).parent.parent / "config.yml"
+                ]
+                
                 config_path = "config.yml"
+                for candidate in candidates:
+                    if candidate.exists():
+                        config_path = str(candidate)
+                        break
+                
                 if os.path.exists(config_path):
+                    logger.info(f"🔍 DocumentAgent found config at: {os.path.abspath(config_path)}")
                     with open(config_path, "r") as f:
                         full_config = yaml.safe_load(f)
                         embedder_type = full_config.get('data_preprocessing', {}).get('embedding', {}).get('provider')
                         logger.info(f"Loaded embedder type from config: {embedder_type}")
+                else:
+                    logger.warning(f"⚠️ DocumentAgent could not find config at: {os.path.abspath(config_path)}")
                 
                 if not embedder_type:
                     embedder_type = 'huggingface'

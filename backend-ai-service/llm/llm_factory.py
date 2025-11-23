@@ -52,11 +52,21 @@ class LLMFactory:
         Args:
             config_path: Path to configuration file
         """
-        # Resolve config path relative to this file if it's the default relative path
-        # This ensures it works regardless of where the script is run from
+        # Resolve config path
         if config_path == "config.yml":
-            # .../backend-ai-service/llm/llm_factory.py -> .../backend-ai-service/config.yml
-            self.config_path = str(Path(__file__).parent.parent / "config.yml")
+            # Try multiple locations
+            candidates = [
+                Path("config.yml"),                                      # CWD
+                Path("/app/config.yml"),                                 # Docker root
+                Path(__file__).parent.parent / "config.yml",             # Relative to this file
+                Path(__file__).parent.parent.parent / "config.yml",      # One level up
+            ]
+            
+            self.config_path = "config.yml" # Default
+            for candidate in candidates:
+                if candidate.exists():
+                    self.config_path = str(candidate.resolve())
+                    break
         else:
             self.config_path = config_path
             

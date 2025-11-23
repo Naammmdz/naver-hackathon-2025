@@ -29,7 +29,8 @@ class ClovaProvider:
             api_key: Naver API key (falls back to CLOVASTUDIO_API_KEY env var)
             **kwargs: Additional arguments
         """
-        self.model = model
+        # Ensure model is not None (fallback to default if None passed explicitly)
+        self.model = model or "HCX-007"
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.api_key = api_key or os.getenv("CLOVASTUDIO_API_KEY")
