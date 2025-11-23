@@ -123,6 +123,9 @@ export function useWorkspaceYjs({
 
           // For production/deployed environments, ALWAYS use relative path via nginx proxy
           // This ensures we never try to connect to localhost:1234 from a client's browser
+          // IMPORTANT: If page is loaded over HTTPS, MUST use wss:// to avoid mixed content blocking
+          // Browser will block ws:// connections from HTTPS pages for security
+          // If certificate is invalid, user will see warning but can proceed
           const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
           const url = `${protocol}//${window.location.host}/ws`;
           console.log('[WorkspaceYjs] Using WebSocket URL via nginx proxy:', url, {
@@ -130,7 +133,8 @@ export function useWorkspaceYjs({
             port: window.location.port,
             protocol: window.location.protocol,
             mode: import.meta.env.MODE,
-            dev: import.meta.env.DEV
+            dev: import.meta.env.DEV,
+            note: 'Using wss:// for HTTPS pages to avoid mixed content blocking'
           });
           return url;
         };
