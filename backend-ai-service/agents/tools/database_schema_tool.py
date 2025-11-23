@@ -201,6 +201,25 @@ User information for readable names in reports.
 - PRIMARY KEY: id
 - UNIQUE: email
 - UNIQUE: username
+
+---
+
+## Table: workspaces
+Workspace information.
+
+**Columns:**
+- id: VARCHAR (Primary Key) - Workspace identifier
+- name: VARCHAR - Workspace name
+- owner_id: VARCHAR (Foreign Key) - References users.id
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
+
+**Indexes:**
+- PRIMARY KEY: id
+- INDEX: owner_id
+- PRIMARY KEY: id
+- UNIQUE: email
+- UNIQUE: username
 - INDEX: username
 
 **Sample Query:**

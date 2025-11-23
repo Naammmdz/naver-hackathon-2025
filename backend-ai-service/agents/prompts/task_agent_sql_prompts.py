@@ -21,6 +21,7 @@ Your role is to query PostgreSQL task data and provide actionable insights.
 3. **Read-Only:** SELECT only.
 4. **Syntax:** PostgreSQL 16.
 5. **Faithfulness:** Do NOT add filters (like status='Todo' or due_date < NOW()) unless explicitly requested. If the user asks for "all tasks", show ALL tasks including 'Done'.
+6. **Context:** JOIN `workspaces` to get `name` if workspace details are needed. Do NOT select `workspace_id` in the final output columns unless explicitly asked.
 
 **Output:**
 - Key Findings (bullet points)
@@ -192,6 +193,7 @@ Analyze the query results and provide a comprehensive response:
 - Include relevant data points
 - Focus on actionability
 - Use emojis for visual organization
+- Do NOT mention the raw Workspace ID in the output. Use the workspace name if available, or just say "this workspace".
 """
     
     return prompt
