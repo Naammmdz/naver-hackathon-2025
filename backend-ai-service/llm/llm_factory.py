@@ -60,6 +60,13 @@ class LLMFactory:
         else:
             self.config_path = config_path
             
+        # Debug: Print absolute path
+        try:
+            abs_path = Path(self.config_path).resolve()
+            print(f"🔍 LLMFactory loading config from: {abs_path}")
+        except Exception:
+            pass
+            
         self.config = self._load_config()
     
     def _load_config(self) -> Dict[str, Any]:
@@ -122,12 +129,20 @@ class LLMFactory:
         
         # Get config and merge with overrides
         config = self._get_provider_config(provider)
-        final_config = {
-            "model": model or config.get("model"),
-            "temperature": temperature if temperature is not None else config.get("temperature", 0.1),
-            "max_tokens": max_tokens or config.get("max_tokens", 2000),
-            **kwargs
-        }
+        
+        # Only include parameters if they are not None, to allow provider defaults to work
+        final_config = {**kwargs}
+        
+        # Helper to safely add config
+        def add_if_present(key, override_val, config_val):
+            if override_val is not None:
+                final_config[key] = override_val
+            elif config_val is not None:
+                final_config[key] = config_val
+                
+        add_if_present("model", model, config.get("model"))
+        add_if_present("temperature", temperature, config.get("temperature"))
+        add_if_present("max_tokens", max_tokens, config.get("max_tokens"))
         
         return provider_class(**final_config)
     
