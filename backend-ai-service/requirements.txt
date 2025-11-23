@@ -35,3 +35,4 @@ transformers>=4.30.0        # HuggingFace transformers library
 fastapi
 uvicorn[standard]
 python-multipart
+pymupdf
