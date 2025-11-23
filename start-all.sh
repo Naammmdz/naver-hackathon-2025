@@ -155,7 +155,8 @@ echo -e "${BLUE}========================================${NC}"
 cd backend-core-service/be-core
 
 # Set environment variables for local run
-export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5439/postgres"
+# Use core-postgres on port 5435 (not 5439 which is for Yjs/Hocuspocus)
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5435/core"
 export SPRING_DATASOURCE_USERNAME="postgres"
 export SPRING_DATASOURCE_PASSWORD="postgres"
 export REDIS_HOST="localhost"
