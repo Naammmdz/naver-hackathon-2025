@@ -778,8 +778,11 @@ export function DocumentEditor({
             
             const content = wrappedEditor.document;
             
-            // Check if document is empty or doesn't start with heading 1
-            if (!content || content.length === 0) {
+            // Check if document is empty (or has only one empty paragraph)
+            const isEmpty = !content || content.length === 0 || 
+              (content.length === 1 && content[0].type === 'paragraph' && (!content[0].content || (Array.isArray(content[0].content) && content[0].content.length === 0)));
+
+            if (isEmpty) {
               // Document is empty in Yjs
               // Check if we have content in Postgres (e.g. from script/API)
               if (document.content && document.content.trim().length > 0) {
