@@ -87,13 +87,30 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'users' AND column_name = 'name'
     ) THEN
-        INSERT INTO users (id, email, name, avatar_url) VALUES
-        ('user_3598sVShk4DTuSUrlZgc8loUPJd', 'thanhnx@devholic.com', 'Xuan-Thanh Nguyen', 'https://api.dicebear.com/7.x/avataaars/svg?seed=ThanhNX'),
-        ('user_alice_12345', 'alice@devholic.com', 'Alice Nguyen', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice'),
-        ('user_bob_67890', 'bob@devholic.com', 'Bob Tran', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob'),
-        ('user_charlie_11111', 'charlie@devholic.com', 'Charlie Le', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie'),
-        ('user_diana_22222', 'diana@devholic.com', 'Diana Pham', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana'),
-        ('user_evan_33333', 'evan@devholic.com', 'Evan Vo', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Evan')
-        ON CONFLICT (id) DO NOTHING;
+        -- Check if created_at column exists to include it in INSERT
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'users' AND column_name = 'created_at'
+        ) THEN
+            -- Include created_at and updated_at in INSERT
+            INSERT INTO users (id, email, name, avatar_url, created_at, updated_at) VALUES
+            ('user_3598sVShk4DTuSUrlZgc8loUPJd', 'thanhnx@devholic.com', 'Xuan-Thanh Nguyen', 'https://api.dicebear.com/7.x/avataaars/svg?seed=ThanhNX', NOW(), NOW()),
+            ('user_alice_12345', 'alice@devholic.com', 'Alice Nguyen', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice', NOW(), NOW()),
+            ('user_bob_67890', 'bob@devholic.com', 'Bob Tran', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob', NOW(), NOW()),
+            ('user_charlie_11111', 'charlie@devholic.com', 'Charlie Le', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie', NOW(), NOW()),
+            ('user_diana_22222', 'diana@devholic.com', 'Diana Pham', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana', NOW(), NOW()),
+            ('user_evan_33333', 'evan@devholic.com', 'Evan Vo', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Evan', NOW(), NOW())
+            ON CONFLICT (id) DO NOTHING;
+        ELSE
+            -- created_at doesn't exist, insert without it
+            INSERT INTO users (id, email, name, avatar_url) VALUES
+            ('user_3598sVShk4DTuSUrlZgc8loUPJd', 'thanhnx@devholic.com', 'Xuan-Thanh Nguyen', 'https://api.dicebear.com/7.x/avataaars/svg?seed=ThanhNX'),
+            ('user_alice_12345', 'alice@devholic.com', 'Alice Nguyen', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alice'),
+            ('user_bob_67890', 'bob@devholic.com', 'Bob Tran', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Bob'),
+            ('user_charlie_11111', 'charlie@devholic.com', 'Charlie Le', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie'),
+            ('user_diana_22222', 'diana@devholic.com', 'Diana Pham', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana'),
+            ('user_evan_33333', 'evan@devholic.com', 'Evan Vo', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Evan')
+            ON CONFLICT (id) DO NOTHING;
+        END IF;
     END IF;
 END $$;
