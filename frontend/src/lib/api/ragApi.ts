@@ -27,8 +27,9 @@ const API_PREFIX = "/api/v1";
 // Determine AI service base URL
 const getAiServiceBaseUrl = (): string => {
   // Priority 1: Environment variable (for custom deployments)
+  // Only use if it's set and not empty
   const envBaseUrl = import.meta.env.VITE_AI_SERVICE_BASE_URL?.trim();
-  if (envBaseUrl) {
+  if (envBaseUrl && envBaseUrl !== "") {
     return envBaseUrl.replace(/\/$/, "");
   }
 
@@ -42,7 +43,7 @@ const getAiServiceBaseUrl = (): string => {
     }
   }
 
-  // Priority 3: Default to /ai-api
+  // Priority 3: Default to /ai-api (relative URL for nginx proxy)
   return "/ai-api";
 };
 
