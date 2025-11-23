@@ -7,6 +7,11 @@ import com.naammm.becore.dto.CreateWorkspaceRequest;
 import com.naammm.becore.dto.InviteMemberRequest;
 import com.naammm.becore.dto.UpdateMemberRoleRequest;
 import com.naammm.becore.dto.UpdateWorkspaceRequest;
+import com.naammm.becore.entity.Board;
+import com.naammm.becore.entity.Document;
+import com.naammm.becore.entity.Task;
+import com.naammm.becore.entity.TaskPriority;
+import com.naammm.becore.entity.TaskStatus;
 import com.naammm.becore.entity.Workspace;
 import com.naammm.becore.entity.WorkspaceInvite;
 import com.naammm.becore.entity.WorkspaceMember;
@@ -40,10 +45,86 @@ public class WorkspaceService {
     private final UserService userService;
     private final EntityManager entityManager;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Workspace> getAllWorkspaces(String userId) {
-        return workspaceRepository.findAllByUserId(userId);
+        List<Workspace> workspaces = workspaceRepository.findAllByUserId(userId);
+        if (workspaces.isEmpty()) {
+            createWelcomeWorkspace(userId);
+            workspaces = workspaceRepository.findAllByUserId(userId);
+        }
+        return workspaces;
     }
+
+    private void createWelcomeWorkspace(String userId) {
+        // 1. Create Workspace
+        CreateWorkspaceRequest request = new CreateWorkspaceRequest();
+        request.setName("Welcome");
+        request.setDescription("Your personal playground to explore the platform.");
+        request.setIsPublic(false);
+        request.setAllowInvites(true);
+        
+        Workspace workspace = createWorkspace(request, userId);
+        String workspaceId = workspace.getId();
+
+        // 2. Create Sample Documents
+        Document welcomeDoc = Document.builder()
+            .title("👋 Getting Started")
+            .content("# Welcome to Your New Workspace!\n\nThis is a demo document to help you get started.\n\n## Features\n- **Real-time Collaboration**: Edit documents with your team.\n- **Task Management**: Track progress with Kanban boards.\n- **Whiteboards**: Brainstorm ideas visually.\n\nTry editing this document or create a new one!")
+            .userId(userId)
+            .workspaceId(workspaceId)
+            .icon("👋")
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+        documentRepository.save(welcomeDoc);
+
+        // 3. Create Sample Tasks
+        Task task1 = Task.builder()
+            .title("Explore the platform")
+            .description("Click around and see what you can do.")
+            .status(TaskStatus.Done)
+            .priority(TaskPriority.Low)
+            .userId(userId)
+            .assigneeId(userId)
+            .workspaceId(workspaceId)
+            .orderIndex(0)
+            .build();
+        
+        Task task2 = Task.builder()
+            .title("Invite your team")
+            .description("Go to Settings > Members to invite others.")
+            .status(TaskStatus.Todo)
+            .priority(TaskPriority.High)
+            .userId(userId)
+            .workspaceId(workspaceId)
+            .orderIndex(1)
+            .build();
+
+        Task task3 = Task.builder()
+            .title("Create your first project")
+            .description("Set up a board and start tracking tasks.")
+            .status(TaskStatus.In_Progress)
+            .priority(TaskPriority.Medium)
+            .userId(userId)
+            .assigneeId(userId)
+            .workspaceId(workspaceId)
+            .orderIndex(2)
+            .build();
+
+        taskRepository.saveAll(List.of(task1, task2, task3));
+
+        // 4. Create Sample Board
+        Board board = Board.builder()
+            .title("Brainstorming")
+            .snapshot("{\"elements\": [], \"appState\": {\"viewBackgroundColor\": \"#ffffff\", \"currentItemFontFamily\": 1}}")
+            .userId(userId)
+            .workspaceId(workspaceId)
+            .createdAt(LocalDateTime.now())
+            .updatedAt(LocalDateTime.now())
+            .build();
+        boardRepository.save(board);
+    }
+
 
     @Transactional(readOnly = true)
     public Workspace getWorkspace(String id, String userId) {
