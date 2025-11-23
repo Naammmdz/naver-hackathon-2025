@@ -102,6 +102,13 @@ export const GlobalChatPanel = () => {
     document.body.style.userSelect = "";
   }, [handleMouseMove]);
 
+  // Auto-scroll to bottom when messages change
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   const closePanel = useCallback(() => setChatOpen(false), [setChatOpen]);
 
   // Keyboard shortcut to close
@@ -182,18 +189,10 @@ export const GlobalChatPanel = () => {
 
         // Normal query response (not HITL)
         // Add AI response
-        let cleanAnswer = response.answer;
-        // Strip markdown code block wrappers if present
-        if (cleanAnswer.startsWith("```markdown")) {
-          cleanAnswer = cleanAnswer.replace(/^```markdown\s*/, "").replace(/\s*```$/, "");
-        } else if (cleanAnswer.startsWith("```")) {
-           cleanAnswer = cleanAnswer.replace(/^```\s*/, "").replace(/\s*```$/, "");
-        }
-
         const assistantMessage: ChatMessage = {
           id: `assistant-${timestamp}`,
           role: "assistant",
-          content: cleanAnswer,
+          content: response.answer,
           timestamp: Date.now(),
           citations: response.citations,
           metadata: response.metadata,
@@ -328,10 +327,10 @@ export const GlobalChatPanel = () => {
                     className="mt-1 h-10 w-10 flex-shrink-0 rounded-full object-cover"
                   />
                 )}
-                <div className="flex flex-col max-w-[90%]">
+                <div className="flex flex-col max-w-[75%] min-w-0 break-words">
                   <div
                     className={cn(
-                      "rounded-xl px-4 py-2",
+                      "rounded-xl px-4 py-2 break-words overflow-hidden",
                       message.role === "assistant"
                         ? message.error 
                           ? "bg-[hsl(var(--destructive-light))] text-[hsl(var(--destructive))] border border-[hsl(var(--destructive))]/20"
@@ -436,6 +435,9 @@ export const GlobalChatPanel = () => {
                 </div>
               </div>
             )}
+            
+            {/* Auto-scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
@@ -448,6 +450,14 @@ export const GlobalChatPanel = () => {
               type="button"
               size="icon"
               variant="ghost"
+              onClick={() => {
+                // Clear current session and messages
+                setSessionId(null);
+                setMessages(defaultMessages);
+                localStorage.removeItem('global-ai-session-id');
+                localStorage.removeItem('global-ai-chat-history');
+              }}
+              title="Start new conversation"
               className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 bg-background/70 text-muted-foreground transition hover:border-primary hover:bg-primary/10 hover:text-primary"
             >
               <span className="text-lg font-semibold leading-none">+</span>

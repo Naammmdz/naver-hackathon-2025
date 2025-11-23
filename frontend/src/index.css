@@ -465,6 +465,35 @@ All colors use OKLCH for better color accuracy and consistency.
     background: var(--gradient-hero);
   }
 
+  /* AI chat markdown content */
+  .ai-markdown {
+    font-family: var(--font-sans, 'Inter', sans-serif);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    font-size: 0.95rem;
+  }
+
+  .ai-markdown * {
+    font-family: inherit;
+    line-height: inherit;
+    white-space: inherit;
+    word-break: inherit;
+    overflow-wrap: inherit;
+  }
+
+  .ai-markdown code {
+    font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+    white-space: pre-wrap;
+  }
+
+  .ai-markdown pre {
+    white-space: pre-wrap;
+    word-break: normal;
+    overflow-x: auto;
+  }
+
   /* Elegant Luxury Theme Specific Components */
   .luxury-card {
     @apply bg-card border border-border rounded-lg shadow-lg backdrop-blur-sm;
