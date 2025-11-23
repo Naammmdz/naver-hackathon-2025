@@ -164,6 +164,7 @@ class BM25SearchTool:
             logger.info(f"BM25 search for query: '{query}' (tokens: {query_tokens})")
             
             # Fetch all chunks from workspace with document titles
+            # Filter through documents.workspace_id to handle cases where document_chunks.workspace_id might not exist
             with get_db() as db:
                 result = db.execute(text("""
                     SELECT 
@@ -171,12 +172,12 @@ class BM25SearchTool:
                         dc.chunk_text, 
                         dc.chunk_index, 
                         dc.document_id, 
-                        dc.workspace_id, 
+                        COALESCE(dc.workspace_id, d.workspace_id) as workspace_id, 
                         dc.metadata,
                         d.title as document_name
                     FROM document_chunks dc
                     JOIN documents d ON dc.document_id = d.id
-                    WHERE dc.workspace_id = :workspace_id
+                    WHERE d.workspace_id = :workspace_id
                 """), {"workspace_id": workspace_id}).fetchall()
                 
                 if not result:
