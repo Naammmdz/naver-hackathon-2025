@@ -3,6 +3,7 @@
  * Client for interacting with the AI Service RAG API
  */
 
+import { apiAuthContext } from "./authContext";
 import type {
   WorkspaceCreate,
   WorkspaceUpdate,
@@ -38,12 +39,14 @@ async function request<T>(
 ): Promise<T> {
   const url = `${AI_SERVICE_BASE_URL}${API_PREFIX}${endpoint}`;
   
+  const headers = await apiAuthContext.getAuthHeaders({
+    "Content-Type": "application/json",
+    ...options.headers,
+  });
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -76,7 +79,8 @@ async function request<T>(
 async function uploadFile<T>(
   endpoint: string,
   file: File,
-  additionalData?: Record<string, string>
+  additionalData?: Record<string, string>,
+  options: RequestInit = {}
 ): Promise<T> {
   const url = `${AI_SERVICE_BASE_URL}${API_PREFIX}${endpoint}`;
   
@@ -89,8 +93,16 @@ async function uploadFile<T>(
     });
   }
 
+  const headers = await apiAuthContext.getAuthHeaders(options.headers);
+  // Remove Content-Type to let browser set it with boundary for FormData
+  if (headers && 'Content-Type' in headers) {
+    // @ts-ignore
+    delete headers['Content-Type'];
+  }
+
   const response = await fetch(url, {
     method: "POST",
+    headers,
     body: formData,
   });
 
