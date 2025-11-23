@@ -133,11 +133,13 @@ services:
       # Database connection - dùng chung database với backend-core
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
       # LLM Provider API Keys (có thể override bằng environment variables)
+      CLOVASTUDIO_API_KEY: ${CLOVASTUDIO_API_KEY:-}
       NAVER_CLIENT_ID: ${NAVER_CLIENT_ID:-}
       NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy
