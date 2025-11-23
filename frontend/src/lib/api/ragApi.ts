@@ -21,94 +21,32 @@ import type {
   ReadinessResponse,
 } from "@/types/rag";
 
-// Stable API prefix used by FastAPI backend
+// AI Service configuration
 const API_PREFIX = "/api/v1";
-const HEALTH_ENDPOINT = "/health";
-const DEFAULT_BASE_FALLBACK = "/ai-api";
 
-const normalizeBaseUrl = (value?: string) => {
-  const trimmed = value?.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-  return trimmed.replace(/\/$/, "");
-};
-
-const detectPathPrefix = () => {
-  if (typeof window === "undefined") {
-    return undefined;
-  }
-  const segments = window.location.pathname.split("/").filter(Boolean);
-  if (!segments.length) {
-    return undefined;
-  }
-  return `/${segments[0]}`;
-};
-
-const buildCandidateBaseUrls = (): string[] => {
-  const candidates = new Set<string>();
-  const envBase = normalizeBaseUrl(import.meta.env.VITE_AI_SERVICE_BASE_URL);
-  if (envBase) {
-    candidates.add(envBase);
+// Determine AI service base URL
+const getAiServiceBaseUrl = (): string => {
+  // Priority 1: Environment variable (for custom deployments)
+  const envBaseUrl = import.meta.env.VITE_AI_SERVICE_BASE_URL?.trim();
+  if (envBaseUrl) {
+    return envBaseUrl.replace(/\/$/, "");
   }
 
-  const pathPrefix = detectPathPrefix();
-  if (pathPrefix && pathPrefix !== "/") {
-    candidates.add(`${pathPrefix.replace(/\/$/, "")}/ai-api`);
-  }
-
-  candidates.add(DEFAULT_BASE_FALLBACK);
-  candidates.add("/app/ai-api");
-
-  return Array.from(candidates);
-};
-
-let resolvedBaseUrl: string | null = null;
-let resolvingBaseUrlPromise: Promise<string> | null = null;
-
-const resolveBaseUrl = async (): Promise<string> => {
-  // During SSR or build, fall back immediately to env/default
-  if (typeof window === "undefined") {
-    return normalizeBaseUrl(import.meta.env.VITE_AI_SERVICE_BASE_URL) ?? DEFAULT_BASE_FALLBACK;
-  }
-
-  const candidates = buildCandidateBaseUrls();
-
-  for (const base of candidates) {
-    const target = `${base}${API_PREFIX}${HEALTH_ENDPOINT}`;
-    try {
-      const response = await fetch(target, { method: "GET" });
-      const contentType = response.headers.get("content-type") || "";
-      const isJson = contentType.includes("application/json");
-      if (response.ok && isJson) {
-        return base;
-      }
-    } catch (error) {
-      // ignore and try next candidate
+  // Priority 2: Auto-detect based on current path
+  // If we're under /app path (Traefik routing), use /app/ai-api
+  // Otherwise use /ai-api (local dev or direct deployment)
+  if (typeof window !== "undefined") {
+    const pathname = window.location.pathname;
+    if (pathname.startsWith("/app/") || pathname === "/app") {
+      return "/app/ai-api";
     }
   }
 
-  return candidates[0] ?? DEFAULT_BASE_FALLBACK;
+  // Priority 3: Default to /ai-api
+  return "/ai-api";
 };
 
-const getBaseUrl = async (): Promise<string> => {
-  if (resolvedBaseUrl) {
-    return resolvedBaseUrl;
-  }
-
-  if (!resolvingBaseUrlPromise) {
-    resolvingBaseUrlPromise = resolveBaseUrl()
-      .then((url) => {
-        resolvedBaseUrl = url;
-        return url;
-      })
-      .finally(() => {
-        resolvingBaseUrlPromise = null;
-      });
-  }
-
-  return resolvingBaseUrlPromise;
-};
+const AI_SERVICE_BASE_URL = getAiServiceBaseUrl();
 
 /**
  * Helper function to make API requests
@@ -117,8 +55,7 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const baseUrl = await getBaseUrl();
-  const url = `${baseUrl}${API_PREFIX}${endpoint}`;
+  const url = `${AI_SERVICE_BASE_URL}${API_PREFIX}${endpoint}`;
   
   const headers = await apiAuthContext.getAuthHeaders({
     "Content-Type": "application/json",
@@ -163,8 +100,7 @@ async function uploadFile<T>(
   additionalData?: Record<string, string>,
   options: RequestInit = {}
 ): Promise<T> {
-  const baseUrl = await getBaseUrl();
-  const url = `${baseUrl}${API_PREFIX}${endpoint}`;
+  const url = `${AI_SERVICE_BASE_URL}${API_PREFIX}${endpoint}`;
   
   const formData = new FormData();
   formData.append("file", file);
