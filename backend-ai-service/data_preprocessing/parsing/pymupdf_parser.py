@@ -209,9 +209,10 @@ class PyMuPDFParser(BaseParser):
                 metadata['subject'] = doc.metadata.get('subject', '')
                 metadata['creator'] = doc.metadata.get('creator', '')
             
+            page_count = len(doc)
             doc.close()
             
-            logger.info(f"✅ Extracted {len(full_text)} chars from {len(doc)} pages ({len(images)} images)")
+            logger.info(f"✅ Extracted {len(full_text)} chars from {page_count} pages ({len(images)} images)")
             
             return ParsingResult(
                 text=full_text,

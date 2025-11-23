@@ -152,9 +152,19 @@ def process_document_indexing(
         Dict with processing results
     """
     import time
+    import yaml
     start_time = time.time()
     
     try:
+        # Load config
+        config_path = Path("config.yml")
+        if config_path.exists():
+            with open(config_path, "r") as f:
+                app_config = yaml.safe_load(f)
+                config = app_config.get("data_preprocessing", {}).get("parsing", {})
+        else:
+            config = {"default_parser": "pymupdf"}
+
         # 1. Parse document
         logger.info(f"📄 Parsing document: {file_path.name}")
         # Use auto-detection with config (will respect default_parser setting)
