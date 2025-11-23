@@ -14,6 +14,7 @@ from agents.schemas.intent_schemas import AgentType
 class StepType(str, Enum):
     """Types of execution steps"""
     QUERY_DOCUMENT = "query_document"
+    DOCUMENT_COMPLETION = "document_completion"
     QUERY_TASK = "query_task"
     QUERY_BOARD = "query_board"
     SYNTHESIZE = "synthesize"

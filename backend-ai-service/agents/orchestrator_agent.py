@@ -37,6 +37,7 @@ class OrchestratorState(TypedDict):
     workspace_id: str
     query: str
     conversation_history: Optional[List[Dict[str, str]]]
+    document_context: Optional[Dict[str, Any]]  # Context of the currently open document
     
     # Intent Detection
     intent: Optional[Intent]
@@ -170,7 +171,8 @@ class OrchestratorAgent:
             prompt = create_intent_detection_prompt(
                 query=state['query'],
                 workspace_id=state['workspace_id'],
-                conversation_history=state.get('conversation_history')
+                conversation_history=state.get('conversation_history'),
+                document_context=state.get('document_context')
             )
             
             # Call LLM
@@ -376,6 +378,9 @@ class OrchestratorAgent:
             if step.type == StepType.QUERY_DOCUMENT:
                 result = self._execute_document_query(step, state)
             
+            elif step.type == StepType.DOCUMENT_COMPLETION:
+                result = self._execute_document_completion(step, state)
+            
             elif step.type == StepType.QUERY_TASK:
                 result = self._execute_task_query(step, state)
             
@@ -525,6 +530,23 @@ class OrchestratorAgent:
         result = self.document_agent.query(
             workspace_id=state['workspace_id'],
             query=step.query
+        )
+        
+        return result
+
+    def _execute_document_completion(self, step: ExecutionStep, state: OrchestratorState) -> Dict[str, Any]:
+        """Execute document completion step"""
+        if not self.document_agent:
+            raise Exception("Document agent not available")
+            
+        document_context = state.get('document_context')
+        if not document_context:
+            raise Exception("No document context available for completion")
+            
+        result = self.document_agent.complete_text(
+            query=step.query,
+            current_content=document_context.get('content', ''),
+            cursor_position=document_context.get('cursor_position')
         )
         
         return result
@@ -691,7 +713,8 @@ class OrchestratorAgent:
         self,
         workspace_id: str,
         query: str,
-        conversation_history: Optional[List[Dict[str, str]]] = None
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        document_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Process user query through orchestrator workflow
@@ -700,6 +723,7 @@ class OrchestratorAgent:
             workspace_id: Workspace ID
             query: User's natural language query
             conversation_history: Recent conversation context
+            document_context: Context of the currently open document (id, content, etc.)
             
         Returns:
             Dict with answer, metadata, and execution details
@@ -711,6 +735,7 @@ class OrchestratorAgent:
             "workspace_id": workspace_id,
             "query": query,
             "conversation_history": conversation_history,
+            "document_context": document_context,
             "intent": None,
             "intent_confidence": 0.0,
             "execution_plan": None,

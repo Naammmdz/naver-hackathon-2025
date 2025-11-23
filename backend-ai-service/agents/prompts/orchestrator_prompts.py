@@ -18,6 +18,7 @@ Your role is to understand user requests, coordinate specialized agents (Documen
 
 **Intent Types:**
 - `document_query`: Content within documents.
+- `document_completion`: Autocomplete or finish text in the active document.
 - `task_query`: Task status, assignees, metrics.
 - `board_query`: Visual charts or diagrams.
 - `hybrid_query`: Needs both documents and task data.
@@ -37,7 +38,8 @@ Your role is to understand user requests, coordinate specialized agents (Documen
 def create_intent_detection_prompt(
     query: str,
     workspace_id: str,
-    conversation_history: List[Dict[str, str]] = None
+    conversation_history: List[Dict[str, str]] = None,
+    document_context: Dict[str, Any] = None
 ) -> str:
     """
     Create prompt for intent detection
@@ -46,6 +48,7 @@ def create_intent_detection_prompt(
         query: User's natural language query
         workspace_id: Workspace context
         conversation_history: Recent conversation for context
+        document_context: Context of the currently open document
         
     Returns:
         Complete prompt for LLM
@@ -69,6 +72,11 @@ def create_intent_detection_prompt(
             role = msg.get('role', 'user')
             content = msg.get('content', '')[:100]
             context_text += f"- {role}: {content}...\n"
+            
+    # Build document context
+    doc_context_text = ""
+    if document_context:
+        doc_context_text = f"\n\n**Active Document Context:**\n- ID: {document_context.get('id')}\n- Title: {document_context.get('title')}\n- Content Preview: {document_context.get('content', '')[:200]}..."
     
     prompt = f"""# Intent Detection Task
 
@@ -78,6 +86,7 @@ def create_intent_detection_prompt(
 ## Workspace Context
 - Workspace ID: {workspace_id}
 {context_text}
+{doc_context_text}
 
 ## IMPORTANT: Check for Small Talk First
 If the query is a simple greeting, casual conversation, or doesn't require any workspace data:

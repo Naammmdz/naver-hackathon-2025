@@ -40,6 +40,7 @@ export const GlobalChatPanel = () => {
   
   // UI Store state
   const { isChatOpen, setChatOpen, chatWidth, setChatWidth } = useUIStore();
+  const { activeDocumentId, getDocument } = useDocumentStore();
 
   const defaultMessages: ChatMessage[] = [
     {
@@ -150,12 +151,36 @@ export const GlobalChatPanel = () => {
       setIsLoading(true);
 
       try {
+        // Get current document context
+        let documentContext = undefined;
+        if (activeDocumentId) {
+          const doc = getDocument(activeDocumentId);
+          if (doc && doc.content) {
+             // Simple block to text conversion
+             const contentText = Array.isArray(doc.content) 
+                ? doc.content.map((block: any) => {
+                    if (Array.isArray(block.content)) {
+                        return block.content.map((c: any) => c.text || "").join("");
+                    }
+                    return "";
+                  }).join("\n")
+                : "";
+                
+             documentContext = {
+               id: doc.id,
+               title: doc.title,
+               content: contentText
+             };
+          }
+        }
+
         // Call Orchestrator API
         const response = await ragApi.queryDocuments(activeWorkspaceId, {
           query: trimmed,
           user_id: user.id,
           session_id: sessionId,
           include_memory: true,
+          document_context: documentContext,
         });
 
         // Save session ID if this is the first message

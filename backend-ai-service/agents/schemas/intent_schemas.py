@@ -20,6 +20,7 @@ class IntentType(str, Enum):
     # Document-related intents (WRITE)
     DOCUMENT_CREATE = "document_create"  # Create new document
     DOCUMENT_UPDATE = "document_update"  # Update existing document
+    DOCUMENT_COMPLETION = "document_completion"  # Autocomplete/Finish text
     
     # Task-related intents (READ)
     TASK_QUERY = "task_query"  # Ask about tasks

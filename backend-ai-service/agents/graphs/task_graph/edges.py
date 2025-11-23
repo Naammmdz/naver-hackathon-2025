@@ -29,6 +29,25 @@ def check_schema_loaded(state: TaskGraphState) -> str:
         return "error"
     
     logger.info("Schema loaded successfully")
+    return "classify_intent"
+
+
+def check_intent(state: TaskGraphState) -> str:
+    """
+    Check user intent to route to SQL or Tools
+    
+    Args:
+        state: Current graph state
+        
+    Returns:
+        Next node to route to
+    """
+    intent = state.get('intent', 'QUERY')
+    if intent == 'ACTION':
+        logger.info("Intent is ACTION -> Routing to tools")
+        return "execute_tools"
+    
+    logger.info("Intent is QUERY -> Routing to SQL generation")
     return "generate_sql"
 
 

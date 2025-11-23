@@ -79,6 +79,12 @@ export interface QueryRequest {
   llm_provider?: string;
   top_k?: number;
   include_memory?: boolean;
+  document_context?: {
+    id: string;
+    title: string;
+    content: string;
+    cursor_position?: number;
+  };
 }
 
 export interface QueryResponse {

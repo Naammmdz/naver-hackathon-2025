@@ -19,6 +19,8 @@ from utils.logger import get_logger
 from agents.graphs.task_graph.state import TaskGraphState
 from agents.tools.database_schema_tool import DatabaseSchemaTool
 from agents.tools.sql_execution_tool import SQLExecutionTool
+from agents.tools import CreateTaskTool, BulkCreateTasksTool, UpdateTaskTool
+from agents.api_clients import CoreServiceClient
 from agents.prompts.task_agent_sql_prompts import (
     TASK_AGENT_SYSTEM_PROMPT,
     create_analysis_prompt,
@@ -28,6 +30,8 @@ from agents.prompts.task_agent_sql_prompts import (
 )
 from llm import LLMFactory
 from database.connection import get_db_session
+import json
+import re
 
 logger = get_logger(__name__)
 
@@ -38,10 +42,12 @@ class TaskGraphNodes:
     
     Workflow:
     1. load_schema_node: Load database schema
-    2. generate_sql_node: LLM generates SQL query
-    3. execute_sql_node: Execute SQL safely
-    4. analyze_results_node: LLM analyzes results
-    5. generate_response_node: Format final answer
+    2. classify_intent_node: Determine if QUERY or ACTION
+    3. generate_sql_node: LLM generates SQL query (if QUERY)
+    4. execute_sql_node: Execute SQL safely (if QUERY)
+    5. analyze_results_node: LLM analyzes results (if QUERY)
+    6. execute_tools_node: Execute tools (if ACTION)
+    7. generate_response_node: Format final answer
     """
     
     def __init__(
@@ -59,8 +65,128 @@ class TaskGraphNodes:
         self.llm = llm_factory.create_llm(provider=llm_provider)
         self.llm_provider = llm_provider
         
+        # Initialize Tools
+        try:
+            api_client = CoreServiceClient()
+            self.tools = {
+                'create_task': CreateTaskTool(api_client),
+                'bulk_create_tasks': BulkCreateTasksTool(api_client),
+                'update_task': UpdateTaskTool(api_client)
+            }
+        except Exception as e:
+            logger.warning(f"Failed to initialize tools: {e}")
+            self.tools = {}
+        
         logger.info(f"TaskGraphNodes initialized with {llm_provider} LLM")
     
+    def classify_intent_node(self, state: TaskGraphState) -> Dict[str, Any]:
+        """
+        Classify user intent as QUERY or ACTION
+        """
+        query = state['query']
+        logger.info(f"Classifying intent for query: {query}")
+        
+        prompt = f"""
+        You are a helpful assistant.
+        User Query: {query}
+
+        Determine if the user wants to:
+        1. QUERY/READ data (e.g. "show me tasks", "how many tasks are overdue", "list tasks")
+        2. ACTION/WRITE data (e.g. "create a task", "add a task", "update task status", "change priority")
+
+        Return JSON:
+        {{
+            "intent": "QUERY" or "ACTION",
+            "reason": "explanation"
+        }}
+        """
+        
+        try:
+            response = self.llm.generate(prompt)
+            # Extract JSON
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                result = json.loads(json_match.group(0))
+                intent = result.get('intent', 'QUERY').upper()
+            else:
+                intent = 'QUERY'
+                
+            logger.info(f"Classified intent: {intent}")
+            return {'intent': intent}
+        except Exception as e:
+            logger.error(f"Error classifying intent: {e}")
+            return {'intent': 'QUERY'}  # Default to QUERY on error
+
+    def execute_tools_node(self, state: TaskGraphState) -> Dict[str, Any]:
+        """
+        Generate and execute tool calls for ACTION intent
+        """
+        query = state['query']
+        workspace_id = state['workspace_id']
+        logger.info(f"Executing tools for query: {query}")
+        
+        # Prompt to generate tool call
+        prompt = f"""
+        You are an AI assistant that manages tasks.
+        User Query: {query}
+        Workspace ID: {workspace_id}
+        
+        Available Tools:
+        - create_task(workspace_id, title, description, status, priority, due_date)
+        - update_task(task_id, title, status, priority)
+        
+        Extract the necessary information and return a JSON object representing the tool call.
+        
+        Format:
+        {{
+            "tool": "create_task",
+            "params": {{
+                "workspace_id": "{workspace_id}",
+                "title": "...",
+                "description": "...",
+                "status": "TODO",
+                "priority": "MEDIUM"
+            }}
+        }}
+        
+        If multiple tasks, use "bulk_create_tasks" with "tasks" list.
+        """
+        
+        try:
+            response = self.llm.generate(prompt)
+            # Extract JSON
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if not json_match:
+                return {'error': "Could not parse tool call from LLM response"}
+                
+            tool_call = json.loads(json_match.group(0))
+            tool_name = tool_call.get('tool')
+            params = tool_call.get('params', {})
+            
+            if tool_name not in self.tools:
+                return {'error': f"Unknown tool: {tool_name}"}
+                
+            # Execute tool
+            tool = self.tools[tool_name]
+            result = tool.execute(params)
+            
+            if result.status == 'success':
+                answer = f"✅ Successfully executed {tool_name}.\n\nDetails:\n{json.dumps(result.data, indent=2)}"
+                return {
+                    'answer': answer,
+                    'tool_results': [result.data],
+                    'confidence': 1.0
+                }
+            else:
+                return {
+                    'error': f"Tool execution failed: {result.message}",
+                    'answer': f"❌ Failed to execute {tool_name}: {result.message}"
+                }
+                
+        except Exception as e:
+            logger.error(f"Error executing tools: {e}")
+            return {'error': str(e)}
+
     def load_schema_node(self, state: TaskGraphState) -> Dict[str, Any]:
         """
         Load database schema information

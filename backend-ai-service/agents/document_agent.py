@@ -84,6 +84,8 @@ class DocumentAgent:
         llm_factory = LLMFactory()
         if llm_provider is None:
             llm_provider = llm_factory.get_default_provider()
+            
+        self.llm = llm_factory.create_llm(provider=llm_provider)
         
         # Get default embedder from config if not specified
         if embedder_type is None:
@@ -487,3 +489,43 @@ class DocumentAgent:
         tool = self.tools[tool_name]
         result = tool.execute(params)
         return result.model_dump()
+
+    def complete_text(
+        self,
+        query: str,
+        current_content: str,
+        cursor_position: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate text completion based on current document context.
+        
+        Args:
+            query: User instruction (e.g. "Finish this paragraph")
+            current_content: Current document text
+            cursor_position: Cursor position (optional)
+            
+        Returns:
+            Dict with 'completion' text
+        """
+        from langchain_core.messages import SystemMessage, HumanMessage
+        
+        prompt = f"""
+        You are an AI writing assistant.
+        User Instruction: {query}
+        
+        Current Document Content:
+        {current_content}
+        
+        Task: Generate the text that should follow or complete the current content based on the user's instruction.
+        Return ONLY the new text to be inserted. Do not repeat the existing text.
+        """
+        
+        try:
+            response = self.llm.invoke([
+                SystemMessage(content="You are a helpful AI writing assistant."),
+                HumanMessage(content=prompt)
+            ])
+            return {"completion": response.content}
+        except Exception as e:
+            logger.error(f"Error generating completion: {e}")
+            return {"completion": "", "error": str(e)}

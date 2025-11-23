@@ -145,6 +145,9 @@ services:
         condition: service_healthy
       backend-core:
         condition: service_started
+    volumes:
+      - ./backend-ai-service:/app
+      - ./backend-ai-service/docker-entrypoint.sh:/docker-entrypoint.sh
     networks:
       - default
     restart: unless-stopped

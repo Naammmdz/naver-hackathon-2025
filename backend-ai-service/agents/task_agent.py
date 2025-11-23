@@ -39,6 +39,7 @@ from agents.graphs.task_graph import (
     create_initial_state,
     TaskGraphNodes,
     check_schema_loaded,
+    check_intent,
     check_sql_generated,
     check_sql_executed,
     check_analysis_complete
@@ -113,7 +114,9 @@ class TaskAgent:
         
         # Add nodes
         workflow.add_node("load_schema", self.nodes.load_schema_node)
+        workflow.add_node("classify_intent", self.nodes.classify_intent_node)
         workflow.add_node("generate_sql", self.nodes.generate_sql_node)
+        workflow.add_node("execute_tools", self.nodes.execute_tools_node)
         workflow.add_node("execute_sql", self.nodes.execute_sql_node)
         workflow.add_node("analyze_results", self.nodes.analyze_results_node)
         workflow.add_node("no_results", self.nodes.no_results_handler)
@@ -127,8 +130,17 @@ class TaskAgent:
             "load_schema",
             check_schema_loaded,
             {
-                "generate_sql": "generate_sql",
+                "classify_intent": "classify_intent",
                 "error": "error"
+            }
+        )
+        
+        workflow.add_conditional_edges(
+            "classify_intent",
+            check_intent,
+            {
+                "generate_sql": "generate_sql",
+                "execute_tools": "execute_tools"
             }
         )
         
@@ -161,6 +173,7 @@ class TaskAgent:
         )
         
         # End nodes
+        workflow.add_edge("execute_tools", END)
         workflow.add_edge("no_results", END)
         workflow.add_edge("error", END)
         
