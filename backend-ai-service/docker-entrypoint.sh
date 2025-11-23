@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Export PYTHONPATH to include /app
+export PYTHONPATH=$PYTHONPATH:/app
+echo "PYTHONPATH: $PYTHONPATH"
+
 echo "=========================================="
 echo "  AI Service Startup"
 echo "=========================================="
