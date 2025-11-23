@@ -88,7 +88,7 @@ echo -e "${BLUE}========================================${NC}"
 if [ -f "./docker-compose-wrapper.sh" ]; then
     ./docker-compose-wrapper.sh up -d postgres redis elasticsearch
 else
-    $DOCKER_CMD up -d postgres redis elasticsearch
+    $DOCKER_CMD up -d postgres redis elasticsearch core-postgres
 fi
 
 echo -e "${GREEN}✓ PostgreSQL, Redis, and Elasticsearch started${NC}"
@@ -133,6 +133,11 @@ fi
 
 # Activate venv and start service in background
 source venv/bin/activate
+# Set environment variables for local run (matching docker-compose but using localhost ports)
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5439/postgres"
+export REDIS_HOST="localhost"
+export REDIS_PORT="6380"
+
 nohup uvicorn api.main:app --host 0.0.0.0 --port 8000 > ../logs/ai-service.log 2>&1 &
 AI_PID=$!
 echo $AI_PID > ../logs/ai-service.pid
@@ -149,6 +154,14 @@ echo -e "${BLUE}========================================${NC}"
 
 cd backend-core-service/be-core
 
+# Set environment variables for local run
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5439/postgres"
+export SPRING_DATASOURCE_USERNAME="postgres"
+export SPRING_DATASOURCE_PASSWORD="postgres"
+export REDIS_HOST="localhost"
+export REDIS_PORT="6380"
+export SPRING_ELASTICSEARCH_URIS="http://localhost:9200"
+
 # Start Spring Boot in background
 nohup ./mvnw spring-boot:run > ../../logs/core-service.log 2>&1 &
 CORE_PID=$!
@@ -161,7 +174,7 @@ echo ""
 
 # Start Hocuspocus Server
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}4. Starting Hocuspocus Server (Port 3002)${NC}"
+echo -e "${BLUE}4. Starting Hocuspocus Server (Port 1234)${NC}"
 echo -e "${BLUE}========================================${NC}"
 
 cd hocuspocus-server
@@ -175,6 +188,13 @@ if [ ! -d "dist" ]; then
     echo -e "${YELLOW}Building TypeScript...${NC}"
     npm run build
 fi
+
+# Set environment variables for local run
+export PORT=1234
+export REDIS_HOST="localhost"
+export REDIS_PORT="6380"
+export POSTGRES_URL="postgresql://postgres:postgres@localhost:5439/yjs"
+export CORE_SERVICE_URL="http://localhost:8989"
 
 nohup npm start > ../logs/hocuspocus.log 2>&1 &
 HOCUS_PID=$!
@@ -197,6 +217,11 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
+# Set environment variables for local run
+export VITE_HOCUSPOCUS_URL="ws://localhost:1234"
+export VITE_API_BASE_URL="http://localhost:8989"
+export VITE_AI_SERVICE_BASE_URL="http://localhost:8000"
+
 nohup npm run dev > ../logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo $FRONTEND_PID > ../logs/frontend.pid
@@ -217,9 +242,9 @@ if [ -z "$FRONTEND_PORT" ]; then
 fi
 
 # Detect actual hocuspocus port from log
-HOCUSPOCUS_PORT=$(grep -oP "WebSocket: ws://0\.0\.0\.0:\K\d+" logs/hocuspocus.log | tail -1)
+HOCUSPOCUS_PORT=$(grep -oP "running on ws://localhost:\K\d+" logs/hocuspocus.log | tail -1)
 if [ -z "$HOCUSPOCUS_PORT" ]; then
-    HOCUSPOCUS_PORT=3002  # fallback to default
+    HOCUSPOCUS_PORT=1234  # fallback to default
 fi
 
 # Check services
