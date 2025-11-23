@@ -762,7 +762,7 @@ export function DocumentEditor({
         }
         
         // Use setTimeout to ensure editor is fully initialized and Yjs sync is complete
-        const timeout = setTimeout(() => {
+        const timeout = setTimeout(async () => {
           // Check if component is still mounted and editor view is available
           if (!isMountedRef.current) {
             return;
