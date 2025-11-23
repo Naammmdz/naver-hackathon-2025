@@ -230,6 +230,14 @@ class OrchestratorAgent:
                 # Default to DOCUMENT_QUERY instead of UNKNOWN to enable document search
                 intent_type_enum = IntentType.DOCUMENT_QUERY
             
+            # Force UNKNOWN to DOCUMENT_QUERY for fallback
+            if intent_type_enum == IntentType.UNKNOWN:
+                logger.info("Intent is UNKNOWN, defaulting to DOCUMENT_QUERY for fallback")
+                intent_type_enum = IntentType.DOCUMENT_QUERY
+                # Boost confidence to ensure plan creation (threshold is 0.3)
+                intent_data['confidence'] = 1.0
+
+            
             # Create Intent object
             intent = Intent(
                 type=intent_type_enum,

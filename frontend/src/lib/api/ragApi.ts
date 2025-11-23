@@ -27,7 +27,7 @@ const AI_SERVICE_BASE_URL =
   import.meta.env.VITE_AI_SERVICE_BASE_URL?.replace(/\/$/, "") ??
   (import.meta.env.DEV ? "" : "http://localhost:8000");
 
-const API_PREFIX = "/ai-api/api/v1";
+const API_PREFIX = "/api/v1";
 
 /**
  * Helper function to make API requests

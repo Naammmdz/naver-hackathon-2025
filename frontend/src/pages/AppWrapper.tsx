@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { startReminderScheduler } from "@/services/reminderScheduler";
 import type { SearchResult } from "@/types/search";
+import GlobalChatPanel from "@/components/ai/GlobalChatPanel";
 
 // Lazy load page components
 const Home = lazy(() => import("./Home"));
@@ -341,6 +342,9 @@ export default function AppWrapper() {
                 </Routes>
               </Suspense>
             </main>
+
+            {/* AI Chat Panel - Resizable Sidebar */}
+            <GlobalChatPanel />
           </div>
         </div>
       )}

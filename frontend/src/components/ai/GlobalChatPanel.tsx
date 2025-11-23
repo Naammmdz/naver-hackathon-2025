@@ -1,5 +1,5 @@
-import { Send, Sparkles, X, Loader2, ExternalLink, Brain, History } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Send, Sparkles, X, Loader2, ExternalLink, Brain, History, GripVertical } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { ragApi } from "@/lib/api/ragApi";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useDocumentStore } from "@/store/documentStore";
+import { useUIStore } from "@/store/uiStore";
 import type { Citation } from "@/types/rag";
 import { MermaidCodeBlock } from "@/components/ai/MermaidRenderer";
 import { TaskAnalysisDisplay } from "@/components/ai/TaskAnalysisDisplay";
@@ -29,14 +30,15 @@ type ChatMessage = {
   error?: boolean;
 };
 
-const panelWidthClass = "w-full sm:w-[24rem] lg:w-[26rem]";
-
 export const GlobalChatPanel = () => {
   const { t } = useTranslation();
   const { user } = useUser();
   const navigate = useNavigate();
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const { documents, setActiveDocument } = useDocumentStore();
+  
+  // UI Store state
+  const { isChatOpen, setChatOpen, chatWidth, setChatWidth } = useUIStore();
 
   const defaultMessages: ChatMessage[] = [
     {
@@ -46,7 +48,6 @@ export const GlobalChatPanel = () => {
     },
   ];
 
-  const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -68,28 +69,43 @@ export const GlobalChatPanel = () => {
     }
     return defaultMessages;
   });
-  const [headerOffset, setHeaderOffset] = useState(0);
 
-  const closePanel = useCallback(() => setOpen(false), []);
+  // Resizing logic
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
 
-  const measureHeaderOffset = useCallback(() => {
-    if (typeof document === "undefined") {
-      return 0;
-    }
-
-    const header = document.querySelector<HTMLElement>("[data-app-header]");
-    if (!header) {
-      return 0;
-    }
-
-    const { bottom } = header.getBoundingClientRect();
-    return Math.max(0, Math.round(bottom));
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none"; // Prevent text selection while resizing
   }, []);
 
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    // Calculate new width based on mouse position from right edge of screen
+    const newWidth = window.innerWidth - e.clientX;
+    
+    // Min width 300px, Max width 800px (or 50% of screen)
+    const clampedWidth = Math.max(300, Math.min(newWidth, Math.min(800, window.innerWidth * 0.8)));
+    
+    setChatWidth(clampedWidth);
+  }, [setChatWidth]);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  }, [handleMouseMove]);
+
+  const closePanel = useCallback(() => setChatOpen(false), [setChatOpen]);
+
+  // Keyboard shortcut to close
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!isChatOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -99,39 +115,7 @@ export const GlobalChatPanel = () => {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, closePanel]);
-
-  const updateOffsets = useCallback(() => {
-    const offset = measureHeaderOffset();
-    setHeaderOffset(offset);
-  }, [measureHeaderOffset]);
-
-  const openPanel = useCallback(() => {
-    setHeaderOffset(measureHeaderOffset());
-    setOpen(true);
-  }, [measureHeaderOffset]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    updateOffsets();
-
-    window.addEventListener("resize", updateOffsets);
-    window.addEventListener("orientationchange", updateOffsets);
-
-    return () => {
-      window.removeEventListener("resize", updateOffsets);
-      window.removeEventListener("orientationchange", updateOffsets);
-    };
-  }, [updateOffsets]);
-
-  useEffect(() => {
-    if (open) {
-      updateOffsets();
-    }
-  }, [open, updateOffsets]);
+  }, [isChatOpen, closePanel]);
 
   const canSend = useMemo(() => input.trim().length > 0 && !isLoading && !!activeWorkspaceId, [input, isLoading, activeWorkspaceId]);
 
@@ -192,10 +176,6 @@ export const GlobalChatPanel = () => {
           // Save to localStorage
           const chatHistory = [...messages.slice(1), userMessage, hitlMessage];
           localStorage.setItem('global-ai-chat-history', JSON.stringify(chatHistory));
-
-          // Note: Frontend should implement a HITL confirmation dialog
-          // similar to the existing HITLConfirmationDialog
-          // For now, just display the HITL request info
           return;
         }
 
@@ -242,64 +222,49 @@ export const GlobalChatPanel = () => {
     [canSend, input, activeWorkspaceId, user, sessionId, messages, t],
   );
 
-  const overlayStyle = useMemo(() => {
-    if (headerOffset === 0) {
-      return undefined;
-    }
-
-    return {
-      top: headerOffset,
-      height: `calc(100% - ${headerOffset}px)`,
-    };
-  }, [headerOffset]);
-
-  const panelStyle = useMemo(() => {
-    if (headerOffset === 0) {
-      return undefined;
-    }
-
-    return {
-      top: headerOffset,
-      height: `calc(100% - ${headerOffset}px)`,
-      maxHeight: `calc(100% - ${headerOffset}px)`,
-    } as const;
-  }, [headerOffset]);
+  // If chat is closed, we render the toggle button
+  if (!isChatOpen) {
+    return (
+      <button
+        aria-controls="global-ai-chat-panel"
+        aria-expanded={false}
+        onClick={() => setChatOpen(true)}
+        className={cn(
+          "fixed right-0 top-1/2 z-[58] flex -translate-y-1/2 translate-x-[calc(100%-1.5rem)] items-center justify-center rounded-l-lg border border-r-0 border-primary bg-primary px-2 py-3 text-xs font-semibold uppercase tracking-wide text-primary-foreground shadow-lg transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary",
+          "sm:translate-x-[calc(100%-2rem)]",
+        )}
+        style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+      >
+        {t('components.GlobalChatPanel.buttonText')}
+      </button>
+    );
+  }
 
   return (
     <>
-      {open ? (
-        <div
-          aria-hidden="true"
-          className="fixed inset-0 z-[55] bg-black/30 backdrop-blur-[1px]"
-          style={overlayStyle}
-          onClick={closePanel}
-        />
-      ) : (
-        <button
-          aria-controls="global-ai-chat-panel"
-          aria-expanded={open}
-          onClick={openPanel}
-          className={cn(
-            "fixed right-0 top-1/2 z-[58] flex -translate-y-1/2 translate-x-[calc(100%-1.5rem)] items-center justify-center rounded-l-lg border border-r-0 border-primary bg-primary px-2 py-3 text-xs font-semibold uppercase tracking-wide text-primary-foreground shadow-lg transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary",
-            "sm:translate-x-[calc(100%-2rem)]",
-          )}
-          style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
-        >
-          {t('components.GlobalChatPanel.buttonText')}
-        </button>
-      )}
-
       <aside
+        ref={sidebarRef}
         aria-label={t('components.GlobalChatPanel.panelAriaLabel')}
         id="global-ai-chat-panel"
         className={cn(
-          "fixed right-0 top-0 z-[60] flex h-full max-h-screen flex-col border-l bg-background text-foreground shadow-2xl transition-transform duration-300 ease-in-out",
-          panelWidthClass,
-          open ? "translate-x-0" : "translate-x-full",
+          "relative z-[40] flex h-full flex-col border-l bg-background text-foreground shadow-xl transition-all duration-200 ease-in-out",
         )}
-        style={panelStyle}
+        style={{ width: chatWidth }}
       >
-        <header className="flex items-center justify-between border-b px-5 py-4">
+        {/* Resize Overlay to capture events */}
+        {isResizing && (
+          <div className="fixed inset-0 z-[100] cursor-col-resize" />
+        )}
+
+        {/* Resize Handle */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/50 transition-colors z-50 flex items-center justify-center group"
+          onMouseDown={startResizing}
+        >
+           <div className="h-8 w-1 rounded-full bg-muted-foreground/20 group-hover:bg-primary/80 transition-colors" />
+        </div>
+
+        <header className="flex items-center justify-between border-b px-5 py-4 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Sparkles className="h-5 w-5" />
@@ -354,7 +319,7 @@ export const GlobalChatPanel = () => {
                     className="mt-1 h-10 w-10 flex-shrink-0 rounded-full object-cover"
                   />
                 )}
-                <div className="flex flex-col max-w-[80%]">
+                <div className="flex flex-col max-w-[90%]">
                   <p
                     className={cn(
                       "rounded-xl px-4 py-2",
@@ -429,7 +394,8 @@ export const GlobalChatPanel = () => {
                                     onClick={() => {
                                       setActiveDocument(document.id);
                                       navigate('/app/docs');
-                                      setOpen(false);
+                                      // Don't close panel on navigation anymore, as it's a sidebar
+                                      // setChatOpen(false); 
                                     }}
                                     title="Open document"
                                   >
@@ -464,7 +430,7 @@ export const GlobalChatPanel = () => {
           </div>
         </ScrollArea>
 
-        <form className="border-t px-5 py-4" onSubmit={handleSend}>
+        <form className="border-t px-5 py-4 flex-shrink-0" onSubmit={handleSend}>
           <label className="sr-only" htmlFor="global-ai-chat-input">
             {t('components.GlobalChatPanel.inputLabel')}
           </label>
@@ -517,7 +483,7 @@ export const GlobalChatPanel = () => {
       {/* Memory Sidebar */}
       <MemorySidebar
         sessionId={sessionId}
-        isOpen={memorySidebarOpen && open}
+        isOpen={memorySidebarOpen && isChatOpen}
         onClose={() => setMemorySidebarOpen(false)}
       />
 

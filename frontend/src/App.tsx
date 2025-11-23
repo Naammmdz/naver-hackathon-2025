@@ -1,4 +1,3 @@
-import GlobalChatPanel from "@/components/ai/GlobalChatPanel";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -112,7 +111,6 @@ const App = () => {
         <FocusFlyProvider>
           <Toaster />
           <Sonner />
-          {!isLandingPage && <GlobalChatPanel />}
           <Suspense fallback={
             <div className="flex items-center justify-center h-screen bg-background">
               <div className="flex flex-col items-center gap-4">
