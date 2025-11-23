@@ -78,7 +78,9 @@ const resolveBaseUrl = async (): Promise<string> => {
     const target = `${base}${API_PREFIX}${HEALTH_ENDPOINT}`;
     try {
       const response = await fetch(target, { method: "GET" });
-      if (response.ok) {
+      const contentType = response.headers.get("content-type") || "";
+      const isJson = contentType.includes("application/json");
+      if (response.ok && isJson) {
         return base;
       }
     } catch (error) {
