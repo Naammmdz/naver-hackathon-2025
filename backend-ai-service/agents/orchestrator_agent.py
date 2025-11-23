@@ -59,6 +59,7 @@ class OrchestratorState(TypedDict):
     # Agent instances (injected)
     document_agent: Optional[Any]
     task_agent: Optional[Any]
+    board_agent: Optional[Any]
 
 
 class OrchestratorAgent:
@@ -77,7 +78,8 @@ class OrchestratorAgent:
         llm_provider: str = "naver",
         model_name: Optional[str] = None,
         document_agent=None,
-        task_agent=None
+        task_agent=None,
+        board_agent=None
     ):
         """
         Initialize Orchestrator Agent
@@ -87,6 +89,7 @@ class OrchestratorAgent:
             model_name: Specific model to use
             document_agent: DocumentAgent instance
             task_agent: TaskAgent instance
+            board_agent: BoardAgent instance
         """
         # Initialize LLM factory
         factory = LLMFactory()
@@ -96,6 +99,7 @@ class OrchestratorAgent:
         )
         self.document_agent = document_agent
         self.task_agent = task_agent
+        self.board_agent = board_agent
         
         # Build workflow
         self.graph = self._build_graph()
@@ -357,6 +361,7 @@ class OrchestratorAgent:
         
         step = plan.steps[step_index]
         logger.info(f"Executing step {step_index + 1}/{len(plan.steps)}: {step.step_id} ({step.type.value})")
+        logger.info(f"DEBUG: step.type={step.type}, type(step.type)={type(step.type)}, StepType.QUERY_BOARD={StepType.QUERY_BOARD}")
         
         try:
             # Check dependencies
@@ -373,6 +378,9 @@ class OrchestratorAgent:
             
             elif step.type == StepType.QUERY_TASK:
                 result = self._execute_task_query(step, state)
+            
+            elif step.type == StepType.QUERY_BOARD:
+                result = self._execute_board_query(step, state)
             
             elif step.type == StepType.SYNTHESIZE:
                 result = self._execute_synthesis(step, state)
@@ -436,7 +444,7 @@ class OrchestratorAgent:
                 {
                     'step_id': r.step_id,
                     'success': r.success,
-                    'result': r.result if r.success else None,
+                    'result': r.result if r.success and r.result is not None else {},
                     'error': r.error if not r.success else None
                 }
                 for r in state['step_results']
@@ -530,6 +538,21 @@ class OrchestratorAgent:
         state['task_agent'] = self.task_agent
         
         result = self.task_agent.query(
+            workspace_id=state['workspace_id'],
+            query=step.query
+        )
+        
+        return result
+    
+    def _execute_board_query(self, step: ExecutionStep, state: OrchestratorState) -> Dict[str, Any]:
+        """Execute board query step"""
+        if not self.board_agent:
+            raise Exception("Board agent not available")
+        
+        # Inject agent instances into state
+        state['board_agent'] = self.board_agent
+        
+        result = self.board_agent.query(
             workspace_id=state['workspace_id'],
             query=step.query
         )
@@ -697,7 +720,8 @@ class OrchestratorAgent:
             "metadata": {},
             "error": None,
             "document_agent": self.document_agent,
-            "task_agent": self.task_agent
+            "task_agent": self.task_agent,
+            "board_agent": self.board_agent
         }
         
         # Run workflow

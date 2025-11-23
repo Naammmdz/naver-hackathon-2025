@@ -3,6 +3,7 @@ LLM Factory for managing multiple LLM providers with structured output support
 """
 import os
 import yaml
+from pathlib import Path
 from typing import Optional, Dict, Any, Literal, Union
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -51,7 +52,14 @@ class LLMFactory:
         Args:
             config_path: Path to configuration file
         """
-        self.config_path = config_path
+        # Resolve config path relative to this file if it's the default relative path
+        # This ensures it works regardless of where the script is run from
+        if config_path == "config.yml":
+            # .../backend-ai-service/llm/llm_factory.py -> .../backend-ai-service/config.yml
+            self.config_path = str(Path(__file__).parent.parent / "config.yml")
+        else:
+            self.config_path = config_path
+            
         self.config = self._load_config()
     
     def _load_config(self) -> Dict[str, Any]:

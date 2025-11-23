@@ -529,3 +529,40 @@ class BoardAgent:
         
         logger.info("Visualization completed")
         return response
+
+    def query(
+        self,
+        workspace_id: str,
+        query: str
+    ) -> Dict[str, Any]:
+        """
+        Unified query interface for Orchestrator
+        
+        Args:
+            workspace_id: Workspace ID
+            query: Natural language query
+            
+        Returns:
+            Dict with answer and visualization data
+        """
+        # Simple heuristic for chart type
+        query_lower = query.lower()
+        chart_type = ChartType.KANBAN
+        
+        if "gantt" in query_lower or "timeline" in query_lower:
+            chart_type = ChartType.GANTT
+        elif "flow" in query_lower or "process" in query_lower or "dependency" in query_lower:
+            chart_type = ChartType.FLOWCHART
+        
+        result = self.visualize(
+            workspace_id=workspace_id,
+            query=query,
+            chart_type=chart_type
+        )
+        
+        # Adapt result to standard format expected by Orchestrator
+        return {
+            "answer": result.get("summary") or result.get("markdown_output"),
+            "visualization": result.get("visualization"),
+            "metadata": result.get("metadata")
+        }

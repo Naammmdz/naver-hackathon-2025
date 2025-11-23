@@ -73,6 +73,7 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
         model_name: Optional[str] = None,
         document_agent=None,
         task_agent=None,
+        board_agent=None,
         hitl_config: Optional[HITLConfig] = None
     ):
         """
@@ -83,13 +84,15 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             model_name: Specific model
             document_agent: Document agent instance
             task_agent: Task agent instance
+            board_agent: Board agent instance
             hitl_config: HITL configuration
         """
         super().__init__(
             llm_provider=llm_provider,
             model_name=model_name,
             document_agent=document_agent,
-            task_agent=task_agent
+            task_agent=task_agent,
+            board_agent=board_agent
         )
         
         self.hitl_manager = HITLManager(
@@ -348,7 +351,8 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             'metadata': {},
             'error': None,
             'document_agent': self.document_agent,
-            'task_agent': self.task_agent
+            'task_agent': self.task_agent,
+            'board_agent': self.board_agent
         })
         
         # Check for small talk / direct answer

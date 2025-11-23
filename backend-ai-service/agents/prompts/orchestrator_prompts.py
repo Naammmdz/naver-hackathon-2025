@@ -107,7 +107,8 @@ Analyze the user's query and detect:
   "agent": "document|task|board|both",
   "reasoning": "Explanation here",
   "entities": {{}},
-  "requires_decomposition": false
+  "requires_decomposition": false,
+  "requires_agents": true
 }}
 ```
 
@@ -278,16 +279,16 @@ def create_synthesis_prompt(
     for i, result in enumerate(step_results, 1):
         step_id = result.get('step_id', f'step{i}')
         success = result.get('success', False)
-        data = result.get('result', {})
+        data = result.get('result') or {}
         
         results_text += f"\n**Step {i} ({step_id}):**\n"
         results_text += f"Status: {'✅ Success' if success else '❌ Failed'}\n"
         
-        if success:
+        if success and data:
             # Extract key information
-            if 'answer' in data:
-                results_text += f"Answer: {data['answer'][:200]}...\n"
-            if 'documents' in data:
+            if data.get('answer'):
+                results_text += f"Answer: {str(data['answer'])[:200]}...\n"
+            if 'documents' in data and data['documents']:
                 results_text += f"Documents found: {len(data['documents'])}\n"
             if 'row_count' in data:
                 results_text += f"Rows returned: {data['row_count']}\n"

@@ -21,6 +21,12 @@ echo "✓ Migrations already applied, skipping migration runner"
 # python run_migrations.py
 # cd /app
 
+# Ensure Welcome Workspace exists for all users
+echo ""
+echo "Ensuring Welcome Workspace..."
+python scripts/ensure_welcome_workspace.py || echo "⚠️ Failed to ensure Welcome Workspace, continuing..."
+echo "✓ Welcome Workspace check complete"
+
 # Start the application
 echo ""
 echo "Starting AI Service..."
