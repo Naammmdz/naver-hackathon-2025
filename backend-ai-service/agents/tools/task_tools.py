@@ -44,14 +44,42 @@ class CreateTaskTool(AgentTool):
         if not isinstance(params['title'], str) or not params['title'].strip():
             raise ToolError("Title must be a non-empty string")
         
-        # Validate enum values
-        valid_statuses = ['TODO', 'IN_PROGRESS', 'DONE']
-        if 'status' in params and params['status'] not in valid_statuses:
-            raise ToolError(f"Invalid status. Must be one of: {valid_statuses}")
-        
-        valid_priorities = ['LOW', 'MEDIUM', 'HIGH']
-        if 'priority' in params and params['priority'] not in valid_priorities:
-            raise ToolError(f"Invalid priority. Must be one of: {valid_priorities}")
+        # Validate and normalize status
+        if 'status' in params:
+            status_map = {
+                'todo': 'Todo',
+                'in_progress': 'In_Progress',
+                'in progress': 'In_Progress',
+                'done': 'Done',
+                'blocked': 'Blocked'
+            }
+            status_key = params['status'].lower()
+            if status_key in status_map:
+                params['status'] = status_map[status_key]
+            else:
+                # Fallback to case-insensitive check against allowed values
+                valid_statuses = ['Todo', 'In_Progress', 'Done', 'Blocked']
+                if params['status'] not in valid_statuses:
+                     # Allow uppercase for backward compatibility if API expects it
+                    if params['status'] not in ['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED']:
+                        raise ToolError(f"Invalid status. Must be one of: {valid_statuses}")
+
+        # Validate and normalize priority
+        if 'priority' in params:
+            priority_map = {
+                'low': 'Low',
+                'medium': 'Medium',
+                'high': 'High',
+                'critical': 'Critical'
+            }
+            priority_key = params['priority'].lower()
+            if priority_key in priority_map:
+                params['priority'] = priority_map[priority_key]
+            else:
+                valid_priorities = ['Low', 'Medium', 'High', 'Critical']
+                if params['priority'] not in valid_priorities:
+                    if params['priority'] not in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']:
+                        raise ToolError(f"Invalid priority. Must be one of: {valid_priorities}")
         
         return True
     
@@ -167,6 +195,31 @@ class BulkCreateTasksTool(AgentTool):
                 raise ToolError(f"Task {i} must be a dictionary")
             if 'title' not in task or not task['title'].strip():
                 raise ToolError(f"Task {i} missing required field: title")
+            
+            # Normalize status if present
+            if 'status' in task:
+                status_map = {
+                    'todo': 'Todo',
+                    'in_progress': 'In_Progress',
+                    'in progress': 'In_Progress',
+                    'done': 'Done',
+                    'blocked': 'Blocked'
+                }
+                status_key = task['status'].lower()
+                if status_key in status_map:
+                    task['status'] = status_map[status_key]
+            
+            # Normalize priority if present
+            if 'priority' in task:
+                priority_map = {
+                    'low': 'Low',
+                    'medium': 'Medium',
+                    'high': 'High',
+                    'critical': 'Critical'
+                }
+                priority_key = task['priority'].lower()
+                if priority_key in priority_map:
+                    task['priority'] = priority_map[priority_key]
         
         return True
     
@@ -285,14 +338,40 @@ class UpdateTaskTool(AgentTool):
         if not any(field in params for field in updateable_fields):
             raise ToolError("At least one field to update is required")
         
-        # Validate enum values
-        valid_statuses = ['TODO', 'IN_PROGRESS', 'DONE']
-        if 'status' in params and params['status'] not in valid_statuses:
-            raise ToolError(f"Invalid status. Must be one of: {valid_statuses}")
+        # Validate and normalize status
+        if 'status' in params:
+            status_map = {
+                'todo': 'Todo',
+                'in_progress': 'In_Progress',
+                'in progress': 'In_Progress',
+                'done': 'Done',
+                'blocked': 'Blocked'
+            }
+            status_key = params['status'].lower()
+            if status_key in status_map:
+                params['status'] = status_map[status_key]
+            else:
+                valid_statuses = ['Todo', 'In_Progress', 'Done', 'Blocked']
+                if params['status'] not in valid_statuses:
+                    if params['status'] not in ['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED']:
+                        raise ToolError(f"Invalid status. Must be one of: {valid_statuses}")
         
-        valid_priorities = ['LOW', 'MEDIUM', 'HIGH']
-        if 'priority' in params and params['priority'] not in valid_priorities:
-            raise ToolError(f"Invalid priority. Must be one of: {valid_priorities}")
+        # Validate and normalize priority
+        if 'priority' in params:
+            priority_map = {
+                'low': 'Low',
+                'medium': 'Medium',
+                'high': 'High',
+                'critical': 'Critical'
+            }
+            priority_key = params['priority'].lower()
+            if priority_key in priority_map:
+                params['priority'] = priority_map[priority_key]
+            else:
+                valid_priorities = ['Low', 'Medium', 'High', 'Critical']
+                if params['priority'] not in valid_priorities:
+                    if params['priority'] not in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']:
+                        raise ToolError(f"Invalid priority. Must be one of: {valid_priorities}")
         
         return True
     
