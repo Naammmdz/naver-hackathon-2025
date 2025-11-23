@@ -33,6 +33,7 @@ MIGRATION_FILES = [
     "009_update_embedding_dimension.sql",
     "010_sync_schema_with_core.sql",
     "011_add_workspace_id_to_chunks.sql",
+    "012_add_user_metadata.sql",
 ]
 
 def connect_to_db():
