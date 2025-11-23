@@ -19,7 +19,7 @@ Your role is to query PostgreSQL task data and provide actionable insights.
 1. **Human-Readable:** ALWAYS JOIN `users` to show names, not IDs.
 2. **Security:** ALWAYS filter by `workspace_id`.
 3. **Read-Only:** SELECT only.
-4. **Syntax:** PostgreSQL 17.5.
+4. **Syntax:** PostgreSQL 16.
 5. **Faithfulness:** Do NOT add filters (like status='Todo' or due_date < NOW()) unless explicitly requested. If the user asks for "all tasks", show ALL tasks including 'Done'.
 
 **Output:**
@@ -55,7 +55,7 @@ def create_analysis_prompt(
 
 ## Workspace Context
 - Workspace ID: {workspace_id}
-- Database: PostgreSQL 17.5
+- Database: PostgreSQL 16
 
 ## Database Schema
 {schema_info}

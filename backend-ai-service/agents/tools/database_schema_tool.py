@@ -116,6 +116,29 @@ ORDER BY t.priority DESC;
 
 ---
 
+## Table: documents
+Document storage.
+
+**Columns:**
+- id: VARCHAR (Primary Key)
+- workspace_id: VARCHAR (Foreign Key)
+- user_id: VARCHAR (Creator)
+- parent_id: VARCHAR (Parent document for nesting)
+- title: VARCHAR
+- content: TEXT
+- icon: VARCHAR
+- trashed: BOOLEAN
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
+
+**Indexes:**
+- PRIMARY KEY: id
+- INDEX: workspace_id
+- INDEX: user_id
+- INDEX: parent_id
+
+---
+
 ## Table: task_docs
 Links between tasks and documents.
 
@@ -138,6 +161,25 @@ JOIN task_docs td ON td.task_id = t.id
 JOIN documents d ON d.id = td.doc_id
 WHERE t.workspace_id = 'workspace-123';
 ```
+
+---
+
+## Table: boards
+Kanban/Whiteboard storage.
+
+**Columns:**
+- id: VARCHAR (Primary Key)
+- workspace_id: VARCHAR (Foreign Key)
+- user_id: VARCHAR (Creator)
+- title: VARCHAR
+- snapshot: TEXT (JSON content)
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
+
+**Indexes:**
+- PRIMARY KEY: id
+- INDEX: workspace_id
+- INDEX: user_id
 
 ---
 
@@ -198,6 +240,7 @@ Users who are members of workspaces.
 - id: VARCHAR (Primary Key)
 - workspace_id: VARCHAR (Foreign Key)
 - user_id: VARCHAR
+
 - role: VARCHAR - User role (owner, admin, member)
 - joined_at: TIMESTAMP
 
