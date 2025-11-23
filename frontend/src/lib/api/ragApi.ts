@@ -24,11 +24,14 @@ import type {
 // AI Service base URL - can be configured via environment variable
 // In development, use proxy path /ai-api to avoid CORS issues
 // In production, use full URL or configure via VITE_AI_SERVICE_BASE_URL
+// In development, use proxy path /ai-api to avoid CORS issues and route to correct service
+// In production, use full URL or configure via VITE_AI_SERVICE_BASE_URL
 const AI_SERVICE_BASE_URL =
   import.meta.env.VITE_AI_SERVICE_BASE_URL?.replace(/\/$/, "") ??
   (import.meta.env.DEV ? "" : "http://localhost:8000");
 
-const API_PREFIX = "/api/v1";
+// Use /ai-api prefix in dev to trigger Vite proxy, which rewrites it to target
+const API_PREFIX = import.meta.env.DEV ? "/ai-api/api/v1" : "/api/v1";
 
 /**
  * Helper function to make API requests

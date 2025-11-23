@@ -17,6 +17,7 @@ import { MermaidCodeBlock } from "@/components/ai/MermaidRenderer";
 import { TaskAnalysisDisplay } from "@/components/ai/TaskAnalysisDisplay";
 import { MemorySidebar } from "@/components/ai/MemorySidebar";
 import { SessionManager } from "@/components/ai/SessionManager";
+import { MarkdownRenderer } from "@/components/ai/MarkdownRenderer";
 
 type ChatMessage = {
   id: string;
@@ -320,7 +321,7 @@ export const GlobalChatPanel = () => {
                   />
                 )}
                 <div className="flex flex-col max-w-[90%]">
-                  <p
+                  <div
                     className={cn(
                       "rounded-xl px-4 py-2",
                       message.role === "assistant"
@@ -330,8 +331,8 @@ export const GlobalChatPanel = () => {
                         : "bg-primary text-primary-foreground",
                     )}
                   >
-                    {message.content}
-                  </p>
+                    <MarkdownRenderer content={message.content} />
+                  </div>
                   
                   {/* Mermaid Visualization (Board Agent) */}
                   {message.visualization && message.role === "assistant" && (
