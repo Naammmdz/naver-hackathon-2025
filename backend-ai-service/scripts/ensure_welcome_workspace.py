@@ -114,7 +114,50 @@ def ensure_welcome_workspace():
             ).all()
             
             doc_id = None
-            doc_content = "# Welcome to Your New Workspace!\n\nThis is a demo document to help you get started.\n\n## Features\n- **Real-time Collaboration**: Edit documents with your team.\n- **Task Management**: Track progress with Kanban boards.\n- **Whiteboards**: Brainstorm ideas visually.\n\nTry editing this document or create a new one!"
+            # BlockNote JSON format
+            import json
+            doc_content_blocks = [
+                {
+                    "type": "heading",
+                    "content": [{"type": "text", "text": "Welcome to Your New Workspace!", "styles": {}}],
+                    "props": {"level": 1}
+                },
+                {
+                    "type": "paragraph",
+                    "content": [{"type": "text", "text": "This is a demo document to help you get started.", "styles": {}}]
+                },
+                {
+                    "type": "heading",
+                    "content": [{"type": "text", "text": "Features", "styles": {}}],
+                    "props": {"level": 2}
+                },
+                {
+                    "type": "bulletListItem",
+                    "content": [
+                        {"type": "text", "text": "Real-time Collaboration", "styles": {"bold": true}},
+                        {"type": "text", "text": ": Edit documents with your team.", "styles": {}}
+                    ]
+                },
+                {
+                    "type": "bulletListItem",
+                    "content": [
+                        {"type": "text", "text": "Task Management", "styles": {"bold": true}},
+                        {"type": "text", "text": ": Track progress with Kanban boards.", "styles": {}}
+                    ]
+                },
+                {
+                    "type": "bulletListItem",
+                    "content": [
+                        {"type": "text", "text": "Whiteboards", "styles": {"bold": true}},
+                        {"type": "text", "text": ": Brainstorm ideas visually.", "styles": {}}
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "content": [{"type": "text", "text": "Try editing this document or create a new one!", "styles": {}}]
+                }
+            ]
+            doc_content = json.dumps(doc_content_blocks)
             
             if existing_docs:
                 doc_id = existing_docs[0].id
