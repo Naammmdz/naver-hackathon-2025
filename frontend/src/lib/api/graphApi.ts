@@ -1,11 +1,14 @@
 import { apiAuthContext } from "./authContext";
 
 // AI Service base URL - use relative URL in production (via nginx proxy)
-// In development, use proxy path /ai-api to avoid CORS issues
-// In production, use relative URL or configure via VITE_AI_SERVICE_BASE_URL
+// If VITE_AI_SERVICE_BASE_URL is set and not empty, use it
+// Otherwise, use relative URL in production (via nginx proxy) or localhost in dev
 const AI_SERVICE_BASE_URL =
-  import.meta.env.VITE_AI_SERVICE_BASE_URL?.replace(/\/$/, "") ??
-  (import.meta.env.PROD ? "" : "http://localhost:8000");
+  import.meta.env.VITE_AI_SERVICE_BASE_URL && import.meta.env.VITE_AI_SERVICE_BASE_URL.trim() !== ""
+    ? import.meta.env.VITE_AI_SERVICE_BASE_URL.replace(/\/$/, "")
+    : import.meta.env.PROD
+    ? ""
+    : "http://localhost:8000";
 
 const API_PREFIX = import.meta.env.DEV ? "/ai-api/api/v1" : "/ai-api/api/v1";
 
