@@ -780,7 +780,24 @@ export function DocumentEditor({
             
             // Check if document is empty or doesn't start with heading 1
             if (!content || content.length === 0) {
-              // Document is empty, insert heading 1 using BlockNote API
+              // Document is empty in Yjs
+              // Check if we have content in Postgres (e.g. from script/API)
+              if (document.content && document.content.trim().length > 0) {
+                console.log('[BlockNote] Seeding Yjs from Postgres content');
+                try {
+                  const blocks = await wrappedEditor.tryParseMarkdownToBlocks(document.content);
+                  if (blocks && blocks.length > 0) {
+                    wrappedEditor.replaceBlocks(wrappedEditor.document, blocks);
+                    headingEnsuredRef.current.add(document.id);
+                    return;
+                  }
+                } catch (error) {
+                  console.warn('[BlockNote] Failed to parse markdown from Postgres:', error);
+                  // Fall through to default initialization
+                }
+              }
+
+              // Document is empty and no Postgres content (or parse failed), insert heading 1
               try {
                 // Try different content formats that BlockNote might accept
                 const titleText = documentTitleRef.current || 'Untitled';
@@ -798,6 +815,7 @@ export function DocumentEditor({
               } catch (error) {
                 console.warn('[BlockNote] Error inserting heading, skipping to avoid breaking editor:', error);
                 // Skip heading insertion to prevent breaking the editor
+              }
                 // The document will work without heading 1, user can add it manually
               }
             } else {
