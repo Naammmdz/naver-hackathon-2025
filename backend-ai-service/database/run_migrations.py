@@ -35,6 +35,8 @@ MIGRATION_FILES = [
     "011_add_workspace_id_to_chunks.sql",
     "012_add_user_metadata.sql",
     "013_ensure_workspace_id.sql",
+    "014_add_name_to_users.sql",
+    "015_fix_schema_issues.sql"
 ]
 
 def connect_to_db():
