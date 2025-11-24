@@ -85,6 +85,7 @@ services:
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
       CLERK_JWKS_URL: ${CLERK_JWKS_URL:-https://direct-newt-10.clerk.accounts.dev/.well-known/jwks.json}
       CLERK_ISSUER: ${CLERK_ISSUER:-https://direct-newt-10.clerk.accounts.dev}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy
