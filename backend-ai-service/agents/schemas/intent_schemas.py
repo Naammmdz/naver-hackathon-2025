@@ -171,5 +171,11 @@ INTENT_EXAMPLES = [
         "intent_type": IntentType.UNKNOWN,
         "agent": AgentType.BOTH,
         "reasoning": "General greeting or open-ended question"
+    },
+    {
+        "query": "Continue writing the next paragraph",
+        "intent_type": IntentType.DOCUMENT_COMPLETION,
+        "agent": AgentType.DOCUMENT,
+        "reasoning": "User asking to generate content for the active document"
     }
 ]

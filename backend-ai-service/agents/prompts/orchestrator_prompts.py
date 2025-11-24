@@ -88,6 +88,14 @@ def create_intent_detection_prompt(
 {context_text}
 {doc_context_text}
 
+{doc_context_text}
+
+## IMPORTANT: Document Completion
+If the user asks to "continue writing", "complete this", "write more", "finish this paragraph", or similar, AND there is an Active Document Context:
+- Set intent_type to "document_completion"
+- Set agent to "document"
+- Set requires_agents to true
+
 ## IMPORTANT: Check for Small Talk First
 If the query is a simple greeting, casual conversation, or doesn't require any workspace data:
 - Set intent_type to "unknown"
@@ -183,14 +191,15 @@ def create_planning_prompt(
 
 ## Step Types Available
 1. **query_document**: Query the Document Agent
-2. **query_task**: Query the Task Agent
-3. **query_board**: Query the Board Agent
-4. **synthesize**: Combine results from multiple steps
+2. **document_completion**: Generate text completion for the active document
+3. **query_task**: Query the Task Agent
+4. **query_board**: Query the Board Agent
+5. **synthesize**: Combine results from multiple steps
 
 ## IMPORTANT: Agent Field Rules
 - Each step's "agent" field must be one of: "document", "task", "board", or "both"
 - NEVER use "orchestrator" as an agent value
-- Use "document" for document queries
+- Use "document" for document queries AND document completion
 - Use "task" for task queries
 - Use "board" for board queries
 - Use "both" only for synthesis steps that combine results
@@ -204,7 +213,7 @@ Create an execution plan with these fields:
 
 Each step should have:
 - **step_id**: Unique identifier (e.g., "step1", "step2")
-- **type**: Step type (query_document, query_task, query_board, or synthesize)
+- **type**: Step type (query_document, document_completion, query_task, query_board, or synthesize)
 - **agent**: MUST be "document", "task", "board", or "both" (NEVER "orchestrator")
 - **query**: What to query
 - **dependencies**: Step IDs that must complete first
@@ -213,10 +222,11 @@ Each step should have:
 ## CRITICAL VALIDATION RULES:
 1. Agent field MUST be exactly one of: "document", "task", "board", "both"
 2. For query_document steps: agent = "document"
-3. For query_task steps: agent = "task"
-4. For query_board steps: agent = "board"
-5. For synthesize steps: agent = "both"
-6. NEVER use "orchestrator" as an agent value
+3. For document_completion steps: agent = "document"
+4. For query_task steps: agent = "task"
+5. For query_board steps: agent = "board"
+6. For synthesize steps: agent = "both"
+7. NEVER use "orchestrator" as an agent value
 
 ## Output Format (JSON)
 ```json

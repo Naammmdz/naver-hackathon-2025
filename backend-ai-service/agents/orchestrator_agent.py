@@ -373,6 +373,7 @@ class OrchestratorAgent:
                     raise Exception(f"Dependency {dep_id} not completed successfully")
             
             # Execute step based on type
+            start_time = datetime.now()
             result = None
             
             if step.type == StepType.QUERY_DOCUMENT:
@@ -396,12 +397,15 @@ class OrchestratorAgent:
             else:
                 raise Exception(f"Unknown step type: {step.type}")
             
+            end_time = datetime.now()
+            execution_time = int((end_time - start_time).total_seconds() * 1000)
+            
             # Create StepResult
             step_result = StepResult(
                 step_id=step.step_id,
                 success=True,
                 result=result,
-                execution_time_ms=0  # TODO: Track actual time
+                execution_time_ms=execution_time
             )
             
             logger.info(f"Step {step.step_id} completed successfully")
@@ -548,6 +552,10 @@ class OrchestratorAgent:
             current_content=document_context.get('content', ''),
             cursor_position=document_context.get('cursor_position')
         )
+        
+        # Map completion to answer for synthesis/response
+        if 'completion' in result:
+            result['answer'] = result['completion']
         
         return result
     

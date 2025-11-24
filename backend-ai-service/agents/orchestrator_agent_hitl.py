@@ -312,7 +312,8 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
         query: str,
         workspace_id: str,
         user_id: str = "default-user",
-        conversation_history: Optional[List[Dict[str, str]]] = None
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        document_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Process query with HITL confirmation for risky operations
@@ -322,6 +323,7 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             workspace_id: Workspace ID
             user_id: User ID
             conversation_history: Conversation context
+            document_context: Context of the currently open document
             
         Returns:
             Result with requires_confirmation flag
@@ -342,6 +344,7 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             'workspace_id': workspace_id,
             'query': query,
             'conversation_history': conversation_history,
+            'document_context': document_context,
             'intent': None,
             'intent_confidence': 0.0,
             'execution_plan': None,
@@ -389,7 +392,7 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
         if risk is None:
             # Safe operation - execute without HITL
             logger.info("Safe operation detected - executing without HITL")
-            result = self.query(workspace_id, query, conversation_history)
+            result = self.query(workspace_id, query, conversation_history, document_context)
             return {
                 **result,
                 'requires_confirmation': False,
@@ -454,7 +457,8 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
         query: str,
         workspace_id: str,
         user_id: str = "default-user",
-        conversation_history: Optional[List[Dict[str, str]]] = None
+        conversation_history: Optional[List[Dict[str, str]]] = None,
+        document_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Alias for query_with_hitl for API compatibility.
@@ -465,11 +469,12 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             workspace_id: Workspace ID
             user_id: User ID
             conversation_history: Conversation context
+            document_context: Context of the currently open document
             
         Returns:
             Result with requires_confirmation flag
         """
-        return self.query_with_hitl(query, workspace_id, user_id, conversation_history)
+        return self.query_with_hitl(query, workspace_id, user_id, conversation_history, document_context)
     
     def _format_plan_preview(self, plan: ExecutionPlan) -> str:
         """Format execution plan for preview"""
@@ -560,7 +565,8 @@ class OrchestratorAgentWithHITL(OrchestratorAgent):
             result = self.query(
                 query=query,
                 workspace_id=request.workspace_id,
-                conversation_history=None
+                conversation_history=None,
+                document_context=request.context.get('document_context')  # Pass context from request
             )
             return result
         

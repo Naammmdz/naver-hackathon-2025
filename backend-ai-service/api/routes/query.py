@@ -55,6 +55,10 @@ class QueryRequest(BaseModel):
     llm_provider: Optional[str] = Field(None, description="LLM provider override (naver, openai, cerebras, gemini)")
     top_k: int = Field(default=5, ge=1, le=20, description="Number of chunks to retrieve")
     include_memory: bool = Field(default=True, description="Include conversation memory")
+    document_context: Optional[Dict[str, Any]] = Field(None, description="Context of the currently open document")
+
+
+
 
 
 class QueryResponse(BaseModel):
@@ -66,6 +70,10 @@ class QueryResponse(BaseModel):
     session_id: str
     retrieval_stats: Dict[str, Any]
     metadata: Dict[str, Any]
+    requires_confirmation: bool = False
+
+
+
 
 
 class ConversationMessage(BaseModel):
@@ -167,7 +175,8 @@ async def query_documents(
             query=request.query,
             workspace_id=workspace_id,
             user_id=request.user_id,
-            conversation_history=conversation_history
+            conversation_history=conversation_history,
+            document_context=request.document_context
         )
         
         # Check if HITL confirmation is required
@@ -187,7 +196,8 @@ async def query_documents(
                     'hitl_request': result,
                     'operation_type': result.get('operation_type'),
                     'intent_type': result.get('intent_type')
-                }
+                },
+                requires_confirmation=True
             )
         
         # Normal query (read operation) - extract citations and prepare response

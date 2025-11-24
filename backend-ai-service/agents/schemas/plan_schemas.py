@@ -189,5 +189,20 @@ PLANNING_EXAMPLES = [
             ],
             "estimated_complexity": "simple"
         }
+    },
+    {
+        "query": "Continue writing the next paragraph",
+        "plan": {
+            "steps": [
+                {
+                    "step_id": "completion",
+                    "type": "document_completion",
+                    "agent": "document",
+                    "query": "Continue writing the next paragraph",
+                    "dependencies": []
+                }
+            ],
+            "estimated_complexity": "simple"
+        }
     }
 ]
