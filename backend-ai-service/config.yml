@@ -51,7 +51,7 @@ data_preprocessing:
 
 llm:
   # Provider mặc định
-  default_provider: naver
+  default_provider: cerebras
   
   # Cấu hình cho từng provider
   providers:
