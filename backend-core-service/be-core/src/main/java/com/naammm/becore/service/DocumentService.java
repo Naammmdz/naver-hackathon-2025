@@ -163,6 +163,9 @@ public class DocumentService {
         document.setTrashedAt(LocalDateTime.now());
         documentRepository.save(document);
         globalSearchService.indexDocument(document);
+        
+        // Publish trash event to Redis for real-time sync
+        publishMetadataUpdate(id, "TRASH", "");
     }
 
     public void permanentlyDeleteDocument(String id) {
@@ -207,6 +210,9 @@ public class DocumentService {
         document.setTrashedAt(null);
         Document saved = documentRepository.save(document);
         globalSearchService.indexDocument(saved);
+        
+        // Publish restore event to Redis for real-time sync
+        publishMetadataUpdate(id, "RESTORE", "");
         
         // Trigger AI indexing if workspace exists
         if (saved.getWorkspaceId() != null && !saved.getWorkspaceId().isBlank()) {
