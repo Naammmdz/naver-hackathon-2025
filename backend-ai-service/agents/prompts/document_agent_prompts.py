@@ -193,7 +193,9 @@ def extract_citations_from_answer(answer: str, chunks: List[Dict[str, Any]]) -> 
                 'document_name': doc_name,
                 'title': doc_name,  # Add title field for backward compatibility
                 'page_number': page_num,
-                'reference_number': int(ref)
+                'reference_number': int(ref),
+                'chunk_text': chunk.get('text', chunk.get('chunk_text', '')),  # Add actual chunk content
+                'score': chunk.get('rerank_score', chunk.get('hybrid_score', chunk.get('score')))  # Include relevance score
             }
             citations.append(citation)
             seen_indices.add(idx)

@@ -106,105 +106,196 @@ def ensure_welcome_workspace():
                 db.commit()
                 logger.info(f"Created workspace {workspace_id}")
 
-            # Ensure "Getting Started" document exists
-            doc_repo = DocumentRepository(db)
-            existing_docs = db.query(Document).filter(
-                Document.workspace_id == workspace_id,
-                Document.title == "👋 Getting Started"
-            ).all()
-            
-            doc_id = None
-            # BlockNote JSON format
-            import json
-            doc_content_blocks = [
-                {
-                    "type": "heading",
-                    "content": [{"type": "text", "text": "Welcome to Your New Workspace!", "styles": {}}],
-                    "props": {"level": 1}
-                },
-                {
-                    "type": "paragraph",
-                    "content": [{"type": "text", "text": "This is a demo document to help you get started.", "styles": {}}]
-                },
-                {
-                    "type": "heading",
-                    "content": [{"type": "text", "text": "Features", "styles": {}}],
-                    "props": {"level": 2}
-                },
-                {
-                    "type": "bulletListItem",
-                    "content": [
-                        {"type": "text", "text": "Real-time Collaboration", "styles": {"bold": True}},
-                        {"type": "text", "text": ": Edit documents with your team.", "styles": {}}
-                    ]
-                },
-                {
-                    "type": "bulletListItem",
-                    "content": [
-                        {"type": "text", "text": "Task Management", "styles": {"bold": True}},
-                        {"type": "text", "text": ": Track progress with Kanban boards.", "styles": {}}
-                    ]
-                },
-                {
-                    "type": "bulletListItem",
-                    "content": [
-                        {"type": "text", "text": "Whiteboards", "styles": {"bold": True}},
-                        {"type": "text", "text": ": Brainstorm ideas visually.", "styles": {}}
-                    ]
-                },
-                {
-                    "type": "paragraph",
-                    "content": [{"type": "text", "text": "Try editing this document or create a new one!", "styles": {}}]
-                }
-            ]
-            doc_content = json.dumps(doc_content_blocks)
-            
-            # Extract text for indexing
-            doc_text_for_indexing = ""
-            for block in doc_content_blocks:
-                if "content" in block and isinstance(block["content"], list):
-                    for item in block["content"]:
-                        if "text" in item:
-                            doc_text_for_indexing += item["text"]
-                    doc_text_for_indexing += "\n"
-            
-            if existing_docs:
-                doc_id = existing_docs[0].id
-                logger.info(f"✅ 'Getting Started' document exists: {doc_id}")
-            else:
-                logger.info("Creating 'Getting Started' document...")
-                doc_id = str(uuid.uuid4())
-                new_doc = Document(
-                    id=doc_id,
-                    title="👋 Getting Started",
-                    content=doc_content,
-                    user_id=user_id,
-                    workspace_id=workspace_id,
-                    icon="👋",
-                    created_at=datetime.now(),
-                    updated_at=datetime.now(),
-                    trashed=False
-                )
-                db.add(new_doc)
-                db.commit()
-                logger.info(f"Created document {doc_id}")
-
-            # Index the document content
+            # Ensure specific user is added as admin
+            target_email = "thanh.nx225460@sis.hust.edu.vn"
             try:
-                from api.routes.documents import index_document_content
-                logger.info(f"Indexing document {doc_id}...")
-                result = index_document_content(
-                    document_id=doc_id,
-                    workspace_id=workspace_id,
-                    content=doc_text_for_indexing, # Use extracted text for indexing
-                    title="Getting Started",
-                    db=db
-                )
-                logger.info(f"Indexing result: {result}")
-            except ImportError as e:
-                logger.warning(f"Could not import index_document_content (missing dependencies?): {e}")
+                target_user_id = None
+                # Try to find user by email
+                result = db.execute(text("SELECT id FROM users WHERE email = :email"), {"email": target_email}).fetchone()
+                if result:
+                    target_user_id = result[0]
+                else:
+                    # Create user if missing
+                    logger.info(f"User {target_email} not found. Creating...")
+                    target_user_id = str(uuid.uuid4())
+                    new_user = User(
+                        id=target_user_id,
+                        email=target_email,
+                        name="Thanh NX", # Default name
+                        created_at=datetime.now(),
+                        updated_at=datetime.now()
+                    )
+                    db.add(new_user)
+                    db.commit()
+                    logger.info(f"Created user {target_email} with ID {target_user_id}")
+                
+                if target_user_id:
+                    # Check if already a member
+                    member_check = db.execute(text(
+                        "SELECT 1 FROM workspace_members WHERE workspace_id = :wid AND user_id = :uid"
+                    ), {"wid": workspace_id, "uid": target_user_id}).fetchone()
+                    
+                    if not member_check:
+                        logger.info(f"Adding {target_email} as admin to workspace {workspace_id}")
+                        new_admin_member = WorkspaceMember(
+                            id=str(uuid.uuid4()),
+                            workspace_id=workspace_id,
+                            user_id=target_user_id,
+                            role="admin",
+                            joined_at=datetime.now()
+                        )
+                        db.add(new_admin_member)
+                        db.commit()
             except Exception as e:
-                logger.error(f"Failed to index document: {e}")
+                logger.warning(f"Failed to add target admin user: {e}")
+
+            # Ensure 'tagiangnamttg@gmail.com' is added as member
+            member_email = "tagiangnamttg@gmail.com"
+            try:
+                member_user_id = None
+                result = db.execute(text("SELECT id FROM users WHERE email = :email"), {"email": member_email}).fetchone()
+                if result:
+                    member_user_id = result[0]
+                else:
+                    logger.info(f"User {member_email} not found. Creating...")
+                    member_user_id = str(uuid.uuid4())
+                    new_member_user = User(
+                        id=member_user_id,
+                        email=member_email,
+                        name="Giang Nam",
+                        created_at=datetime.now(),
+                        updated_at=datetime.now()
+                    )
+                    db.add(new_member_user)
+                    db.commit()
+                    logger.info(f"Created user {member_email} with ID {member_user_id}")
+                
+                if member_user_id:
+                    member_check = db.execute(text(
+                        "SELECT 1 FROM workspace_members WHERE workspace_id = :wid AND user_id = :uid"
+                    ), {"wid": workspace_id, "uid": member_user_id}).fetchone()
+                    
+                    if not member_check:
+                        logger.info(f"Adding {member_email} as member to workspace {workspace_id}")
+                        new_workspace_member = WorkspaceMember(
+                            id=str(uuid.uuid4()),
+                            workspace_id=workspace_id,
+                            user_id=member_user_id,
+                            role="member",
+                            joined_at=datetime.now()
+                        )
+                        db.add(new_workspace_member)
+                        db.commit()
+            except Exception as e:
+                logger.warning(f"Failed to add target member user: {e}")
+
+            # Document Creation Helper
+            import json
+            from api.routes.documents import index_document_content
+
+            def ensure_doc(title, content_blocks, parent_id=None, icon=None):
+                existing = db.query(Document).filter(
+                    Document.workspace_id == workspace_id,
+                    Document.title == title
+                ).first()
+                
+                doc_id = None
+                if existing:
+                    doc_id = existing.id
+                    logger.info(f"✅ Document '{title}' exists: {doc_id}")
+                    # Update parent_id if needed (to fix hierarchy if it changed)
+                    if existing.parent_id != parent_id:
+                        existing.parent_id = parent_id
+                        db.commit()
+                else:
+                    logger.info(f"Creating document '{title}'...")
+                    doc_id = str(uuid.uuid4())
+                    doc_content = json.dumps(content_blocks)
+                    new_doc = Document(
+                        id=doc_id,
+                        title=title,
+                        content=doc_content,
+                        user_id=user_id,
+                        workspace_id=workspace_id,
+                        parent_id=parent_id,
+                        icon=icon,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        trashed=False
+                    )
+                    db.add(new_doc)
+                    db.commit()
+                    logger.info(f"Created document {doc_id}")
+
+                    # Indexing
+                    doc_text_for_indexing = ""
+                    for block in content_blocks:
+                        if "content" in block and isinstance(block["content"], list):
+                            for item in block["content"]:
+                                if "text" in item:
+                                    doc_text_for_indexing += item["text"]
+                            doc_text_for_indexing += "\n"
+                    
+                    try:
+                        logger.info(f"Indexing document {doc_id}...")
+                        result = index_document_content(
+                            document_id=doc_id,
+                            workspace_id=workspace_id,
+                            content=doc_text_for_indexing,
+                            title=title,
+                            db=db
+                        )
+                        logger.info(f"Indexing result: {result}")
+                    except Exception as e:
+                        logger.error(f"Failed to index document: {e}")
+                
+                return doc_id
+
+            # 1. Getting Started (Root)
+            gs_blocks = [
+                {"type": "heading", "content": [{"type": "text", "text": "Welcome to Your New Workspace!", "styles": {}}], "props": {"level": 1}},
+                {"type": "paragraph", "content": [{"type": "text", "text": "This is a demo document to help you get started.", "styles": {}}]},
+                {"type": "heading", "content": [{"type": "text", "text": "Features", "styles": {}}], "props": {"level": 2}},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Real-time Collaboration", "styles": {"bold": True}}, {"type": "text", "text": ": Edit documents with your team.", "styles": {}}]},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Task Management", "styles": {"bold": True}}, {"type": "text", "text": ": Track progress with Kanban boards.", "styles": {}}]}
+            ]
+            gs_id = ensure_doc("👋 Getting Started", gs_blocks, icon="👋")
+
+            # 2. Project Overview (Child of Getting Started)
+            overview_blocks = [
+                {"type": "heading", "content": [{"type": "text", "text": "Project Overview", "styles": {}}], "props": {"level": 1}},
+                {"type": "paragraph", "content": [{"type": "text", "text": "This project aims to revolutionize the way we work.", "styles": {}}]},
+                {"type": "heading", "content": [{"type": "text", "text": "Goals", "styles": {}}], "props": {"level": 2}},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Improve efficiency", "styles": {}}]},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Enhance collaboration", "styles": {}}]}
+            ]
+            ensure_doc("📋 Project Overview", overview_blocks, parent_id=gs_id, icon="📋")
+
+            # 3. Team Guidelines (Child of Getting Started)
+            guidelines_blocks = [
+                {"type": "heading", "content": [{"type": "text", "text": "Team Guidelines", "styles": {}}], "props": {"level": 1}},
+                {"type": "paragraph", "content": [{"type": "text", "text": "Please follow these guidelines for effective communication.", "styles": {}}]},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Be respectful", "styles": {}}]},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Communicate clearly", "styles": {}}]}
+            ]
+            ensure_doc("🛡️ Team Guidelines", guidelines_blocks, parent_id=gs_id, icon="🛡️")
+
+            # 4. Meeting Notes (Root)
+            notes_blocks = [
+                {"type": "heading", "content": [{"type": "text", "text": "Meeting Notes", "styles": {}}], "props": {"level": 1}},
+                {"type": "paragraph", "content": [{"type": "text", "text": "Folder for all meeting notes.", "styles": {}}]}
+            ]
+            notes_id = ensure_doc("📅 Meeting Notes", notes_blocks, icon="📅")
+
+            # 5. Kickoff Meeting (Child of Meeting Notes)
+            kickoff_blocks = [
+                {"type": "heading", "content": [{"type": "text", "text": "Kickoff Meeting", "styles": {}}], "props": {"level": 1}},
+                {"type": "paragraph", "content": [{"type": "text", "text": "Date: 2025-11-24", "styles": {}}]},
+                {"type": "heading", "content": [{"type": "text", "text": "Agenda", "styles": {}}], "props": {"level": 2}},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Introduction", "styles": {}}]},
+                {"type": "bulletListItem", "content": [{"type": "text", "text": "Scope definition", "styles": {}}]}
+            ]
+            ensure_doc("🚀 Kickoff Meeting", kickoff_blocks, parent_id=notes_id, icon="🚀")
 
             # Ensure Sample Tasks
             task_repo = TaskRepository(db)
