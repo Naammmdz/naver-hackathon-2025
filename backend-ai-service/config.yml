@@ -51,7 +51,7 @@ data_preprocessing:
 
 llm:
   # Provider mặc định
-  default_provider: cerebras
+  default_provider: HCX-007
   
   # Cấu hình cho từng provider
   providers:

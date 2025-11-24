@@ -167,8 +167,24 @@ async def query_documents(
         
         logger.info(f"Processing query in workspace {workspace_id}, session {session_id}")
         
-        # TODO: Fetch history if needed for conversation_history parameter
-        conversation_history = None 
+        # Fetch conversation history
+        conversation_history = []
+        if session_id:
+            try:
+                conversation_repo = ConversationRepository(db)
+                # Get recent messages from this session
+                recent_messages = conversation_repo.get_by_session(session_id, limit=10)
+                
+                # Format for Orchestrator (list of dicts)
+                for msg in recent_messages:
+                    conversation_history.append({
+                        "role": msg.role,
+                        "content": msg.content
+                    })
+                logger.info(f"Retrieved {len(conversation_history)} messages from history")
+            except Exception as e:
+                logger.warning(f"Failed to fetch conversation history: {e}")
+                conversation_history = [] 
 
         # Query with Orchestrator (now supports CRUD operations with HITL)
         result = orchestrator.query_with_crud(

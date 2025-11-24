@@ -47,7 +47,7 @@ def test_query(query):
                     
                     # Check for citations (Document Agent)
                     if 'citations' in result and isinstance(result['citations'], list):
-                        print(f"    Found {len(result['citations'])} citations:")
+                        print(f"    Found {len(result['citations'])} citations (Time: {step.get('execution_time_ms', 0):.2f}ms):")
                         for i, citation in enumerate(result['citations']):
                             content = citation.get('chunk_text', '')
                             score = citation.get('score', 'N/A')

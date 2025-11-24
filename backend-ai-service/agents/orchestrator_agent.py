@@ -626,37 +626,49 @@ class OrchestratorAgent:
             
         # Short-circuit for small talk / greetings (UNKNOWN intent without agent requirement)
         if intent.type == IntentType.UNKNOWN and not intent.requires_decomposition:
-            # Generate friendly direct response without agent calls
-            small_talk_responses = {
-                "hello": "Hello! I'm your Workspace Assistant. I can help you manage tasks, find documents, or visualize your project progress. How can I help you today?",
-                "hi": "Hi there! Ready to help with your project. What do you need?",
-                "hey": "Hey! How can I assist you with your workspace today?",
-                "how are you": "I'm functioning perfectly and ready to assist! How can I help you with your work?",
-                "thanks": "You're welcome! Let me know if you need anything else.",
-                "thank you": "Happy to help! Is there anything else you need?",
-                "bye": "Goodbye! Have a productive day.",
-                "what can you do": "I'm your project assistant. I can:\n- **Analyze Tasks:** Show overdue items, risks, or workload.\n- **Search Documents:** Answer questions from your uploaded files.\n- **Visualize Data:** Create Kanban boards, Gantt charts, and flowcharts.\n\nJust ask!"
-            }
-            
-            query_lower = state['query'].lower().strip()
-            # Simple fuzzy matching or exact match
-            response = small_talk_responses.get(query_lower)
-            
-            if not response:
-                # Try partial matches for common greetings
-                for key, val in small_talk_responses.items():
-                    if key in query_lower and len(query_lower) < 20: # Only for short queries
-                        response = val
-                        break
-            
-            if not response:
-                response = "I'm not sure I understood that. I can help with tasks, documents, and visualizations. Could you rephrase your request?"
+            # Generate friendly direct response using LLM for dynamic small talk
+            try:
+                from langchain_core.messages import SystemMessage, HumanMessage
                 
-            state['final_answer'] = response
-            return True
-            
-        return False
+                # Build context string from history
+                history_text = ""
+                history = state.get('conversation_history', [])
+                if history:
+                    history_text = "\n\nRecent Conversation:\n"
+                    for msg in history[-5:]: # Include last 5 messages
+                        role = msg.get('role', 'user')
+                        content = msg.get('content', '')
+                        history_text += f"- {role}: {content}\n"
 
+                system_prompt = f"""You are a helpful and friendly AI Workspace Assistant.
+                Your goal is to be conversational, polite, and helpful.
+                
+                If the user introduces themselves, acknowledge it warmly.
+                If the user greets you, greet them back.
+                If the user asks what you can do, explain your capabilities (Tasks, Documents, Visualizations).
+                
+                Use the provided conversation history to maintain context (e.g., remembering names).
+                
+                Keep your response concise (1-2 sentences unless explaining capabilities).
+                {history_text}
+                """
+                
+                response = self.llm.invoke([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": state['query']}
+                ])
+                
+                state['final_answer'] = response.content
+                return True
+                
+            except Exception as e:
+                logger.error(f"Small talk generation failed: {e}")
+                # Fallback to generic message
+                state['final_answer'] = "I'm here to help with your workspace tasks and documents. How can I assist you?"
+                return True
+        
+        return False
+    
     def _should_create_plan(self, state: OrchestratorState) -> str:
         """Decide if we should create a plan or handle error"""
         if state.get('error'):
